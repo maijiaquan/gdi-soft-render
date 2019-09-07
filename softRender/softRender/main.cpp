@@ -24,6 +24,8 @@
 
 #include <iostream>
 
+#include "frame.h"
+
 typedef unsigned int IUINT32;
 
 //=====================================================================
@@ -1066,6 +1068,55 @@ void init_texture(device_t *device)
 	device_set_texture(device, texture, 256 * 4, 256, 256);
 }
 
+//--------------------------------------------------------------
+
+RenderList4 renderList; // the single renderlist
+void GameInit();
+void GameMain();
+
+void GameInit()
+{
+	// Build_Sin_Cos_Tables();
+	// initialize a single polygon
+	// poly1.state = POLY4DV1_STATE_ACTIVE;
+	// poly1.attr = 0;
+	// poly1.color = RGB16Bit(0, 255, 0);
+
+	// poly1.vlist[0].x = 0;
+	// poly1.vlist[0].y = 50;
+	// poly1.vlist[0].z = 0;
+	// poly1.vlist[0].w = 1;
+
+	// poly1.vlist[1].x = 50;
+	// poly1.vlist[1].y = -50;
+	// poly1.vlist[1].z = 0;
+	// poly1.vlist[1].w = 1;
+
+	// poly1.vlist[2].x = -50;
+	// poly1.vlist[2].y = -50;
+	// poly1.vlist[2].z = 0;
+	// poly1.vlist[2].w = 1;
+
+	// poly1.next = poly1.prev = NULL;
+
+	// // initialize the camera with 90 FOV, normalized coordinates
+	// Init_CAM4DV1(&cam,			  // the camera object
+	// 			 CAM_MODEL_EULER, // euler camera model
+	// 			 &cam_pos,		  // initial camera position
+	// 			 &cam_dir,		  // initial camera angles
+	// 			 NULL,			  // no initial target
+	// 			 50.0,			  // near and far clipping planes
+	// 			 500.0,
+	// 			 90.0,		   // field of view in degrees
+	// 			 WINDOW_WIDTH, // size of final screen viewport
+	// 			 WINDOW_HEIGHT);
+}
+
+void GameMain()
+{
+	ResetRenderList(&renderList);
+}
+
 int main(void)
 {
 	device_t device;
@@ -1088,6 +1139,9 @@ int main(void)
 	device.render_state = RENDER_STATE_TEXTURE;
 
 	int tmp = 1;
+
+	GameInit();
+
 	while (screen_exit == 0 && screen_keys[VK_ESCAPE] == 0)
 	{
 		screen_dispatch();
@@ -1118,13 +1172,15 @@ int main(void)
 			kbhit = 0;
 		}
 
+		GameMain();
+
 		draw_box(&device, alpha);
 
-			tmp++;
-			device_draw_line(&device, 199 + tmp, 149, 249 + tmp, 249, device.foreground); //1 2
-			device_draw_line(&device, 149 + tmp, 249, 249 + tmp, 249, device.foreground); //2 3
-			device_draw_line(&device, 149 + tmp, 249, 199 + tmp, 149, device.foreground); //3 1
-			 //Sleep(10);
+		tmp++;
+		device_draw_line(&device, 199 + tmp, 149, 249 + tmp, 249, device.foreground); //1 2
+		device_draw_line(&device, 149 + tmp, 249, 249 + tmp, 249, device.foreground); //2 3
+		device_draw_line(&device, 149 + tmp, 249, 199 + tmp, 149, device.foreground); //3 1
+																					  //Sleep(10);
 
 		screen_update();
 		Sleep(50);

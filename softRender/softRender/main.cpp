@@ -25,6 +25,8 @@
 #include <iostream>
 
 #include "frame.h"
+#include <windows.h>
+
 
 typedef unsigned int IUINT32;
 
@@ -1195,6 +1197,10 @@ void GameMain()
 
 int main(void)
 {
+	DWORD time_start, time_end;
+
+
+
 	bool isOnlyBox = false;
 	int states[] = {RENDER_STATE_TEXTURE, RENDER_STATE_COLOR, RENDER_STATE_WIREFRAME};
 	int indicator = 0;
@@ -1217,9 +1223,14 @@ int main(void)
 	int tmp = 1;
 
 	GameInit();
+	
+	int deltaTime = 0;
 
 	while (screen_exit == 0 && screen_keys[VK_ESCAPE] == 0)
 	{
+				/* 获取开始时间 */
+		time_start = GetTickCount(); //从操作系统启动经过的毫秒数
+
 		screen_dispatch();
 		device_clear(&device, 1);
 		camera_at_zero(&device, pos, 0, 0);
@@ -1266,7 +1277,16 @@ int main(void)
 		// //Sleep(10);
 
 		screen_update();
-		Sleep(50);
+		// Sleep(50);
+
+		time_end = GetTickCount();
+		deltaTime = (time_end - time_start);
+		// std::cout<<"delta time = "<<deltaTime<<std::endl;
+		std::cout<<"delta time = "<<1000/float(deltaTime)<<std::endl;
+
+
+
+
 	}
 	return 0;
 }

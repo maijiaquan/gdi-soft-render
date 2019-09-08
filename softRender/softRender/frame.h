@@ -1,22 +1,51 @@
 #pragma once
+
+#include <math.h>
+#include <string.h>
+typedef unsigned short USHORT;
+
 #define RENDERLIST4DV1_MAX_POLYS 32768 // 16384
 #define POLY4DV1_STATE_ACTIVE 0x0001
 #define CAM_MODEL_EULER 0x0008
 #define CAM_MODEL_UVN 0x0010
-#define PI         ((float)3.141592654f)
-
-typedef unsigned short USHORT;
+#define PI ((float)3.141592654f)
 #define _RGB16BIT565(r, g, b) ((b & 31) + ((g & 63) << 5) + ((r & 31) << 11))
+#define DEG_TO_RAD(ang) ((ang)*PI / 180.0)
 
-#include <math.h>
+// defines for small numbers
+#define EPSILON_E3 (float)(1E-3)
+#define EPSILON_E4 (float)(1E-4)
+#define EPSILON_E5 (float)(1E-5)
+#define EPSILON_E6 (float)(1E-6)
 
-
-// storage for our lookup tables
-float cos_look[361]; // 1 extra element so we can store 0-360 inclusive
-float sin_look[361];
 #define WINDOW_WIDTH 400 // size of window
 #define WINDOW_HEIGHT 400
 
+// transformation control flags
+#define TRANSFORM_LOCAL_ONLY 0 // perform the transformation in place on the \
+                               // local/world vertex list
+#define TRANSFORM_TRANS_ONLY 1 // perfrom the transformation in place on the \
+                               // "transformed" vertex list
+
+#define TRANSFORM_LOCAL_TO_TRANS 2
+
+// defines for camera rotation sequences
+#define CAM_ROT_SEQ_XYZ 0
+#define CAM_ROT_SEQ_YXZ 1
+#define CAM_ROT_SEQ_XZY 2
+#define CAM_ROT_SEQ_YZX 3
+#define CAM_ROT_SEQ_ZYX 4
+#define CAM_ROT_SEQ_ZXY 5
+
+
+// states of polygons and faces
+#define POLY4DV1_STATE_ACTIVE 0x0001
+#define POLY4DV1_STATE_CLIPPED 0x0002
+#define POLY4DV1_STATE_BACKFACE 0x0004
+
+// storage for our lookup tables
+extern float cos_look[361]; // 1 extra so we can store 0-360 inclusive
+extern float sin_look[361]; // 1 extra so we can store 0-360 inclusive
 
 // 3D vector, point without the w ////////////////////////
 typedef struct VECTOR3D_TYP
@@ -81,6 +110,7 @@ typedef struct PLANE3D_TYP
     VECTOR3D n; // normal to the plane (not necessarily a unit vector)
 } PLANE3D, *PLANE3D_PTR;
 
+//矩阵
 // 4x4 matrix /////////////////////////////////////////////
 typedef struct MATRIX4X4
 {
@@ -99,6 +129,14 @@ typedef struct MATRIX4X4
     }; // end union
 
 } MATRIX4X4, *MATRIX4X4_PTR;
+
+//矩阵
+
+// 4x4 identity matrix
+const MATRIX4X4 IMAT_4X4 = {1, 0, 0, 0,
+                            0, 1, 0, 0,
+                            0, 0, 1, 0,
+                            0, 0, 0, 1};
 
 // camera version 1
 typedef struct CAM4DV1_TYP
@@ -157,23 +195,109 @@ typedef struct CAM4DV1_TYP
 
 } CAM4DV1, *CAM4DV1_PTR;
 
+//内联函数
+inline void VECTOR3D_INITXYZ(VECTOR3D_PTR v, float x, float y, float z)
+{
+    (v)->x = (x);
+    (v)->y = (y);
+    (v)->z = (z);
+}
+inline void VECTOR4D_COPY(VECTOR4D_PTR vdst, VECTOR4D_PTR vsrc)
+{
+    (vdst)->x = (vsrc)->x;
+    (vdst)->y = (vsrc)->y;
+    (vdst)->z = (vsrc)->z;
+    (vdst)->w = (vsrc)->w;
+}
 
+inline void VECTOR4D_INITXYZ(VECTOR4D_PTR v, float x, float y, float z)
+{
+    (v)->x = (x);
+    (v)->y = (y);
+    (v)->z = (z);
+    (v)->w = 1.0;
+}
 
-inline void VECTOR4D_COPY(VECTOR4D_PTR vdst, VECTOR4D_PTR vsrc) 
-{(vdst)->x = (vsrc)->x; (vdst)->y = (vsrc)->y;  
-(vdst)->z = (vsrc)->z; (vdst)->w = (vsrc)->w;  }
+inline void POINT3D_COPY(POINT3D_PTR vdst, POINT3D_PTR vsrc)
+{
+    (vdst)->x = (vsrc)->x;
+    (vdst)->y = (vsrc)->y;
+    (vdst)->z = (vsrc)->z;
+}
 
-inline void VECTOR4D_INITXYZ(VECTOR4D_PTR v, float x,float y,float z) 
-{(v)->x = (x); (v)->y = (y); (v)->z = (z); (v)->w = 1.0;}
+inline void VECTOR4D_ZERO(VECTOR4D_PTR v)
+{
+    (v)->x = (v)->y = (v)->z = 0.0;
+    (v)->w = 1.0;
+}
+
+inline void VECTOR3D_COPY(VECTOR3D_PTR vdst, VECTOR3D_PTR vsrc)
+{
+    (vdst)->x = (vsrc)->x;
+    (vdst)->y = (vsrc)->y;
+    (vdst)->z = (vsrc)->z;
+}
+
+inline void VECTOR3D_ZERO(VECTOR3D_PTR v)
+{
+    (v)->x = (v)->y = (v)->z = 0.0;
+}
+
 USHORT RGB16Bit565(int r, int g, int b);
 
-// function ptr to RGB16 builder
-USHORT (*RGB16Bit)
-(int r, int g, int b) = nullptr ;
-
 void Reset_RENDERLIST4DV1(RENDERLIST4DV1_PTR renderList);
-void Build_Sin_Cos_Tables(void);
 void Init_CAM4DV1(CAM4DV1_PTR cam, int attr, POINT4D_PTR cam_pos,
                   VECTOR4D_PTR cam_dir, VECTOR4D_PTR cam_target,
                   float near_clip_z, float far_clip_z, float fov,
                   float viewport_width, float viewport_height);
+
+void MAT_IDENTITY_4X4(MATRIX4X4_PTR m);
+void PLANE3D_Init(PLANE3D_PTR plane, POINT3D_PTR p0,
+                  VECTOR3D_PTR normal, int normalize);
+
+void VECTOR3D_Normalize(VECTOR3D_PTR va);
+void VECTOR3D_Normalize(VECTOR3D_PTR va, VECTOR3D_PTR vn);
+float VECTOR3D_Length(VECTOR3D_PTR va);
+
+int Insert_POLYF4DV1_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list, POLYF4DV1_PTR poly);
+
+void Build_XYZ_Rotation_MATRIX4X4(float theta_x, // euler angles
+                                  float theta_y,
+                                  float theta_z,
+                                  MATRIX4X4_PTR mrot);
+
+float Fast_Sin(float theta);
+float Fast_Cos(float theta);
+void Mat_Mul_4X4(MATRIX4X4_PTR ma, MATRIX4X4_PTR mb, MATRIX4X4_PTR mprod);
+
+void Mat_Init_4X4(MATRIX4X4_PTR ma,
+                  float m00, float m01, float m02, float m03,
+                  float m10, float m11, float m12, float m13,
+                  float m20, float m21, float m22, float m23,
+                  float m30, float m31, float m32, float m33);
+
+#define MAT_COPY_4X4(src_mat, dest_mat)                                   \
+    {                                                                     \
+        memcpy((void *)(dest_mat), (void *)(src_mat), sizeof(MATRIX4X4)); \
+    }
+
+void Transform_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list, // render list to transform
+                              MATRIX4X4_PTR mt,             // transformation matrix
+                              int coord_select);
+
+void Model_To_World_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list, POINT4D_PTR world_pos,
+                                   int coord_select = TRANSFORM_LOCAL_TO_TRANS);                                   
+
+void Build_CAM4DV1_Matrix_Euler(CAM4DV1_PTR cam, int cam_rot_seq);
+
+void World_To_Camera_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list, CAM4DV1_PTR cam);
+
+void Camera_To_Perspective_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list, CAM4DV1_PTR cam);
+
+void Perspective_To_Screen_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list, CAM4DV1_PTR cam);
+
+
+void Mat_Mul_VECTOR4D_4X4(VECTOR4D_PTR  va, MATRIX4X4_PTR mb, VECTOR4D_PTR  vprod);
+
+void VECTOR4D_Add(VECTOR4D_PTR va, VECTOR4D_PTR vb, VECTOR4D_PTR vsum);
+VECTOR4D VECTOR4D_Add(VECTOR4D_PTR va, VECTOR4D_PTR vb);

@@ -1083,8 +1083,25 @@ POLYF4DV1 poly1;					// our lonely polygon
 CAM4DV1 cam;						// the single camera
 POINT4D poly1_pos = {0, 0, 100, 1}; // world position of polygon
 
+device_t device;
+
 void GameInit();
 void GameMain();
+
+USHORT(*RGB16Bit)
+(int r, int g, int b) = nullptr;
+
+void Build_Sin_Cos_Tables(void);
+
+void Build_Sin_Cos_Tables(void)
+{
+	for (int ang = 0; ang <= 360; ang++)
+	{
+		float theta = (float)ang * PI / (float)180;
+		cos_look[ang] = cos(theta);
+		sin_look[ang] = sin(theta);
+	}
+}
 
 void GameInit()
 {
@@ -1127,12 +1144,58 @@ void GameInit()
 
 void GameMain()
 {
+	static MATRIX4X4 gMatrixRotate; // general rotation matrix
+
+	static float ang_y = 0; // rotation angle
+
 	Reset_RENDERLIST4DV1(&rend_list);
+	Insert_POLYF4DV1_RENDERLIST4DV1(&rend_list, &poly1);
+	Build_XYZ_Rotation_MATRIX4X4(0, ang_y, 0, &gMatrixRotate);
+
+	ang_y += 10;
+	if (ang_y >= 360.0)
+		ang_y = 0;
+
+
+	Transform_RENDERLIST4DV1(&rend_list, &gMatrixRotate, TRANSFORM_LOCAL_ONLY);
+	Model_To_World_RENDERLIST4DV1(&rend_list, &poly1_pos);
+	Build_CAM4DV1_Matrix_Euler(&cam, CAM_ROT_SEQ_ZYX);
+	World_To_Camera_RENDERLIST4DV1(&rend_list, &cam);
+	Camera_To_Perspective_RENDERLIST4DV1(&rend_list, &cam);
+	Perspective_To_Screen_RENDERLIST4DV1(&rend_list, &cam);
+
+	RENDERLIST4DV1_PTR rend_list_ptr = &rend_list;
+
+	for (int idx_poly = 0; idx_poly < rend_list_ptr->num_polys; idx_poly++)
+	{
+		// std::cout << rend_list_ptr->poly_ptrs[idx_poly]->tvlist[0].x << std::endl;
+		// std::cout << "x1 = " << rend_list_ptr->poly_ptrs[idx_poly]->tvlist[0].x << std::endl;
+		// std::cout << "y1 = " << rend_list_ptr->poly_ptrs[idx_poly]->tvlist[0].y << std::endl;
+		// std::cout << "x2 = " << rend_list_ptr->poly_ptrs[idx_poly]->tvlist[1].x << std::endl;
+		// std::cout << "y2 = " << rend_list_ptr->poly_ptrs[idx_poly]->tvlist[1].y << std::endl;
+		// std::cout << "x3 = " << rend_list_ptr->poly_ptrs[idx_poly]->tvlist[2].x << std::endl;
+		// std::cout << "y3 = " << rend_list_ptr->poly_ptrs[idx_poly]->tvlist[2].y << std::endl;
+
+
+
+		float x1 = rend_list_ptr->poly_ptrs[idx_poly]->tvlist[0].x;
+		float y1 = rend_list_ptr->poly_ptrs[idx_poly]->tvlist[0].y;
+		float x2 = rend_list_ptr->poly_ptrs[idx_poly]->tvlist[1].x;
+		float y2 = rend_list_ptr->poly_ptrs[idx_poly]->tvlist[1].y;
+		float x3 = rend_list_ptr->poly_ptrs[idx_poly]->tvlist[2].x;
+		float y3 = rend_list_ptr->poly_ptrs[idx_poly]->tvlist[2].y;
+
+
+		device_draw_line(&device, x1, y1, x2, y2, device.foreground); //3 1
+		device_draw_line(&device, x1, y1, x3, y3, device.foreground); //3 1
+		device_draw_line(&device, x2, y2, x3, y3, device.foreground); //3 1
+
+	} // end for poly
 }
 
 int main(void)
 {
-	device_t device;
+	bool isOnlyBox = false;
 	int states[] = {RENDER_STATE_TEXTURE, RENDER_STATE_COLOR, RENDER_STATE_WIREFRAME};
 	int indicator = 0;
 	int kbhit = 0;
@@ -1169,6 +1232,8 @@ int main(void)
 			alpha += 0.01f;
 		if (screen_keys[VK_RIGHT])
 			alpha -= 0.01f;
+		if (screen_keys[VK_F1])
+			isOnlyBox = !isOnlyBox;
 
 		if (screen_keys[VK_SPACE])
 		{
@@ -1185,15 +1250,20 @@ int main(void)
 			kbhit = 0;
 		}
 
-		GameMain();
+		if(!isOnlyBox)
+		{
+			GameMain();
+		}
+
+
 
 		draw_box(&device, alpha);
 
-		tmp++;
-		device_draw_line(&device, 199 + tmp, 149, 249 + tmp, 249, device.foreground); //1 2
-		device_draw_line(&device, 149 + tmp, 249, 249 + tmp, 249, device.foreground); //2 3
-		device_draw_line(&device, 149 + tmp, 249, 199 + tmp, 149, device.foreground); //3 1
-																					  //Sleep(10);
+		// tmp++;
+		// device_draw_line(&device, 199 + tmp, 149, 249 + tmp, 249, device.foreground); //1 2
+		// device_draw_line(&device, 149 + tmp, 249, 249 + tmp, 249, device.foreground); //2 3
+		// device_draw_line(&device, 149 + tmp, 249, 199 + tmp, 149, device.foreground); //3 1
+		// //Sleep(10);
 
 		screen_update();
 		Sleep(50);

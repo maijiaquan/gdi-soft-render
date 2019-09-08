@@ -1069,52 +1069,65 @@ void init_texture(device_t *device)
 }
 
 //--------------------------------------------------------------
+// initialize camera position and direction
+POINT4D cam_pos = {0, 0, -100, 1};
+VECTOR4D cam_dir = {0, 0, 0, 1};
 
-RenderList4 renderList; // the single renderlist
+// all your initialization code goes here...
+VECTOR4D vscale = {.5, .5, .5, 1},
+		 vpos = {0, 0, 0, 1},
+		 vrot = {0, 0, 0, 1};
+
+RENDERLIST4DV1 rend_list;			// the single renderlist
+POLYF4DV1 poly1;					// our lonely polygon
+CAM4DV1 cam;						// the single camera
+POINT4D poly1_pos = {0, 0, 100, 1}; // world position of polygon
+
 void GameInit();
 void GameMain();
 
 void GameInit()
 {
-	// Build_Sin_Cos_Tables();
-	// initialize a single polygon
-	// poly1.state = POLY4DV1_STATE_ACTIVE;
-	// poly1.attr = 0;
-	// poly1.color = RGB16Bit(0, 255, 0);
+	RGB16Bit = RGB16Bit565;
 
-	// poly1.vlist[0].x = 0;
-	// poly1.vlist[0].y = 50;
-	// poly1.vlist[0].z = 0;
-	// poly1.vlist[0].w = 1;
+	Build_Sin_Cos_Tables();
+	poly1.state = POLY4DV1_STATE_ACTIVE;
+	poly1.attr = 0;
+	poly1.color = RGB16Bit(0, 255, 0);
 
-	// poly1.vlist[1].x = 50;
-	// poly1.vlist[1].y = -50;
-	// poly1.vlist[1].z = 0;
-	// poly1.vlist[1].w = 1;
+	poly1.vlist[0].x = 0;
+	poly1.vlist[0].y = 50;
+	poly1.vlist[0].z = 0;
+	poly1.vlist[0].w = 1;
 
-	// poly1.vlist[2].x = -50;
-	// poly1.vlist[2].y = -50;
-	// poly1.vlist[2].z = 0;
-	// poly1.vlist[2].w = 1;
+	poly1.vlist[1].x = 50;
+	poly1.vlist[1].y = -50;
+	poly1.vlist[1].z = 0;
+	poly1.vlist[1].w = 1;
 
-	// poly1.next = poly1.prev = NULL;
+	poly1.vlist[2].x = -50;
+	poly1.vlist[2].y = -50;
+	poly1.vlist[2].z = 0;
+	poly1.vlist[2].w = 1;
 
-	// // initialize the camera with 90 FOV, normalized coordinates
-	// Init_CAM4DV1(&cam,			  // the camera object
-	// 			 CAM_MODEL_EULER, // euler camera model
-	// 			 &cam_pos,		  // initial camera position
-	// 			 &cam_dir,		  // initial camera angles
-	// 			 NULL,			  // no initial target
-	// 			 50.0,			  // near and far clipping planes
-	// 			 500.0,
-	// 			 90.0,		   // field of view in degrees
-	// 			 WINDOW_WIDTH, // size of final screen viewport
-	// 			 WINDOW_HEIGHT);
+	poly1.next = poly1.prev = NULL;
+
+	// initialize the camera with 90 FOV, normalized coordinates
+	Init_CAM4DV1(&cam,			  // the camera object
+				 CAM_MODEL_EULER, // euler camera model
+				 &cam_pos,		  // initial camera position
+				 &cam_dir,		  // initial camera angles
+				 NULL,			  // no initial target
+				 50.0,			  // near and far clipping planes
+				 500.0,
+				 90.0,		   // field of view in degrees
+				 WINDOW_WIDTH, // size of final screen viewport
+				 WINDOW_HEIGHT);
 }
 
 void GameMain()
 {
-	ResetRenderList(&renderList);
+	Reset_RENDERLIST4DV1(&rend_list);
 }
 
 int main(void)

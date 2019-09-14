@@ -37,7 +37,6 @@ typedef unsigned short USHORT;
 #define CAM_ROT_SEQ_ZYX 4
 #define CAM_ROT_SEQ_ZXY 5
 
-
 // states of polygons and faces
 #define POLY4DV1_STATE_ACTIVE 0x0001
 #define POLY4DV1_STATE_CLIPPED 0x0002
@@ -51,18 +50,17 @@ extern float sin_look[361]; // 1 extra so we can store 0-360 inclusive
 typedef struct VECTOR3D_TYP
 {
     union {
-        float M[3]; // array indexed storage
-
+        float M[3];
         // explicit names
         struct
         {
             float x, y, z;
-        }; // end struct
-
-    }; // end union
+        };
+    };
 
 } VECTOR3D, POINT3D, *VECTOR3D_PTR, *POINT3D_PTR;
 
+//顶点的结构
 typedef struct VECTOR4D_TYP
 {
     union {
@@ -78,29 +76,27 @@ typedef struct VECTOR4D_TYP
 //Polygon多边形，其实就是一个三角形
 typedef struct POLYF4DV1_TYP
 {
-    int state; // state information
-    int attr;  // physical attributes of polygon
-    int color; // color of polygon
+    int state;
+    int attr;
+    int color;
 
-    POINT4D vlist[3];  // the vertices of this triangle
-    POINT4D tvlist[3]; // the vertices after transformation if needed
+    POINT4D vlist[3];  // 该三角形的三个顶点
+    POINT4D tvlist[3]; // 该三角形变换后的顶点
 
-    POLYF4DV1_TYP *next; // pointer to next polygon in list??
-    POLYF4DV1_TYP *prev; // pointer to previous polygon in list??
-
+    POLYF4DV1_TYP *next;
+    POLYF4DV1_TYP *prev;
 } POLYF4DV1, *POLYF4DV1_PTR;
 
 //渲染列表，其实就是三角形数组
 typedef struct RENDERLIST4DV1_TYP
 {
-    int state; // state of renderlist ???
-    int attr;  // attributes of renderlist ???
+    int state; 
+    int attr;  
 
-    POLYF4DV1_PTR poly_ptrs[RENDERLIST4DV1_MAX_POLYS];
+    POLYF4DV1_PTR poly_ptrs[RENDERLIST4DV1_MAX_POLYS];  //索引列表
     POLYF4DV1 poly_data[RENDERLIST4DV1_MAX_POLYS];
 
-    int num_polys; // number of polys in render list
-
+    int num_polys; // 三角形的数量
 } RENDERLIST4DV1, *RENDERLIST4DV1_PTR;
 
 // 3D 平面 ///////////////////////////////////////////////////
@@ -286,7 +282,7 @@ void Transform_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list, // render list to tr
                               int coord_select);
 
 void Model_To_World_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list, POINT4D_PTR world_pos,
-                                   int coord_select = TRANSFORM_LOCAL_TO_TRANS);                                   
+                                   int coord_select = TRANSFORM_LOCAL_TO_TRANS);
 
 void Build_CAM4DV1_Matrix_Euler(CAM4DV1_PTR cam, int cam_rot_seq);
 
@@ -296,8 +292,7 @@ void Camera_To_Perspective_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list, CAM4DV1_
 
 void Perspective_To_Screen_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list, CAM4DV1_PTR cam);
 
-
-void Mat_Mul_VECTOR4D_4X4(VECTOR4D_PTR  va, MATRIX4X4_PTR mb, VECTOR4D_PTR  vprod);
+void Mat_Mul_VECTOR4D_4X4(VECTOR4D_PTR va, MATRIX4X4_PTR mb, VECTOR4D_PTR vprod);
 
 void VECTOR4D_Add(VECTOR4D_PTR va, VECTOR4D_PTR vb, VECTOR4D_PTR vsum);
 VECTOR4D VECTOR4D_Add(VECTOR4D_PTR va, VECTOR4D_PTR vb);

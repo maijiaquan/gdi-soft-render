@@ -360,12 +360,6 @@ void screen_update(void)
 // initialize camera position and direction
 POINT4D cam_pos = {0, 0, -100, 1};
 VECTOR4D cam_dir = {0, 0, 0, 1};
-
-// all your initialization code goes here...
-VECTOR4D vscale = {.5, .5, .5, 1},
-		 vpos = {0, 0, 0, 1},
-		 vrot = {0, 0, 0, 1};
-
 RENDERLIST4DV1 rend_list;			// the single renderlist
 POLYF4DV1 poly1;					// our lonely polygon
 CAM4DV1 cam;						// the single camera
@@ -396,6 +390,7 @@ void GameInit()
 	RGB16Bit = RGB16Bit565;
 
 	Build_Sin_Cos_Tables();
+
 	poly1.state = POLY4DV1_STATE_ACTIVE;
 	poly1.attr = 0;
 	poly1.color = RGB16Bit(0, 255, 0);
@@ -480,7 +475,6 @@ void GameMain()
 int main(void)
 {
 	DWORD time_start, time_end;
-
 	bool isOnlyBox = false;
 	int states[] = {RENDER_STATE_TEXTURE, RENDER_STATE_COLOR, RENDER_STATE_WIREFRAME};
 	int indicator = 0;
@@ -516,7 +510,7 @@ int main(void)
 		GameMain();
 
 		screen_update();
-		// Sleep(50);
+		Sleep(50);
 
 		time_end = GetTickCount();
 		deltaTime = (time_end - time_start);

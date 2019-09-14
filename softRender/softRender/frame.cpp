@@ -619,28 +619,18 @@ void Transform_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list, // render list to tr
     {
         for (int poly = 0; poly < rend_list->num_polys; poly++)
         {
-            // acquire current polygon
             POLYF4DV1_PTR curr_poly = rend_list->poly_ptrs[poly];
 
-            // is this polygon valid?
-            // transform this polygon if and only if it's not clipped, not culled,
-            // active, and visible, note however the concept of "backface" is
-            // irrelevant in a wire frame engine though
-            if ((curr_poly == NULL) || !(curr_poly->state & POLY4DV1_STATE_ACTIVE) ||
-                (curr_poly->state & POLY4DV1_STATE_CLIPPED) ||
-                (curr_poly->state & POLY4DV1_STATE_BACKFACE))
-                continue; // move onto next poly
+            if ((curr_poly == NULL) || !(curr_poly->state & POLY4DV1_STATE_ACTIVE) || (curr_poly->state & POLY4DV1_STATE_CLIPPED) || (curr_poly->state & POLY4DV1_STATE_BACKFACE))
+                continue;
 
-            // all good, let's transform
             for (int vertex = 0; vertex < 3; vertex++)
             {
-                // transform the vertex by mt
-                POINT4D presult; // hold result of each transformation
+                POINT4D presult;
 
                 // transform point
                 Mat_Mul_VECTOR4D_4X4(&curr_poly->vlist[vertex], mt, &presult);
 
-                // store result back
                 VECTOR4D_COPY(&curr_poly->vlist[vertex], &presult);
             } // end for vertex
 
@@ -1061,9 +1051,7 @@ void Perspective_To_Screen_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list, CAM4DV1_
 
 } // end Perspective_To_Screen_RENDERLIST4DV1
 
-void Mat_Mul_VECTOR4D_4X4(VECTOR4D_PTR va,
-                          MATRIX4X4_PTR mb,
-                          VECTOR4D_PTR vprod)
+void Mat_Mul_VECTOR4D_4X4(VECTOR4D_PTR va, MATRIX4X4_PTR mb, VECTOR4D_PTR vprod)
 {
     // this function multiplies a VECTOR4D against a
     // 4x4 matrix - ma*mb and stores the result in mprod

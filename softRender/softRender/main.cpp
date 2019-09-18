@@ -27,6 +27,8 @@
 #include "frame.h"
 #include <windows.h>
 
+		static DWORD time_start, time_end;
+
 typedef unsigned int IUINT32;
 
 int CMID(int x, int min, int max) { return (x < min) ? min : ((x > max) ? max : x); }
@@ -87,7 +89,7 @@ void device_init(device_t *device, int width, int height, void *fb)
 	device->width = width;
 	device->height = height;
 	device->background = 0xc0c0c0;
-	device->foreground = 0;
+	device->foreground = 0xc0c0c0;
 	device->render_state = RENDER_STATE_WIREFRAME;
 }
 
@@ -109,7 +111,8 @@ void device_clear(device_t *device, int mode)
 	{
 		IUINT32 *dst = device->framebuffer[y];
 		// IUINT32 cc = (height - 1 - y) * 230 / (height - 1);
-		IUINT32 cc = (height - 1 - 0) * 230 / (height - 1);
+		// IUINT32 cc = (height - 1 - 0) * 255 / (height - 1);
+		IUINT32 cc = (height - 1 - 0) * 0 / (height - 1);	//黑色背景
 		cc = (cc << 16) | (cc << 8) | cc;
 		// std::cout<<"cc = "<<cc<<std::endl;
 		if (mode == 0)
@@ -331,6 +334,7 @@ static LRESULT screen_events(HWND hWnd, UINT msg,
 	return 0;
 }
 
+int count = 0;
 void screen_dispatch(void)
 {
 	MSG msg;
@@ -344,13 +348,34 @@ void screen_dispatch(void)
 	}
 }
 
+void DrawText(char* text)
+{
+	HDC hDC = GetDC(screen_handle);
+
+    SetTextColor(hDC, RGB(0, 255, 0));
+    SetBkMode(hDC, TRANSPARENT);
+	// char* text = "abc爱抚";
+	// char* text = "";
+	// _itoa(count++, text, 5);
+
+	
+	TextOutA(hDC,10,10,text,strlen(text));
+
+	ReleaseDC(screen_handle, hDC);
+
+}
 void screen_update(void)
 {
 	HDC hDC = GetDC(screen_handle);
 	BitBlt(hDC, 0, 0, screen_w, screen_h, screen_dc, 0, 0, SRCCOPY);
+
 	ReleaseDC(screen_handle, hDC);
+
+	
+	DrawText("asdf 爱上了奋达科技");
 	screen_dispatch();
 }
+
 
 //=====================================================================
 // 主程序
@@ -364,17 +389,27 @@ RENDERLIST4DV1 rend_list;			// the single renderlist
 POLYF4DV1 poly1;					// our lonely polygon
 CAM4DV1 cam;						// the single camera
 POINT4D poly1_pos = {0, 0, 100, 1}; // world position of polygon
+OBJECT4DV1 obj;						// used to hold our cube mesh
+// all your initialization code goes here...
+VECTOR4D vscale = {5.0, 5.0, 5.0, 1}, // scale of object
+    vpos = {0, 0, 0, 1},              // position of object
+    vrot = {0, 0, 0, 1};              // initial orientation of object
 
 device_t device;
 
 void GameInit();
 void GameMain();
 
-USHORT(*RGB16Bit)
-(int r, int g, int b) = nullptr;
+// USHORT(*RGB16Bit)(int r, int g, int b);
+USHORT(*RGB16Bit)(int r, int g, int b);
+
+
+void InitDemo7_1();
+void DrawDemo7_1();
+void InitDemo7_2();
+void DrawDemo7_2();
 
 void Build_Sin_Cos_Tables(void);
-
 void Build_Sin_Cos_Tables(void)
 {
 	for (int ang = 0; ang <= 360; ang++)
@@ -385,11 +420,9 @@ void Build_Sin_Cos_Tables(void)
 	}
 }
 
-void GameInit()
+void InitDemo7_1()
 {
 	RGB16Bit = RGB16Bit565;
-
-	Build_Sin_Cos_Tables();
 
 	poly1.state = POLY4DV1_STATE_ACTIVE;
 	poly1.attr = 0;
@@ -425,97 +458,196 @@ void GameInit()
 				 WINDOW_HEIGHT);
 }
 
-void GameMain()
+void InitDemo7_2()
 {
-	static MATRIX4X4 gMatrixRotate; // general rotation matrix
+	RGB16Bit = RGB16Bit565;
 
-	static float ang_y = 0; // rotation angle
+	Init_CAM4DV1(&cam,			  // the camera object
+				 CAM_MODEL_EULER, // the euler model
+				 &cam_pos,		  // initial camera position
+				 &cam_dir,		  // initial camera angles
+				 NULL,			  // no target
+				 50.0,			  // near and far clipping planes
+				 500.0,
+				 90.0,		   // field of view in degrees
+				 WINDOW_WIDTH, // size of final screen viewport
+				 WINDOW_HEIGHT);
+
+	Load_OBJECT4DV1_PLG(&obj, "cube1.plg", &vscale, &vpos, &vrot);
+
+	obj.world_pos.x = 0;
+	obj.world_pos.y = 0;
+	obj.world_pos.z = 100;
+}
+void DrawDemo7_1()
+{
+		Sleep(10);
+
+	static MATRIX4X4 mrot; // general rotation matrix
+	static float ang_y = 0;			// rotation angle
+	ang_y += 1;
+	ang_y = ang_y >= 360.0 ? 0 : ang_y;
 
 	Reset_RENDERLIST4DV1(&rend_list);
 	Insert_POLYF4DV1_RENDERLIST4DV1(&rend_list, &poly1);
-	Build_XYZ_Rotation_MATRIX4X4(0, ang_y, 0, &gMatrixRotate);
 
-	ang_y += 10;
-	if (ang_y >= 360.0)
-		ang_y = 0;
+	Build_XYZ_Rotation_MATRIX4X4(0, ang_y, 0, &mrot); //构造旋转矩阵，绕y轴旋转
 
-	Transform_RENDERLIST4DV1(&rend_list, &gMatrixRotate, TRANSFORM_LOCAL_ONLY);
-	Model_To_World_RENDERLIST4DV1(&rend_list, &poly1_pos);
-	Build_CAM4DV1_Matrix_Euler(&cam, CAM_ROT_SEQ_ZYX);
-	World_To_Camera_RENDERLIST4DV1(&rend_list, &cam);
-	Camera_To_Perspective_RENDERLIST4DV1(&rend_list, &cam);
-	Perspective_To_Screen_RENDERLIST4DV1(&rend_list, &cam);
+	Transform_RENDERLIST4DV1(&rend_list, &mrot, TRANSFORM_LOCAL_ONLY); //在局部坐标中实现旋转矩阵的变换
+
+	Model_To_World_RENDERLIST4DV1(&rend_list, &poly1_pos); //平移到世界坐标
+
+	Build_CAM4DV1_Matrix_Euler(&cam, CAM_ROT_SEQ_ZYX); //构造欧拉相机矩阵
+	World_To_Camera_RENDERLIST4DV1(&rend_list, &cam);  //世界坐标到相机坐标的变换
+
+	Camera_To_Perspective_RENDERLIST4DV1(&rend_list, &cam); //相机坐标到透视坐标
+
+	Perspective_To_Screen_RENDERLIST4DV1(&rend_list, &cam); //透视坐标到屏幕坐标
 
 	RENDERLIST4DV1_PTR rend_list_ptr = &rend_list;
 
-	for (int idx_poly = 0; idx_poly < rend_list_ptr->num_polys; idx_poly++)
+	for (int poly = 0; poly < rend_list_ptr->num_polys; poly++)
 	{
-		// std::cout << rend_list_ptr->poly_ptrs[idx_poly]->tvlist[0].x << std::endl;
-		// std::cout << "x1 = " << rend_list_ptr->poly_ptrs[idx_poly]->tvlist[0].x << std::endl;
-		// std::cout << "y1 = " << rend_list_ptr->poly_ptrs[idx_poly]->tvlist[0].y << std::endl;
-		// std::cout << "x2 = " << rend_list_ptr->poly_ptrs[idx_poly]->tvlist[1].x << std::endl;
-		// std::cout << "y2 = " << rend_list_ptr->poly_ptrs[idx_poly]->tvlist[1].y << std::endl;
-		// std::cout << "x3 = " << rend_list_ptr->poly_ptrs[idx_poly]->tvlist[2].x << std::endl;
-		// std::cout << "y3 = " << rend_list_ptr->poly_ptrs[idx_poly]->tvlist[2].y << std::endl;
-
-		float x1 = rend_list_ptr->poly_ptrs[idx_poly]->tvlist[0].x;
-		float y1 = rend_list_ptr->poly_ptrs[idx_poly]->tvlist[0].y;
-		float x2 = rend_list_ptr->poly_ptrs[idx_poly]->tvlist[1].x;
-		float y2 = rend_list_ptr->poly_ptrs[idx_poly]->tvlist[1].y;
-		float x3 = rend_list_ptr->poly_ptrs[idx_poly]->tvlist[2].x;
-		float y3 = rend_list_ptr->poly_ptrs[idx_poly]->tvlist[2].y;
+		float x1 = rend_list_ptr->poly_ptrs[poly]->tvlist[0].x;
+		float y1 = rend_list_ptr->poly_ptrs[poly]->tvlist[0].y;
+		float x2 = rend_list_ptr->poly_ptrs[poly]->tvlist[1].x;
+		float y2 = rend_list_ptr->poly_ptrs[poly]->tvlist[1].y;
+		float x3 = rend_list_ptr->poly_ptrs[poly]->tvlist[2].x;
+		float y3 = rend_list_ptr->poly_ptrs[poly]->tvlist[2].y;
 
 		device_draw_line(&device, x1, y1, x2, y2, device.foreground); //3 1
 		device_draw_line(&device, x1, y1, x3, y3, device.foreground); //3 1
 		device_draw_line(&device, x2, y2, x3, y3, device.foreground); //3 1
-
-	} // end for poly
-}
-
-int main(void)
-{
-	DWORD time_start, time_end;
-	bool isOnlyBox = false;
-	int states[] = {RENDER_STATE_TEXTURE, RENDER_STATE_COLOR, RENDER_STATE_WIREFRAME};
-	int indicator = 0;
-	int kbhit = 0;
-	float alpha = 1;
-	float pos = 3.5;
-
-	TCHAR *title = _T("Mini3d (software render tutorial) - ")
-				   _T("Left/Right: rotation, Up/Down: forward/backward, Space: switch state");
-
-	if (screen_init(800, 600, title))
-		return -1;
-
-	device_init(&device, 800, 600, screen_fb);
-
-	//init_texture(&device);
-	device.render_state = RENDER_STATE_TEXTURE;
-
-	int tmp = 1;
-
-	GameInit();
-
-	int deltaTime = 0;
-
-	while (screen_exit == 0 && screen_keys[VK_ESCAPE] == 0)
-	{
-		/* 获取开始时间 */
-		time_start = GetTickCount(); //从操作系统启动经过的毫秒数
-
-		screen_dispatch();
-		device_clear(&device, 1);
-
-		GameMain();
-
-		screen_update();
-		Sleep(50);
-
-		time_end = GetTickCount();
-		deltaTime = (time_end - time_start);
-		// std::cout<<"delta time = "<<deltaTime<<std::endl;
-		std::cout << "delta time = " << 1000 / float(deltaTime) << std::endl;
 	}
-	return 0;
 }
+
+void DrawDemo7_2()
+{
+		Sleep(10);
+
+	static MATRIX4X4 mrot; // general rotation matrix
+	static float ang_y = 0;			// rotation angle
+	// ang_y += 1;
+	// ang_y = ang_y >= 360.0 ? 0 : ang_y;
+	ang_y = 1;
+
+	Reset_OBJECT4DV1(&obj);
+
+	Build_XYZ_Rotation_MATRIX4X4(0, ang_y, 0, &mrot); //构造旋转矩阵，绕y轴旋转
+
+	Transform_OBJECT4DV1(&obj, &mrot, TRANSFORM_LOCAL_ONLY, 1);
+
+	// perform local/model to world transform
+	Model_To_World_OBJECT4DV1(&obj);
+
+	// generate camera matrix
+	Build_CAM4DV1_Matrix_Euler(&cam, CAM_ROT_SEQ_ZYX);
+
+	// apply world to camera transform
+	World_To_Camera_OBJECT4DV1(&obj, &cam);
+
+	// apply camera to perspective transformation
+	Camera_To_Perspective_OBJECT4DV1(&obj, &cam);
+
+	// apply screen transform
+	Perspective_To_Screen_OBJECT4DV1(&obj, &cam);
+
+	OBJECT4DV1_PTR obj_ptr = &obj;
+	for (int poly = 0; poly < obj_ptr->num_polys; poly++)
+	{
+		if (!(obj_ptr->plist[poly].state & POLY4DV1_STATE_ACTIVE) ||
+			(obj_ptr->plist[poly].state & POLY4DV1_STATE_CLIPPED) ||
+			(obj_ptr->plist[poly].state & POLY4DV1_STATE_BACKFACE))
+			continue;
+
+		int vindex_0 = obj_ptr->plist[poly].vert[0];
+		int vindex_1 = obj_ptr->plist[poly].vert[1];
+		int vindex_2 = obj_ptr->plist[poly].vert[2];
+
+		// // draw the lines now
+		// Draw_Clip_Line16(obj_ptr->vlist_trans[vindex_0].x, obj_ptr->vlist_trans[vindex_0].y, obj_ptr->vlist_trans[vindex_1].x, obj_ptr->vlist_trans[vindex_1].y,
+		// 				 obj_ptr->plist[poly].color,
+		// 				 video_buffer, lpitch);
+
+		// Draw_Clip_Line16(obj_ptr->vlist_trans[vindex_1].x, obj_ptr->vlist_trans[vindex_1].y, obj_ptr->vlist_trans[vindex_2].x, obj_ptr->vlist_trans[vindex_2].y,
+		// 				 obj_ptr->plist[poly].color,
+		// 				 video_buffer, lpitch);
+
+		// Draw_Clip_Line16(obj_ptr->vlist_trans[vindex_2].x, obj_ptr->vlist_trans[vindex_2].y, obj_ptr->vlist_trans[vindex_0].x, obj_ptr->vlist_trans[vindex_0].y,
+		// 				 obj_ptr->plist[poly].color,
+		// 				 video_buffer, lpitch);
+
+
+		device_draw_line(&device, obj_ptr->vlist_trans[vindex_0].x, obj_ptr->vlist_trans[vindex_0].y, obj_ptr->vlist_trans[vindex_1].x, obj_ptr->vlist_trans[vindex_1].y, device.foreground); //3 1
+		device_draw_line(&device, obj_ptr->vlist_trans[vindex_1].x, obj_ptr->vlist_trans[vindex_1].y, obj_ptr->vlist_trans[vindex_2].x, obj_ptr->vlist_trans[vindex_2].y, device.foreground); //3 1
+		device_draw_line(&device, obj_ptr->vlist_trans[vindex_2].x, obj_ptr->vlist_trans[vindex_2].y, obj_ptr->vlist_trans[vindex_0].x, obj_ptr->vlist_trans[vindex_0].y, device.foreground); //3 1
+	}
+}
+	void GameInit()
+	{
+
+		Build_Sin_Cos_Tables();
+		// InitDemo7_1();
+		InitDemo7_2();
+
+	}
+
+	void GameMain()
+	{
+		// DrawDemo7_1();
+		DrawDemo7_2();
+
+	}
+
+	int main(void)
+	{
+		bool isOnlyBox = false;
+		int states[] = {RENDER_STATE_TEXTURE, RENDER_STATE_COLOR, RENDER_STATE_WIREFRAME};
+		int indicator = 0;
+		int kbhit = 0;
+		float alpha = 1;
+		float pos = 3.5;
+
+		// TCHAR *title = _T("Mini3d (software render tutorial) - ") _T("Left/Right: rotation, Up/Down: forward/backward, Space: switch state");
+		TCHAR *title = _T("Wireframe Triangle");
+
+		if (screen_init(400, 400, title))
+			return -1;
+
+		device_init(&device, 400, 400, screen_fb);
+
+		//init_texture(&device);
+		device.render_state = RENDER_STATE_TEXTURE;
+
+		int tmp = 1;
+
+		GameInit();
+
+		float deltaTime = 0;
+
+		while (screen_exit == 0 && screen_keys[VK_ESCAPE] == 0)
+		{
+			time_start = GetTickCount();
+
+			screen_dispatch();
+			device_clear(&device, 1);
+
+			GameMain();
+
+			screen_update();
+
+			time_end = GetTickCount();
+			deltaTime = ((float)time_end - (float)time_start);
+			// std::cout<<"delta time = "<<deltaTime<<std::endl;
+			// float zero = 0.0001;
+			// if(deltaTime < 0.0001)
+			// {
+			// 	std::cout<<0<<std::endl;
+			// }
+			// else
+			// {
+			// 	std::cout << "delta time = " << 1000 / deltaTime << std::endl;
+			// }
+		}
+		return 0;
+	}

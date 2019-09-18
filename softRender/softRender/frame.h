@@ -2,6 +2,27 @@
 
 #include <math.h>
 #include <string.h>
+#include <stdio.h>
+
+
+#include <windows.h> // include important windows stuff
+#include <windowsx.h>
+#include <mmsystem.h>
+#include <objbase.h>
+#include <iostream> // include important C/C++ stuff
+#include <conio.h>
+#include <stdlib.h>
+#include <malloc.h>
+#include <memory.h>
+#include <string.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <math.h>
+#include <io.h>
+#include <fcntl.h>
+#include <direct.h>
+#include <wchar.h>
+
 typedef unsigned short USHORT;
 
 #define RENDERLIST4DV1_MAX_POLYS 32768 // 16384
@@ -41,6 +62,52 @@ typedef unsigned short USHORT;
 #define POLY4DV1_STATE_ACTIVE 0x0001
 #define POLY4DV1_STATE_CLIPPED 0x0002
 #define POLY4DV1_STATE_BACKFACE 0x0004
+
+// defines for objects version 1
+#define OBJECT4DV1_MAX_VERTICES 1024 // 64
+#define OBJECT4DV1_MAX_POLYS 1024    // 128
+
+// states for objects
+#define OBJECT4DV1_STATE_ACTIVE 0x0001
+#define OBJECT4DV1_STATE_VISIBLE 0x0002
+#define OBJECT4DV1_STATE_CULLED 0x0004
+
+
+// shading mode of polygon
+#define PLX_SHADE_MODE_PURE_FLAG 0x0000      // this poly is a constant color
+#define PLX_SHADE_MODE_CONSTANT_FLAG 0x0000  // alias
+#define PLX_SHADE_MODE_FLAT_FLAG 0x2000      // this poly uses flat shading
+#define PLX_SHADE_MODE_GOURAUD_FLAG 0x4000   // this poly used gouraud shading
+#define PLX_SHADE_MODE_PHONG_FLAG 0x6000     // this poly uses phong shading
+#define PLX_SHADE_MODE_FASTPHONG_FLAG 0x6000 // this poly uses phong shading (alias)
+
+// attributes of polygons and polygon faces
+#define POLY4DV1_ATTR_2SIDED 0x0001
+#define POLY4DV1_ATTR_TRANSPARENT 0x0002
+#define POLY4DV1_ATTR_8BITCOLOR 0x0004
+#define POLY4DV1_ATTR_RGB16 0x0008
+#define POLY4DV1_ATTR_RGB24 0x0010
+
+#define POLY4DV1_ATTR_SHADE_MODE_PURE 0x0020
+#define POLY4DV1_ATTR_SHADE_MODE_CONSTANT 0x0020 // (alias)
+#define POLY4DV1_ATTR_SHADE_MODE_FLAT 0x0040
+#define POLY4DV1_ATTR_SHADE_MODE_GOURAUD 0x0080
+#define POLY4DV1_ATTR_SHADE_MODE_PHONG 0x0100
+#define POLY4DV1_ATTR_SHADE_MODE_FASTPHONG 0x0100 // (alias)
+#define POLY4DV1_ATTR_SHADE_MODE_TEXTURE 0x0200
+
+#define PLX_2SIDED_FLAG 0x1000 // this poly is double sided
+#define PLX_1SIDED_FLAG 0x0000 // this poly is single sided
+
+
+#define PLX_COLOR_MODE_RGB_FLAG 0x8000     // this poly uses RGB color
+#define PLX_COLOR_MODE_INDEXED_FLAG 0x0000 // this poly uses an indexed 8-bit color
+
+#define PLX_RGB_MASK 0x8000        // mask to extract RGB or indexed color
+#define PLX_SHADE_MODE_MASK 0x6000 // mask to extract shading mode
+#define PLX_2SIDED_MASK 0x1000     // mask for double sided
+#define PLX_COLOR_MASK 0x0fff      // xxxxrrrrggggbbbb, 4-bits per channel RGB \
+                                   // xxxxxxxxiiiiiiii, indexed mode 8-bit index
 
 // storage for our lookup tables
 extern float cos_look[361]; // 1 extra so we can store 0-360 inclusive
@@ -87,13 +154,53 @@ typedef struct POLYF4DV1_TYP
     POLYF4DV1_TYP *prev;
 } POLYF4DV1, *POLYF4DV1_PTR;
 
+// a polygon based on an external vertex list
+typedef struct POLY4DV1_TYP
+{
+    int state; // state information
+    int attr;  // physical attributes of polygon
+    int color; // color of polygon
+
+    POINT4D_PTR vlist; // the vertex list itself
+    int vert[3];       // the indices into the vertex list
+
+} POLY4DV1, *POLY4DV1_PTR;
+
+//物体
+typedef struct OBJECT4DV1_TYP
+{
+    int id;           
+    char name[64];
+    int state;        
+    int attr; 
+    float avg_radius; // average radius of object used for collision detection
+    float max_radius; // maximum radius of object
+
+    POINT4D world_pos; 
+
+    VECTOR4D dir; 
+
+    VECTOR4D ux, uy, uz;
+
+    int num_vertices;
+
+    POINT4D vlist_local[OBJECT4DV1_MAX_VERTICES]; 
+    POINT4D vlist_trans[OBJECT4DV1_MAX_VERTICES];
+
+    int num_polys;                        
+    POLY4DV1 plist[OBJECT4DV1_MAX_POLYS]; 
+
+} OBJECT4DV1, *OBJECT4DV1_PTR;
+
+
+
 //渲染列表，其实就是三角形数组
 typedef struct RENDERLIST4DV1_TYP
 {
-    int state; 
-    int attr;  
+    int state;
+    int attr;
 
-    POLYF4DV1_PTR poly_ptrs[RENDERLIST4DV1_MAX_POLYS];  //索引列表
+    POLYF4DV1_PTR poly_ptrs[RENDERLIST4DV1_MAX_POLYS]; //索引列表
     POLYF4DV1 poly_data[RENDERLIST4DV1_MAX_POLYS];
 
     int num_polys; // 三角形的数量
@@ -111,18 +218,15 @@ typedef struct PLANE3D_TYP
 typedef struct MATRIX4X4
 {
     union {
-        float M[4][4]; // array indexed data storage
-
-        // storage in row major form with explicit names
+        float M[4][4];
         struct
         {
             float M00, M01, M02, M03;
             float M10, M11, M12, M13;
             float M20, M21, M22, M23;
             float M30, M31, M32, M33;
-        }; // end explicit names
-
-    }; // end union
+        };
+    };
 
 } MATRIX4X4, *MATRIX4X4_PTR;
 
@@ -134,60 +238,44 @@ const MATRIX4X4 IMAT_4X4 = {1, 0, 0, 0,
                             0, 0, 1, 0,
                             0, 0, 0, 1};
 
-// camera version 1
+//相机
 typedef struct CAM4DV1_TYP
 {
-    int state; // state of camera
-    int attr;  // camera attributes
+    int state;
+    int attr;
 
-    POINT4D pos; // world position of camera used by both camera models
+    POINT4D pos;  // 相机在世界坐标中的位置
+    VECTOR4D dir; // 相机的注视方向
 
-    VECTOR4D dir; // angles or look at direction of camera for simple
-                  // euler camera models, elevation and heading for
-                  // uvn model
-
-    VECTOR4D u; // extra vectors to track the camera orientation
-    VECTOR4D v; // for more complex UVN camera model
+    VECTOR4D u;
+    VECTOR4D v;
     VECTOR4D n;
+    VECTOR4D target; // 目标位置
 
-    VECTOR4D target; // look at target
+    float view_dist; // 视距
 
-    float view_dist; // focal length
+    float fov; // 水平方向和垂直方向的视野
 
-    float fov; // field of view for both horizontal and vertical axes
+    float near_clip_z; // 近剪裁面的z
+    float far_clip_z;  // 远剪裁面的z
 
-    // 3d clipping planes
-    // if view volume is NOT 90 degree then general 3d clipping
-    // must be employed
-    float near_clip_z; // near z=constant clipping plane
-    float far_clip_z;  // far z=constant clipping plane
+    PLANE3D rt_clip_plane; // 右剪裁面
+    PLANE3D lt_clip_plane; // 左剪裁面
+    PLANE3D tp_clip_plane; // 上剪裁面
+    PLANE3D bt_clip_plane; // 下剪裁面
 
-    PLANE3D rt_clip_plane; // the right clipping plane
-    PLANE3D lt_clip_plane; // the left clipping plane
-    PLANE3D tp_clip_plane; // the top clipping plane
-    PLANE3D bt_clip_plane; // the bottom clipping plane
+    float viewplane_width;  // 视平面的宽
+    float viewplane_height; // 视平面的高
 
-    float viewplane_width;  // width and height of view plane to project onto
-    float viewplane_height; // usually 2x2 for normalized projection or
-                            // the exact same size as the viewport or screen window
+    float viewport_width;    // 屏幕的宽
+    float viewport_height;   // 屏幕的高
+    float viewport_center_x; // 屏幕中心的x
+    float viewport_center_y; // 屏幕中心的y
+    float aspect_ratio;      // 屏幕宽高比
 
-    // remember screen and viewport are synonomous
-    float viewport_width; // size of screen/viewport
-    float viewport_height;
-    float viewport_center_x; // center of view port (final image destination)
-    float viewport_center_y;
-
-    // aspect ratio
-    float aspect_ratio;
-
-    // these matrices are not necessarily needed based on the method of
-    // transformation, for example, a manual perspective or screen transform
-    // and or a concatenated perspective/screen, however, having these
-    // matrices give us more flexibility
-
-    MATRIX4X4 mcam; // storage for the world to camera transform matrix
-    MATRIX4X4 mper; // storage for the camera to perspective transform matrix
-    MATRIX4X4 mscr; // storage for the perspective to screen transform matrix
+    MATRIX4X4 mcam; // 世界坐标到相机坐标的变换矩阵
+    MATRIX4X4 mper; // 相机坐标到透视坐标的变换矩阵
+    MATRIX4X4 mscr; // 透视坐标到屏幕坐标的变换矩阵
 
 } CAM4DV1, *CAM4DV1_PTR;
 
@@ -296,3 +384,24 @@ void Mat_Mul_VECTOR4D_4X4(VECTOR4D_PTR va, MATRIX4X4_PTR mb, VECTOR4D_PTR vprod)
 
 void VECTOR4D_Add(VECTOR4D_PTR va, VECTOR4D_PTR vb, VECTOR4D_PTR vsum);
 VECTOR4D VECTOR4D_Add(VECTOR4D_PTR va, VECTOR4D_PTR vb);
+
+int Load_OBJECT4DV1_PLG(OBJECT4DV1_PTR obj, char *filename, VECTOR4D_PTR scale,
+                        VECTOR4D_PTR pos, VECTOR4D_PTR rot);
+
+void Transform_OBJECT4DV1(OBJECT4DV1_PTR obj, MATRIX4X4_PTR mt,
+                          int coord_select, int transform_basis);
+                        void Reset_OBJECT4DV1(OBJECT4DV1_PTR obj);
+
+#define SET_BIT(word,bit_flag)   ((word)=((word) | (bit_flag)))
+#define RESET_BIT(word,bit_flag) ((word)=((word) & (~bit_flag)))
+
+void Model_To_World_OBJECT4DV1(OBJECT4DV1_PTR obj, int coord_select = TRANSFORM_LOCAL_TO_TRANS);
+void World_To_Camera_OBJECT4DV1(OBJECT4DV1_PTR obj, CAM4DV1_PTR cam);
+void Camera_To_Perspective_OBJECT4DV1(OBJECT4DV1_PTR obj, CAM4DV1_PTR cam);
+void Perspective_To_Screen_OBJECT4DV1(OBJECT4DV1_PTR obj, CAM4DV1_PTR cam);
+
+
+
+char *Get_Line_PLG(char *buffer, int maxlength, FILE *fp);
+float Compute_OBJECT4DV1_Radius(OBJECT4DV1_PTR obj);
+

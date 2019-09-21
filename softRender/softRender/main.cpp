@@ -371,8 +371,13 @@ void screen_update(void)
 
 	ReleaseDC(screen_handle, hDC);
 
-	
-	DrawText("asdf 爱上了奋达科技");
+	char text[100] = "asdf 爱上了奋达科技";
+	int tmp = 199;
+	char c[10];
+	_itoa(tmp, c, 10);
+
+	strcat(text, c);
+	DrawText(text);
 	screen_dispatch();
 }
 

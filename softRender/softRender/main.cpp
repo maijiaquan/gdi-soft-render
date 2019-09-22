@@ -1,19 +1,5 @@
-//=====================================================================
-//
-// mini3d.c - Mini Software Render All-In-One
-//
-// build:
-//   mingw: gcc -O3 mini3d.c -o mini3d.exe -lgdi32
-//   msvc:  cl -O2 -nologo mini3d.c
-//
-// history:
-//   2007.7.01  skywind  create this file as a tutorial
-//   2007.7.02  skywind  implementate texture and color render
-//   2008.3.15  skywind  fixed a trapezoid issue
-//   2015.8.09  skywind  rewrite with more comment
-//   2015.8.12  skywind  adjust interfaces for clearity
-//
-//=====================================================================
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -24,10 +10,13 @@
 
 #include <iostream>
 
-#include "frame.h"
+// #include "frame.h"
+#include "transform.h"
+#include "datastructure.h"
+
 #include <windows.h>
 
-		static DWORD time_start, time_end;
+static DWORD time_start, time_end;
 
 typedef unsigned int IUINT32;
 
@@ -112,7 +101,7 @@ void device_clear(device_t *device, int mode)
 		IUINT32 *dst = device->framebuffer[y];
 		// IUINT32 cc = (height - 1 - y) * 230 / (height - 1);
 		// IUINT32 cc = (height - 1 - 0) * 255 / (height - 1);
-		IUINT32 cc = (height - 1 - 0) * 0 / (height - 1);	//黑色背景
+		IUINT32 cc = (height - 1 - 0) * 0 / (height - 1); //黑色背景
 		cc = (cc << 16) | (cc << 8) | cc;
 		// std::cout<<"cc = "<<cc<<std::endl;
 		if (mode == 0)
@@ -228,6 +217,8 @@ static LRESULT screen_events(HWND, UINT, WPARAM, LPARAM);
 #pragma comment(lib, "gdi32.lib")
 #pragma comment(lib, "user32.lib")
 #endif
+
+static float gRotationAngle = 0; // rotation angle
 
 // 初始化窗口并设置标题
 int screen_init(int w, int h, const TCHAR *title)
@@ -348,21 +339,19 @@ void screen_dispatch(void)
 	}
 }
 
-void DrawText(char* text)
+void DrawText(char *text)
 {
 	HDC hDC = GetDC(screen_handle);
 
-    SetTextColor(hDC, RGB(0, 255, 0));
-    SetBkMode(hDC, TRANSPARENT);
+	SetTextColor(hDC, RGB(0, 255, 0));
+	SetBkMode(hDC, TRANSPARENT);
 	// char* text = "abc爱抚";
 	// char* text = "";
 	// _itoa(count++, text, 5);
 
-	
-	TextOutA(hDC,10,10,text,strlen(text));
+	TextOutA(hDC, 10, 10, text, strlen(text));
 
 	ReleaseDC(screen_handle, hDC);
-
 }
 void screen_update(void)
 {
@@ -371,16 +360,15 @@ void screen_update(void)
 
 	ReleaseDC(screen_handle, hDC);
 
-	char text[100] = "asdf 爱上了奋达科技";
-	int tmp = 199;
-	char c[10];
-	_itoa(tmp, c, 10);
+	char text[100] = "Rotation Angle: ";
+	int tmp = gRotationAngle;
+	char textInt[10];
+	_itoa(tmp, textInt, 10);
 
-	strcat(text, c);
+	strcat(text, textInt);
 	DrawText(text);
 	screen_dispatch();
 }
-
 
 //=====================================================================
 // 主程序
@@ -397,8 +385,8 @@ POINT4D poly1_pos = {0, 0, 100, 1}; // world position of polygon
 OBJECT4DV1 obj;						// used to hold our cube mesh
 // all your initialization code goes here...
 VECTOR4D vscale = {5.0, 5.0, 5.0, 1}, // scale of object
-    vpos = {0, 0, 0, 1},              // position of object
-    vrot = {0, 0, 0, 1};              // initial orientation of object
+	vpos = {0, 0, 0, 1},			  // position of object
+	vrot = {0, 0, 0, 1};			  // initial orientation of object
 
 device_t device;
 
@@ -406,24 +394,13 @@ void GameInit();
 void GameMain();
 
 // USHORT(*RGB16Bit)(int r, int g, int b);
-USHORT(*RGB16Bit)(int r, int g, int b);
-
+USHORT (*RGB16Bit)
+(int r, int g, int b);
 
 void InitDemo7_1();
 void DrawDemo7_1();
 void InitDemo7_2();
 void DrawDemo7_2();
-
-void Build_Sin_Cos_Tables(void);
-void Build_Sin_Cos_Tables(void)
-{
-	for (int ang = 0; ang <= 360; ang++)
-	{
-		float theta = (float)ang * PI / (float)180;
-		cos_look[ang] = cos(theta);
-		sin_look[ang] = sin(theta);
-	}
-}
 
 void InitDemo7_1()
 {
@@ -486,21 +463,20 @@ void InitDemo7_2()
 }
 void DrawDemo7_1()
 {
-		Sleep(10);
+	Sleep(20);
 
 	static MATRIX4X4 mrot; // general rotation matrix
-	static float ang_y = 0;			// rotation angle
-	ang_y += 1;
-	ang_y = ang_y >= 360.0 ? 0 : ang_y;
+	gRotationAngle += 1;
+	gRotationAngle = gRotationAngle >= 360.0 ? 0 : gRotationAngle;
 
 	Reset_RENDERLIST4DV1(&rend_list);
-	Insert_POLYF4DV1_RENDERLIST4DV1(&rend_list, &poly1);
+	Insert_POLYF4DV1_RENDERLIST4DV1(&rend_list, &poly1);	//每一次都从重新赋值，相当于每一次都重置了该三角形的顶点坐标
 
-	Build_XYZ_Rotation_MATRIX4X4(0, ang_y, 0, &mrot); //构造旋转矩阵，绕y轴旋转
+	Build_XYZ_Rotation_MATRIX4X4(0, gRotationAngle, 0, &mrot); //构造旋转矩阵，绕y轴旋转
 
 	Transform_RENDERLIST4DV1(&rend_list, &mrot, TRANSFORM_LOCAL_ONLY); //在局部坐标中实现旋转矩阵的变换
 
-	Model_To_World_RENDERLIST4DV1(&rend_list, &poly1_pos); //平移到世界坐标
+	Model_To_World_RENDERLIST4DV1(&rend_list, &poly1_pos, TRANSFORM_LOCAL_TO_TRANS); //平移到世界坐标
 
 	Build_CAM4DV1_Matrix_Euler(&cam, CAM_ROT_SEQ_ZYX); //构造欧拉相机矩阵
 	World_To_Camera_RENDERLIST4DV1(&rend_list, &cam);  //世界坐标到相机坐标的变换
@@ -528,24 +504,21 @@ void DrawDemo7_1()
 
 void DrawDemo7_2()
 {
-		Sleep(10);
+	Sleep(10);
 
 	static MATRIX4X4 mrot; // general rotation matrix
-	static float ang_y = 0;			// rotation angle
-	// ang_y += 1;
-	// ang_y = ang_y >= 360.0 ? 0 : ang_y;
-	ang_y = 1;
+
+	gRotationAngle = 1;
+
 
 	Reset_OBJECT4DV1(&obj);
 
-	Build_XYZ_Rotation_MATRIX4X4(0, ang_y, 0, &mrot); //构造旋转矩阵，绕y轴旋转
+	Build_XYZ_Rotation_MATRIX4X4(0, gRotationAngle, 0, &mrot); //构造旋转矩阵，绕y轴旋转
 
 	Transform_OBJECT4DV1(&obj, &mrot, TRANSFORM_LOCAL_ONLY, 1);
 
-	// perform local/model to world transform
 	Model_To_World_OBJECT4DV1(&obj);
 
-	// generate camera matrix
 	Build_CAM4DV1_Matrix_Euler(&cam, CAM_ROT_SEQ_ZYX);
 
 	// apply world to camera transform
@@ -569,90 +542,74 @@ void DrawDemo7_2()
 		int vindex_1 = obj_ptr->plist[poly].vert[1];
 		int vindex_2 = obj_ptr->plist[poly].vert[2];
 
-		// // draw the lines now
-		// Draw_Clip_Line16(obj_ptr->vlist_trans[vindex_0].x, obj_ptr->vlist_trans[vindex_0].y, obj_ptr->vlist_trans[vindex_1].x, obj_ptr->vlist_trans[vindex_1].y,
-		// 				 obj_ptr->plist[poly].color,
-		// 				 video_buffer, lpitch);
-
-		// Draw_Clip_Line16(obj_ptr->vlist_trans[vindex_1].x, obj_ptr->vlist_trans[vindex_1].y, obj_ptr->vlist_trans[vindex_2].x, obj_ptr->vlist_trans[vindex_2].y,
-		// 				 obj_ptr->plist[poly].color,
-		// 				 video_buffer, lpitch);
-
-		// Draw_Clip_Line16(obj_ptr->vlist_trans[vindex_2].x, obj_ptr->vlist_trans[vindex_2].y, obj_ptr->vlist_trans[vindex_0].x, obj_ptr->vlist_trans[vindex_0].y,
-		// 				 obj_ptr->plist[poly].color,
-		// 				 video_buffer, lpitch);
-
-
 		device_draw_line(&device, obj_ptr->vlist_trans[vindex_0].x, obj_ptr->vlist_trans[vindex_0].y, obj_ptr->vlist_trans[vindex_1].x, obj_ptr->vlist_trans[vindex_1].y, device.foreground); //3 1
 		device_draw_line(&device, obj_ptr->vlist_trans[vindex_1].x, obj_ptr->vlist_trans[vindex_1].y, obj_ptr->vlist_trans[vindex_2].x, obj_ptr->vlist_trans[vindex_2].y, device.foreground); //3 1
 		device_draw_line(&device, obj_ptr->vlist_trans[vindex_2].x, obj_ptr->vlist_trans[vindex_2].y, obj_ptr->vlist_trans[vindex_0].x, obj_ptr->vlist_trans[vindex_0].y, device.foreground); //3 1
 	}
 }
-	void GameInit()
+void GameInit()
+{
+
+	Build_Sin_Cos_Tables();
+	// InitDemo7_1();
+	InitDemo7_2();
+}
+
+void GameMain()
+{
+	// DrawDemo7_1();
+	DrawDemo7_2();
+}
+
+int main(void)
+{
+	bool isOnlyBox = false;
+	int states[] = {RENDER_STATE_TEXTURE, RENDER_STATE_COLOR, RENDER_STATE_WIREFRAME};
+	int indicator = 0;
+	int kbhit = 0;
+	float alpha = 1;
+	float pos = 3.5;
+
+	// TCHAR *title = _T("Mini3d (software render tutorial) - ") _T("Left/Right: rotation, Up/Down: forward/backward, Space: switch state");
+	TCHAR *title = _T("Wireframe Triangle");
+
+	if (screen_init(400, 400, title))
+		return -1;
+
+	device_init(&device, 400, 400, screen_fb);
+
+	//init_texture(&device);
+	device.render_state = RENDER_STATE_TEXTURE;
+
+	int tmp = 1;
+
+	GameInit();
+
+	float deltaTime = 0;
+
+	while (screen_exit == 0 && screen_keys[VK_ESCAPE] == 0)
 	{
+		time_start = GetTickCount();
 
-		Build_Sin_Cos_Tables();
-		// InitDemo7_1();
-		InitDemo7_2();
+		screen_dispatch();
+		device_clear(&device, 1);
 
+		GameMain();
+
+		screen_update();
+
+		time_end = GetTickCount();
+		deltaTime = ((float)time_end - (float)time_start);
+		// std::cout<<"delta time = "<<deltaTime<<std::endl;
+		// float zero = 0.0001;
+		// if(deltaTime < 0.0001)
+		// {
+		// 	std::cout<<0<<std::endl;
+		// }
+		// else
+		// {
+		// 	std::cout << "delta time = " << 1000 / deltaTime << std::endl;
+		// }
 	}
-
-	void GameMain()
-	{
-		// DrawDemo7_1();
-		DrawDemo7_2();
-
-	}
-
-	int main(void)
-	{
-		bool isOnlyBox = false;
-		int states[] = {RENDER_STATE_TEXTURE, RENDER_STATE_COLOR, RENDER_STATE_WIREFRAME};
-		int indicator = 0;
-		int kbhit = 0;
-		float alpha = 1;
-		float pos = 3.5;
-
-		// TCHAR *title = _T("Mini3d (software render tutorial) - ") _T("Left/Right: rotation, Up/Down: forward/backward, Space: switch state");
-		TCHAR *title = _T("Wireframe Triangle");
-
-		if (screen_init(400, 400, title))
-			return -1;
-
-		device_init(&device, 400, 400, screen_fb);
-
-		//init_texture(&device);
-		device.render_state = RENDER_STATE_TEXTURE;
-
-		int tmp = 1;
-
-		GameInit();
-
-		float deltaTime = 0;
-
-		while (screen_exit == 0 && screen_keys[VK_ESCAPE] == 0)
-		{
-			time_start = GetTickCount();
-
-			screen_dispatch();
-			device_clear(&device, 1);
-
-			GameMain();
-
-			screen_update();
-
-			time_end = GetTickCount();
-			deltaTime = ((float)time_end - (float)time_start);
-			// std::cout<<"delta time = "<<deltaTime<<std::endl;
-			// float zero = 0.0001;
-			// if(deltaTime < 0.0001)
-			// {
-			// 	std::cout<<0<<std::endl;
-			// }
-			// else
-			// {
-			// 	std::cout << "delta time = " << 1000 / deltaTime << std::endl;
-			// }
-		}
-		return 0;
-	}
+	return 0;
+}

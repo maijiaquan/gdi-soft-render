@@ -78,18 +78,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="frame.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Math.cpp" />
-    <ClCompile Include="Vector3.cpp" />
-    <ClCompile Include="Vertex.cpp" />
+    <ClCompile Include="transform.cpp" />
+    <ClCompile Include="datastructure.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="frame.h" />
     <ClInclude Include="header.h" />
-    <ClInclude Include="Math.h" />
-    <ClInclude Include="Vector3.h" />
-    <ClInclude Include="Vertex.h" />
+    <ClInclude Include="transform.h" />
+    <ClInclude Include="datastructure.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

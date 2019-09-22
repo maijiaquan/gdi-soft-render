@@ -18,33 +18,21 @@
     <ClCompile Include="main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Math.cpp">
+    <ClCompile Include="transform.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Vector3.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Vertex.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="frame.cpp">
+    <ClCompile Include="datastructure.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Math.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="header.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Vector3.h">
+    <ClInclude Include="transform.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Vertex.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="frame.h">
+    <ClInclude Include="datastructure.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

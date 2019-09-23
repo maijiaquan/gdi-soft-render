@@ -1,8 +1,5 @@
 #include "datastructure.h"
 
-
-
-
 USHORT RGB16Bit565(int r, int g, int b)
 {
     // this function simply builds a 5.6.5 format 16 bit pixel
@@ -11,8 +8,7 @@ USHORT RGB16Bit565(int r, int g, int b)
     g >>= 2;
     b >>= 3;
     return (_RGB16BIT565((r), (g), (b)));
-
-} 
+}
 
 float *cos_look;
 float *sin_look;
@@ -21,14 +17,13 @@ void Build_Sin_Cos_Tables(void)
 {
     cos_look = new float[361];
     sin_look = new float[361];
-	for (int ang = 0; ang <= 360; ang++)
-	{
-		float theta = (float)ang * PI / (float)180;
-		cos_look[ang] = cos(theta);
-		sin_look[ang] = sin(theta);
-	}
+    for (int ang = 0; ang <= 360; ang++)
+    {
+        float theta = (float)ang * PI / (float)180;
+        cos_look[ang] = cos(theta);
+        sin_look[ang] = sin(theta);
+    }
 }
-
 
 float Fast_Sin(float theta)
 {
@@ -86,8 +81,6 @@ float Fast_Cos(float theta)
 
 } // end Fast_Cos
 
-
-
 void PLANE3D_Init(PLANE3D_PTR plane, POINT3D_PTR p0,
                   VECTOR3D_PTR normal, int normalize = 0)
 {
@@ -127,7 +120,6 @@ void VECTOR3D_Normalize(VECTOR3D_PTR va)
 
 } // end VECTOR3D_Normalize
 
-
 //向量正则化
 void VECTOR3D_Normalize(VECTOR3D_PTR va, VECTOR3D_PTR vn)
 {
@@ -160,7 +152,6 @@ float VECTOR3D_Length(VECTOR3D_PTR va)
     return ((float)sqrtf(va->x * va->x + va->y * va->y + va->z * va->z));
 
 } // end VECTOR3D_Length
-
 
 //构造旋转矩阵，前3个参数是三个轴的旋转角度，最后一个参数是旋转矩阵的矩阵指针
 void Build_XYZ_Rotation_MATRIX4X4(float theta_x, float theta_y, float theta_z, MATRIX4X4_PTR mrot)
@@ -412,7 +403,7 @@ VECTOR4D VECTOR4D_Add(VECTOR4D_PTR va, VECTOR4D_PTR vb)
     vsum.z = va->z + vb->z;
     vsum.w = 1;
     return (vsum);
-} 
+}
 
 //矩阵相乘
 void Mat_Mul_4X4(MATRIX4X4_PTR ma, MATRIX4X4_PTR mb, MATRIX4X4_PTR mprod)
@@ -421,7 +412,7 @@ void Mat_Mul_4X4(MATRIX4X4_PTR ma, MATRIX4X4_PTR mb, MATRIX4X4_PTR mprod)
     {
         for (int col = 0; col < 4; col++)
         {
-            float sum = 0; 
+            float sum = 0;
             for (int index = 0; index < 4; index++)
             {
                 sum += (ma->M[row][index] * mb->M[index][col]);
@@ -459,7 +450,6 @@ void Mat_Init_4X4(MATRIX4X4_PTR ma,
     ma->M33 = m33;
 
 } // end Mat_Init_4X4
-
 
 void Init_CAM4DV1(CAM4DV1_PTR cam,
                   int cam_attr,
@@ -575,7 +565,6 @@ void Init_CAM4DV1(CAM4DV1_PTR cam,
 
 } // end Init_CAM4DV1
 
-
 int Insert_POLYF4DV1_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list,
                                     POLYF4DV1_PTR poly)
 {
@@ -590,7 +579,7 @@ int Insert_POLYF4DV1_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list,
     {
         rend_list->poly_data[0].next = NULL;
         rend_list->poly_data[0].prev = NULL;
-    } 
+    }
     else
     {
         rend_list->poly_data[rend_list->num_polys].next = NULL;
@@ -599,12 +588,10 @@ int Insert_POLYF4DV1_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list,
 
         rend_list->poly_data[rend_list->num_polys - 1].next =
             &rend_list->poly_data[rend_list->num_polys];
-    } 
+    }
     rend_list->num_polys++;
     return (1);
-
-} 
-
+}
 
 //构造欧拉相机矩阵
 void Build_CAM4DV1_Matrix_Euler(CAM4DV1_PTR cam, int cam_rot_seq)
@@ -707,9 +694,6 @@ void Build_CAM4DV1_Matrix_Euler(CAM4DV1_PTR cam, int cam_rot_seq)
     //将平移矩阵和旋转矩阵相乘的结果，保存到cam->mcam
     Mat_Mul_4X4(&mt_inv, &mrot, &cam->mcam);
 }
-
-
-
 
 ////////////////////////////////////////////////////////////
 
@@ -969,7 +953,6 @@ int Load_OBJECT4DV1_PLG(OBJECT4DV1_PTR obj, // pointer to object
 
 } // end Load_OBJECT4DV1_PLG
 
-
 char *Get_Line_PLG(char *buffer, int maxlength, FILE *fp)
 {
     // this little helper function simply read past comments
@@ -1034,3 +1017,40 @@ float Compute_OBJECT4DV1_Radius(OBJECT4DV1_PTR obj)
     return (obj->max_radius);
 
 } // end Compute_OBJECT4DV1_Radius
+
+void VECTOR4D_Build(VECTOR4D_PTR init, VECTOR4D_PTR term, VECTOR4D_PTR result)
+{
+    // build a 4d vector
+    result->x = term->x - init->x;
+    result->y = term->y - init->y;
+    result->z = term->z - init->z;
+    result->w = 1;
+
+} // end VECTOR4D_Build
+
+//向量点乘
+float VECTOR4D_Dot(VECTOR4D_PTR va, VECTOR4D_PTR vb)
+{
+    return ((va->x * vb->x) + (va->y * vb->y) + (va->z * vb->z));
+}
+
+//向量叉乘
+void VECTOR4D_Cross(VECTOR4D_PTR va, VECTOR4D_PTR vb, VECTOR4D_PTR vn)
+{
+    vn->x = ((va->y * vb->z) - (va->z * vb->y));
+    vn->y = -((va->x * vb->z) - (va->z * vb->x));
+    vn->z = ((va->x * vb->y) - (va->y * vb->x));
+    vn->w = 1;
+
+}
+
+//向量叉乘
+VECTOR4D VECTOR4D_Cross(VECTOR4D_PTR va, VECTOR4D_PTR vb)
+{
+    VECTOR4D vn;
+    vn.x = ((va->y * vb->z) - (va->z * vb->y));
+    vn.y = -((va->x * vb->z) - (va->z * vb->x));
+    vn.z = ((va->x * vb->y) - (va->y * vb->x));
+    vn.w = 1;
+    return (vn);
+}

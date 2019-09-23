@@ -167,16 +167,15 @@ typedef struct POLYF4DV1_TYP
 	POLYF4DV1_TYP *prev;
 } POLYF4DV1, *POLYF4DV1_PTR;
 
-// a polygon based on an external vertex list
+// 基于外部顶点列表的多边形
 typedef struct POLY4DV1_TYP
 {
-	int state; // state information
-	int attr;  // physical attributes of polygon
-	int color; // color of polygon
+	int state; // 状态
+	int attr;  // 属性
+	int color; // 颜色
 
-	POINT4D_PTR vlist; // the vertex list itself
-	int vert[3];	   // the indices into the vertex list
-
+	POINT4D_PTR vlist; // 顶点指针
+	int vert[3];	   // 三个顶点的索引
 } POLY4DV1, *POLY4DV1_PTR;
 
 //物体
@@ -197,11 +196,11 @@ typedef struct OBJECT4DV1_TYP
 
 	int num_vertices;
 
-	POINT4D vlist_local[OBJECT4DV1_MAX_VERTICES];
-	POINT4D vlist_trans[OBJECT4DV1_MAX_VERTICES];
+	POINT4D vlist_local[OBJECT4DV1_MAX_VERTICES];	//局部顶点列表
+	POINT4D vlist_trans[OBJECT4DV1_MAX_VERTICES];	//变换后的顶点列表
 
 	int num_polys;
-	POLY4DV1 plist[OBJECT4DV1_MAX_POLYS];
+	POLY4DV1 plist[OBJECT4DV1_MAX_POLYS];	//多边形数组
 
 } OBJECT4DV1, *OBJECT4DV1_PTR;
 
@@ -321,10 +320,17 @@ void PLANE3D_Init(PLANE3D_PTR plane, POINT3D_PTR p0,
 void VECTOR3D_Normalize(VECTOR3D_PTR va);
 void VECTOR3D_Normalize(VECTOR3D_PTR va, VECTOR3D_PTR vn);
 float VECTOR3D_Length(VECTOR3D_PTR va);
+void VECTOR4D_Build(VECTOR4D_PTR init, VECTOR4D_PTR term, VECTOR4D_PTR result);
+
 void Mat_Mul_VECTOR4D_4X4(VECTOR4D_PTR va, MATRIX4X4_PTR mb, VECTOR4D_PTR vprod);
 
 void VECTOR4D_Add(VECTOR4D_PTR va, VECTOR4D_PTR vb, VECTOR4D_PTR vsum);
 VECTOR4D VECTOR4D_Add(VECTOR4D_PTR va, VECTOR4D_PTR vb);
+
+float VECTOR4D_Dot(VECTOR4D_PTR va, VECTOR4D_PTR vb);
+void VECTOR4D_Cross(VECTOR4D_PTR va,VECTOR4D_PTR vb,VECTOR4D_PTR vn);
+VECTOR4D VECTOR4D_Cross(VECTOR4D_PTR va, VECTOR4D_PTR vb);
+
 
 //矩阵
 //相机

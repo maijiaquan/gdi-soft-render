@@ -15,7 +15,7 @@
 #include "datastructure.h"
 
 #include <windows.h>
-
+#include"conio.h"
 static DWORD time_start, time_end;
 
 typedef unsigned int IUINT32;
@@ -325,7 +325,6 @@ static LRESULT screen_events(HWND hWnd, UINT msg,
 	return 0;
 }
 
-int count = 0;
 void screen_dispatch(void)
 {
 	MSG msg;
@@ -351,7 +350,8 @@ void DrawText(char *text)
 
 	TextOutA(hDC, 10, 10, text, strlen(text));
 
-	ReleaseDC(screen_handle, hDC);
+	// ReleaseDC(screen_handle, hDC);
+	// ReleaseDC(screen_handle, hDC);
 }
 void screen_update(void)
 {
@@ -360,13 +360,12 @@ void screen_update(void)
 
 	ReleaseDC(screen_handle, hDC);
 
-	char text[100] = "Rotation Angle: ";
-	int tmp = gRotationAngle;
-	char textInt[10];
-	_itoa(tmp, textInt, 10);
-
-	strcat(text, textInt);
-	DrawText(text);
+	// char text[100] = "Rotation Angle: ";
+	// int tmp = gRotationAngle;
+	// char textInt[10];
+	// _itoa(tmp, textInt, 10);
+	// strcat(text, textInt);
+	// DrawText(text);
 	screen_dispatch();
 }
 
@@ -376,17 +375,13 @@ void screen_update(void)
 
 //--------------------------------------------------------------
 // initialize camera position and direction
-POINT4D cam_pos = {0, 0, -100, 1};
-VECTOR4D cam_dir = {0, 0, 0, 1};
+
 RENDERLIST4DV1 rend_list;			// the single renderlist
 POLYF4DV1 poly1;					// our lonely polygon
 CAM4DV1 cam;						// the single camera
 POINT4D poly1_pos = {0, 0, 100, 1}; // world position of polygon
 OBJECT4DV1 obj;						// used to hold our cube mesh
 // all your initialization code goes here...
-VECTOR4D vscale = {5.0, 5.0, 5.0, 1}, // scale of object
-	vpos = {0, 0, 0, 1},			  // position of object
-	vrot = {0, 0, 0, 1};			  // initial orientation of object
 
 device_t device;
 
@@ -402,8 +397,18 @@ void DrawDemo7_1();
 void InitDemo7_2();
 void DrawDemo7_2();
 
+void InitDemo7_4();
+void DrawDemo7_4();
+
 void InitDemo7_1()
 {
+	POINT4D cam_pos = {0, 0, -100, 1};
+	VECTOR4D cam_dir = {0, 0, 0, 1};
+
+	VECTOR4D vscale = {5.0, 5.0, 5.0, 1}, // scale of object
+		vpos = {0, 0, 0, 1},			  // position of object
+		vrot = {0, 0, 0, 1};			  // initial orientation of object
+
 	RGB16Bit = RGB16Bit565;
 
 	poly1.state = POLY4DV1_STATE_ACTIVE;
@@ -433,19 +438,56 @@ void InitDemo7_1()
 
 void InitDemo7_2()
 {
+	POINT4D cam_pos = {0, 0, -100, 1};
+	VECTOR4D cam_dir = {0, 0, 0, 1};
+
+	VECTOR4D vscale = {5.0, 5.0, 5.0, 1}, // scale of object
+		vpos = {0, 0, 0, 1},			  // position of object
+		vrot = {0, 0, 0, 1};			  // initial orientation of object
+
 	RGB16Bit = RGB16Bit565;
 
 	Init_CAM4DV1(&cam, CAM_MODEL_EULER, &cam_pos, &cam_dir, NULL, 50.0, 500.0, 90.0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-	Load_OBJECT4DV1_PLG(&obj, "cube2.plg", &vscale, &vpos, &vrot);
+	// Load_OBJECT4DV1_PLG(&obj, "./plg/tank1.plg", &vscale, &vpos, &vrot);
+	Load_OBJECT4DV1_PLG(&obj, "./plg/cube2.plg", &vscale, &vpos, &vrot);
 	// Load_OBJECT4DV1_PLG(&obj, "cube1.plg", &vscale, &vpos, &vrot);
 
 	obj.world_pos.x = 0;
 	obj.world_pos.y = 0;
 	obj.world_pos.z = 100;
 }
+
+void InitDemo7_4()
+{
+	POINT4D cam_pos = {0, 200, 0, 1};
+	VECTOR4D cam_dir = {0, 0, 0, 1};
+
+	VECTOR4D vscale = {1.0, 1.0, 1.0, 1}, // scale of object
+		vpos = {0, 0, 0, 1},			  // position of object
+		vrot = {0, 0, 0, 1};			  // initial orientation of object
+
+	RGB16Bit = RGB16Bit565;
+	Init_CAM4DV1(&cam, CAM_MODEL_EULER, &cam_pos, &cam_dir, NULL, 50.0, 1000.0, 90.0, WINDOW_WIDTH, WINDOW_HEIGHT);
+
+	// load the object
+	Load_OBJECT4DV1_PLG(&obj, "./plg/tank1.plg", &vscale, &vpos, &vrot);
+
+	// set the default position of the object in the world
+	obj.world_pos.x = 0;
+	obj.world_pos.y = 0;
+	obj.world_pos.z = 400;
+}
+
 void DrawDemo7_1()
 {
+	char text[100] = "Rotation Angle: ";
+	int tmp = gRotationAngle;
+	char textInt[10];
+	_itoa(tmp, textInt, 10);
+	strcat(text, textInt);
+	DrawText(text);
+
 	Sleep(20);
 
 	static MATRIX4X4 mrot; // general rotation matrix
@@ -487,6 +529,13 @@ void DrawDemo7_1()
 
 void DrawDemo7_2()
 {
+	char text[100] = "Rotation Angle: ";
+	int tmp = gRotationAngle;
+	char textInt[10];
+	_itoa(tmp, textInt, 10);
+	strcat(text, textInt);
+	DrawText(text);
+
 	Sleep(10);
 
 	static MATRIX4X4 mrot; // general rotation matrix
@@ -501,7 +550,7 @@ void DrawDemo7_2()
 
 	Model_To_World_OBJECT4DV1(&obj, TRANSFORM_LOCAL_TO_TRANS);
 
-	// Remove_Backfaces_OBJECT4DV1(&obj, &cam);
+	Remove_Backfaces_OBJECT4DV1(&obj, &cam);
 
 	Build_CAM4DV1_Matrix_Euler(&cam, CAM_ROT_SEQ_ZYX);
 	World_To_Camera_OBJECT4DV1(&obj, &cam);
@@ -524,7 +573,105 @@ void DrawDemo7_2()
 	}
 }
 
-int gDemoIndex = 2;
+char *work_string;
+char *textBuffer; // used to print text
+
+void DrawDemo7_4()
+{
+	Sleep(20);
+
+#define KEY_DOWN(vk_code) ((GetAsyncKeyState(vk_code) & 0x8000) ? 1 : 0)
+
+	const int NUM_OBJECTS = 2;		// number of objects on a row
+	const int OBJECT_SPACING = 250; // spacing between objects
+
+	work_string = new char[256];
+	textBuffer = new char[1024]; // used to print text
+
+	strcpy(textBuffer, "Objects Culled: ");
+
+	static MATRIX4X4 mrot;
+	gRotationAngle = 1;
+	Reset_RENDERLIST4DV1(&rend_list);
+
+	// is user trying to rotate camera
+	if (KEY_DOWN(VK_DOWN))
+		cam.dir.x += 1;
+	else if (KEY_DOWN(VK_UP))
+		cam.dir.x -= 1;
+
+	// is user trying to rotate camera
+	if (KEY_DOWN(VK_RIGHT))
+		cam.dir.y -= 1;
+	else if (KEY_DOWN(VK_LEFT))
+		cam.dir.y += 1;
+
+	Build_XYZ_Rotation_MATRIX4X4(0, gRotationAngle, 0, &mrot);
+	Transform_OBJECT4DV1(&obj, &mrot, TRANSFORM_LOCAL_ONLY, 1);
+	for (int x = -NUM_OBJECTS / 2; x < NUM_OBJECTS / 2; x++)
+	{
+		for (int z = -NUM_OBJECTS / 2; z < NUM_OBJECTS / 2; z++)
+		{
+
+			Reset_OBJECT4DV1(&obj);
+
+			obj.world_pos.x = x * OBJECT_SPACING + OBJECT_SPACING / 2;
+			obj.world_pos.y = 0;
+			obj.world_pos.z = 500 + z * OBJECT_SPACING + OBJECT_SPACING / 2;
+
+			if (!Cull_OBJECT4DV1(&obj, &cam, CULL_OBJECT_XYZ_PLANES))
+			{
+
+				Model_To_World_OBJECT4DV1(&obj);
+				Insert_OBJECT4DV1_RENDERLIST4DV1(&rend_list, &obj);
+			}
+			else
+			{
+				sprintf(work_string, "[%d, %d] ", x, z);
+				strcat(textBuffer, work_string);
+			}
+		}
+	}
+
+	Build_CAM4DV1_Matrix_Euler(&cam, CAM_ROT_SEQ_ZYX);
+
+	// remove backfaces
+	Remove_Backfaces_RENDERLIST4DV1(&rend_list, &cam);
+
+	// apply world to camera transform
+	World_To_Camera_RENDERLIST4DV1(&rend_list, &cam);
+
+	// apply camera to perspective transformation
+	Camera_To_Perspective_RENDERLIST4DV1(&rend_list, &cam);
+
+	// apply screen transform
+	Perspective_To_Screen_RENDERLIST4DV1(&rend_list, &cam);
+
+	RENDERLIST4DV1_PTR rend_list_ptr = &rend_list;
+
+	for (int poly = 0; poly < rend_list_ptr->num_polys; poly++)
+	{
+		float x1 = rend_list_ptr->poly_ptrs[poly]->tvlist[0].x;
+		float y1 = rend_list_ptr->poly_ptrs[poly]->tvlist[0].y;
+		float x2 = rend_list_ptr->poly_ptrs[poly]->tvlist[1].x;
+		float y2 = rend_list_ptr->poly_ptrs[poly]->tvlist[1].y;
+		float x3 = rend_list_ptr->poly_ptrs[poly]->tvlist[2].x;
+		float y3 = rend_list_ptr->poly_ptrs[poly]->tvlist[2].y;
+
+		device_draw_line(&device, x1, y1, x2, y2, device.foreground); //3 1
+		device_draw_line(&device, x1, y1, x3, y3, device.foreground); //3 1
+		device_draw_line(&device, x2, y2, x3, y3, device.foreground); //3 1
+	}
+
+	// char text[100] = "Rotation Angle: ";
+	// int tmp = gRotationAngle;
+	// char textInt[10];
+	// _itoa(tmp, textInt, 10);
+	// strcat(text, textInt);
+}
+
+int gDemoIndex = 4;
+
 void GameInit()
 {
 	Build_Sin_Cos_Tables();
@@ -536,6 +683,9 @@ void GameInit()
 		break;
 	case 2:
 		InitDemo7_2();
+		break;
+	case 4:
+		InitDemo7_4();
 		break;
 	default:
 		break;
@@ -552,11 +702,16 @@ void GameMain()
 	case 2:
 		DrawDemo7_2();
 		break;
+	case 4:
+		// DrawDemo7_2();
+		DrawDemo7_4();
+		break;
 	default:
 		break;
 	}
 }
 
+int count = 10000000;
 int main(void)
 {
 	bool isOnlyBox = false;
@@ -583,6 +738,12 @@ int main(void)
 
 	float deltaTime = 0;
 
+	HANDLE hStdout;
+	//   光标位置
+	COORD cursorPos;
+		hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
+
+
 	while (screen_exit == 0 && screen_keys[VK_ESCAPE] == 0)
 	{
 		time_start = GetTickCount();
@@ -592,7 +753,15 @@ int main(void)
 
 		GameMain();
 
-		screen_update();
+		// screen_update();
+		HDC hDC = GetDC(screen_handle);
+		BitBlt(hDC, 0, 0, screen_w, screen_h, screen_dc, 0, 0, SRCCOPY);
+
+		DrawText(textBuffer);
+
+		ReleaseDC(screen_handle, hDC);
+
+		screen_dispatch();
 
 		time_end = GetTickCount();
 		deltaTime = ((float)time_end - (float)time_start);
@@ -606,6 +775,45 @@ int main(void)
 		// {
 		// 	std::cout << "delta time = " << 1000 / deltaTime << std::endl;
 		// }
+
+		// printf("");
+
+		// printf("\r");
+		// printf("\r");
+		// printf("\r");
+		// printf("\r");
+		// printf("\r");
+
+		// printf("delta time = %f \n", 1000/deltaTime);
+		// printf(textBuffer);
+		// printf("\n");
+
+		//   标准输出句柄
+
+
+
+		cursorPos.X = 0;
+		cursorPos.Y = 1;
+		SetConsoleCursorPosition(hStdout, cursorPos);
+		// std::cout << "Delta Tiem : " << 1000/deltaTime <<"ms"<< std::endl;
+		std::cout << "FPS : " << 1000/deltaTime << std::endl;
+
+		cursorPos.X = 0;
+		cursorPos.Y = 2;
+		SetConsoleCursorPosition(hStdout, cursorPos);
+		std::cout << "Objects Culled:                                                                                    "  << std::endl;
+
+		
+		// std::cout << "Delta Tiem : " << 1000/deltaTime <<"ms"<< std::endl;
+		// 清空这一行
+
+		
+		cursorPos.X = 0;
+		cursorPos.Y = 2;
+		SetConsoleCursorPosition(hStdout, cursorPos);
+		std::cout << textBuffer  << std::endl;
+	
 	}
+	CloseHandle(hStdout);
 	return 0;
 }

@@ -123,6 +123,13 @@ typedef unsigned short USHORT;
 #define WINDOW_WIDTH 400 // size of window
 #define WINDOW_HEIGHT 400
 
+// general culling flags
+#define CULL_OBJECT_X_PLANE 0x0001 // cull on the x clipping planes
+#define CULL_OBJECT_Y_PLANE 0x0002 // cull on the y clipping planes
+#define CULL_OBJECT_Z_PLANE 0x0004 // cull on the z clipping planes
+#define CULL_OBJECT_XYZ_PLANES (CULL_OBJECT_X_PLANE | CULL_OBJECT_Y_PLANE | CULL_OBJECT_Z_PLANE)
+
+
 float Fast_Sin(float theta);
 float Fast_Cos(float theta);
 

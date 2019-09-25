@@ -366,3 +366,171 @@ void Remove_Backfaces_OBJECT4DV1(OBJECT4DV1_PTR obj, CAM4DV1_PTR cam)
             SET_BIT(curr_poly->state, POLY4DV1_STATE_BACKFACE);
     } 
 }
+
+int Cull_OBJECT4DV1(OBJECT4DV1_PTR obj, CAM4DV1_PTR cam, int cull_flags)
+{
+
+    POINT4D sphere_pos;
+    Mat_Mul_VECTOR4D_4X4(&obj->world_pos, &cam->mcam, &sphere_pos);
+
+    if (cull_flags & CULL_OBJECT_Z_PLANE)
+    {
+
+        if (((sphere_pos.z - obj->max_radius) > cam->far_clip_z) ||
+            ((sphere_pos.z + obj->max_radius) < cam->near_clip_z))
+        {
+            SET_BIT(obj->state, OBJECT4DV1_STATE_CULLED);
+            return (1);
+        }
+    }
+
+    if (cull_flags & CULL_OBJECT_X_PLANE)
+    {
+
+        float z_test = (0.5) * cam->viewplane_width * sphere_pos.z / cam->view_dist;
+
+        if (((sphere_pos.x - obj->max_radius) > z_test) ||
+            ((sphere_pos.x + obj->max_radius) < -z_test))
+        {
+            SET_BIT(obj->state, OBJECT4DV1_STATE_CULLED);
+            return (1);
+        }
+    }
+
+    if (cull_flags & CULL_OBJECT_Y_PLANE)
+    {
+
+        float z_test = (0.5) * cam->viewplane_height * sphere_pos.z / cam->view_dist;
+
+        if (((sphere_pos.y - obj->max_radius) > z_test) ||
+            ((sphere_pos.y + obj->max_radius) < -z_test))
+        {
+            SET_BIT(obj->state, OBJECT4DV1_STATE_CULLED);
+            return (1);
+        }
+    }
+
+    return (0);
+}
+
+int Insert_OBJECT4DV1_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list, OBJECT4DV1_PTR obj, int insert_local)
+{
+
+    if (!(obj->state & OBJECT4DV1_STATE_ACTIVE) ||
+        (obj->state & OBJECT4DV1_STATE_CULLED) ||
+        !(obj->state & OBJECT4DV1_STATE_VISIBLE))
+        return (0);
+
+    for (int poly = 0; poly < obj->num_polys; poly++)
+    {
+
+        POLY4DV1_PTR curr_poly = &obj->plist[poly];
+
+        if (!(curr_poly->state & POLY4DV1_STATE_ACTIVE) ||
+            (curr_poly->state & POLY4DV1_STATE_CLIPPED) ||
+            (curr_poly->state & POLY4DV1_STATE_BACKFACE))
+            continue;
+
+        POINT4D_PTR vlist_old = curr_poly->vlist;
+
+        if (insert_local)
+            curr_poly->vlist = obj->vlist_local;
+        else
+            curr_poly->vlist = obj->vlist_trans;
+
+        if (!Insert_POLY4DV1_RENDERLIST4DV1(rend_list, curr_poly))
+        {
+
+            curr_poly->vlist = vlist_old;
+
+            return (0);
+        }
+
+        curr_poly->vlist = vlist_old;
+    }
+
+    return (1);
+}
+
+int Insert_POLY4DV1_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list, POLY4DV1_PTR poly)
+{
+
+    if (rend_list->num_polys >= RENDERLIST4DV1_MAX_POLYS)
+        return (0);
+
+    rend_list->poly_ptrs[rend_list->num_polys] = &rend_list->poly_data[rend_list->num_polys];
+
+    rend_list->poly_data[rend_list->num_polys].state = poly->state;
+    rend_list->poly_data[rend_list->num_polys].attr = poly->attr;
+    rend_list->poly_data[rend_list->num_polys].color = poly->color;
+
+    VECTOR4D_COPY(&rend_list->poly_data[rend_list->num_polys].tvlist[0],
+                  &poly->vlist[poly->vert[0]]);
+
+    VECTOR4D_COPY(&rend_list->poly_data[rend_list->num_polys].tvlist[1],
+                  &poly->vlist[poly->vert[1]]);
+
+    VECTOR4D_COPY(&rend_list->poly_data[rend_list->num_polys].tvlist[2],
+                  &poly->vlist[poly->vert[2]]);
+
+    VECTOR4D_COPY(&rend_list->poly_data[rend_list->num_polys].vlist[0],
+                  &poly->vlist[poly->vert[0]]);
+
+    VECTOR4D_COPY(&rend_list->poly_data[rend_list->num_polys].vlist[1],
+                  &poly->vlist[poly->vert[1]]);
+
+    VECTOR4D_COPY(&rend_list->poly_data[rend_list->num_polys].vlist[2],
+                  &poly->vlist[poly->vert[2]]);
+
+    if (rend_list->num_polys == 0)
+    {
+
+        rend_list->poly_data[0].next = NULL;
+        rend_list->poly_data[0].prev = NULL;
+    }
+    else
+    {
+
+        rend_list->poly_data[rend_list->num_polys].next = NULL;
+        rend_list->poly_data[rend_list->num_polys].prev =
+            &rend_list->poly_data[rend_list->num_polys - 1];
+
+        rend_list->poly_data[rend_list->num_polys - 1].next =
+            &rend_list->poly_data[rend_list->num_polys];
+    }
+
+    rend_list->num_polys++;
+
+    return (1);
+}
+
+void Remove_Backfaces_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list, CAM4DV1_PTR cam)
+{
+
+    for (int poly = 0; poly < rend_list->num_polys; poly++)
+    {
+
+        POLYF4DV1_PTR curr_poly = rend_list->poly_ptrs[poly];
+
+        if ((curr_poly == NULL) || !(curr_poly->state & POLY4DV1_STATE_ACTIVE) ||
+            (curr_poly->state & POLY4DV1_STATE_CLIPPED) ||
+            (curr_poly->attr & POLY4DV1_ATTR_2SIDED) ||
+            (curr_poly->state & POLY4DV1_STATE_BACKFACE))
+            continue;
+
+        VECTOR4D u, v, n;
+
+        VECTOR4D_Build(&curr_poly->tvlist[0], &curr_poly->tvlist[1], &u);
+        VECTOR4D_Build(&curr_poly->tvlist[0], &curr_poly->tvlist[2], &v);
+
+        VECTOR4D_Cross(&u, &v, &n);
+
+        VECTOR4D view;
+        VECTOR4D_Build(&curr_poly->tvlist[0], &cam->pos, &view);
+
+        float dp = VECTOR4D_Dot(&n, &view);
+
+        if (dp <= 0.0)
+            SET_BIT(curr_poly->state, POLY4DV1_STATE_BACKFACE);
+    }
+}

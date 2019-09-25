@@ -15,7 +15,12 @@
 #include "datastructure.h"
 
 #include <windows.h>
-#include"conio.h"
+#include "conio.h"
+
+HANDLE hStdout;
+//   光标位置
+COORD cursorPos;
+
 static DWORD time_start, time_end;
 
 typedef unsigned int IUINT32;
@@ -353,6 +358,19 @@ void DrawText(char *text)
 	// ReleaseDC(screen_handle, hDC);
 	// ReleaseDC(screen_handle, hDC);
 }
+
+void DrawTextOnScreen(char *text, int x, int y)
+{
+	HDC hDC = GetDC(screen_handle);
+
+	SetTextColor(hDC, RGB(0, 255, 0));
+	SetBkMode(hDC, TRANSPARENT);
+	// char* text = "abc爱抚";
+	// char* text = "";
+	// _itoa(count++, text, 5);
+
+	TextOutA(hDC, x, y, text, strlen(text));
+}
 void screen_update(void)
 {
 	HDC hDC = GetDC(screen_handle);
@@ -458,27 +476,6 @@ void InitDemo7_2()
 	obj.world_pos.z = 100;
 }
 
-void InitDemo7_4()
-{
-	POINT4D cam_pos = {0, 200, 0, 1};
-	VECTOR4D cam_dir = {0, 0, 0, 1};
-
-	VECTOR4D vscale = {1.0, 1.0, 1.0, 1}, // scale of object
-		vpos = {0, 0, 0, 1},			  // position of object
-		vrot = {0, 0, 0, 1};			  // initial orientation of object
-
-	RGB16Bit = RGB16Bit565;
-	Init_CAM4DV1(&cam, CAM_MODEL_EULER, &cam_pos, &cam_dir, NULL, 50.0, 1000.0, 90.0, WINDOW_WIDTH, WINDOW_HEIGHT);
-
-	// load the object
-	Load_OBJECT4DV1_PLG(&obj, "./plg/tank1.plg", &vscale, &vpos, &vrot);
-
-	// set the default position of the object in the world
-	obj.world_pos.x = 0;
-	obj.world_pos.y = 0;
-	obj.world_pos.z = 400;
-}
-
 void DrawDemo7_1()
 {
 	char text[100] = "Rotation Angle: ";
@@ -576,6 +573,27 @@ void DrawDemo7_2()
 char *work_string;
 char *textBuffer; // used to print text
 
+void InitDemo7_4()
+{
+	POINT4D cam_pos = {0, 200, 0, 1};
+	VECTOR4D cam_dir = {0, 0, 0, 1};
+
+	VECTOR4D vscale = {1.0, 1.0, 1.0, 1}, // scale of object
+		vpos = {0, 0, 0, 1},			  // position of object
+		vrot = {0, 0, 0, 1};			  // initial orientation of object
+
+	RGB16Bit = RGB16Bit565;
+	Init_CAM4DV1(&cam, CAM_MODEL_EULER, &cam_pos, &cam_dir, NULL, 50.0, 1000.0, 90.0, WINDOW_WIDTH, WINDOW_HEIGHT);
+
+	// load the object
+	Load_OBJECT4DV1_PLG(&obj, "./plg/tank1.plg", &vscale, &vpos, &vrot);
+
+	// set the default position of the object in the world
+	obj.world_pos.x = 0;
+	obj.world_pos.y = 0;
+	obj.world_pos.z = 400;
+}
+
 void DrawDemo7_4()
 {
 	Sleep(20);
@@ -608,27 +626,49 @@ void DrawDemo7_4()
 
 	Build_XYZ_Rotation_MATRIX4X4(0, gRotationAngle, 0, &mrot);
 	Transform_OBJECT4DV1(&obj, &mrot, TRANSFORM_LOCAL_ONLY, 1);
+	int idxLine = 0;
 	for (int x = -NUM_OBJECTS / 2; x < NUM_OBJECTS / 2; x++)
 	{
 		for (int z = -NUM_OBJECTS / 2; z < NUM_OBJECTS / 2; z++)
 		{
+			POINT4D sphere_pos;
+			Mat_Mul_VECTOR4D_4X4(&obj.world_pos, &cam.mcam, &sphere_pos); //将包围球转换到相机空间
+			
+			char tmpText[1024];
 
+			strcpy(tmpText, "Sphere pos: ");
+			char textInt[10];
+
+			_itoa(sphere_pos.x, textInt, 10);
+			strcat(tmpText, textInt);
+
+			_itoa(sphere_pos.y, textInt, 10);
+			strcat(tmpText, textInt);
+
+			_itoa(sphere_pos.z, textInt, 10);
+			strcat(tmpText, textInt);
+
+			DrawTextOnScreen(tmpText, (x+1)*10+20, (z+1)*10+20);
+
+			cursorPos.X = 0;
+			cursorPos.Y = 4 + idxLine++;
+			SetConsoleCursorPosition(hStdout, cursorPos);
+			std::cout << "pos = " << sphere_pos.x<< ", "<<sphere_pos.y<<", "<< sphere_pos.z << std::endl;
 			Reset_OBJECT4DV1(&obj);
 
 			obj.world_pos.x = x * OBJECT_SPACING + OBJECT_SPACING / 2;
 			obj.world_pos.y = 0;
 			obj.world_pos.z = 500 + z * OBJECT_SPACING + OBJECT_SPACING / 2;
 
-			if (!Cull_OBJECT4DV1(&obj, &cam, CULL_OBJECT_XYZ_PLANES))
-			{
-
-				Model_To_World_OBJECT4DV1(&obj);
-				Insert_OBJECT4DV1_RENDERLIST4DV1(&rend_list, &obj);
-			}
-			else
+			if (Cull_OBJECT4DV1(&obj, &cam, CULL_OBJECT_XYZ_PLANES))
 			{
 				sprintf(work_string, "[%d, %d] ", x, z);
 				strcat(textBuffer, work_string);
+			}
+			else
+			{
+				Model_To_World_OBJECT4DV1(&obj);
+				Insert_OBJECT4DV1_RENDERLIST4DV1(&rend_list, &obj); //将物体插入到渲染列表
 			}
 		}
 	}
@@ -714,6 +754,7 @@ void GameMain()
 int count = 10000000;
 int main(void)
 {
+	hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
 	bool isOnlyBox = false;
 	int states[] = {RENDER_STATE_TEXTURE, RENDER_STATE_COLOR, RENDER_STATE_WIREFRAME};
 	int indicator = 0;
@@ -738,12 +779,7 @@ int main(void)
 
 	float deltaTime = 0;
 
-	HANDLE hStdout;
-	//   光标位置
-	COORD cursorPos;
-		hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
-
-
+	int lastCharLen = 0;
 	while (screen_exit == 0 && screen_keys[VK_ESCAPE] == 0)
 	{
 		time_start = GetTickCount();
@@ -765,54 +801,29 @@ int main(void)
 
 		time_end = GetTickCount();
 		deltaTime = ((float)time_end - (float)time_start);
-		// std::cout<<"delta time = "<<deltaTime<<std::endl;
-		// float zero = 0.0001;
-		// if(deltaTime < 0.0001)
-		// {
-		// 	std::cout<<0<<std::endl;
-		// }
-		// else
-		// {
-		// 	std::cout << "delta time = " << 1000 / deltaTime << std::endl;
-		// }
-
-		// printf("");
-
-		// printf("\r");
-		// printf("\r");
-		// printf("\r");
-		// printf("\r");
-		// printf("\r");
-
-		// printf("delta time = %f \n", 1000/deltaTime);
-		// printf(textBuffer);
-		// printf("\n");
 
 		//   标准输出句柄
-
-
 
 		cursorPos.X = 0;
 		cursorPos.Y = 1;
 		SetConsoleCursorPosition(hStdout, cursorPos);
-		// std::cout << "Delta Tiem : " << 1000/deltaTime <<"ms"<< std::endl;
-		std::cout << "FPS : " << 1000/deltaTime << std::endl;
+		if (deltaTime > 0)
+			std::cout << "FPS : " << 1000 / deltaTime << std::endl;
 
 		cursorPos.X = 0;
 		cursorPos.Y = 2;
 		SetConsoleCursorPosition(hStdout, cursorPos);
-		std::cout << "Objects Culled:                                                                                    "  << std::endl;
+		if (strlen(textBuffer) < lastCharLen)
+			std::cout << "Objects Culled:                                                                                    " << std::endl;
 
-		
 		// std::cout << "Delta Tiem : " << 1000/deltaTime <<"ms"<< std::endl;
 		// 清空这一行
 
-		
 		cursorPos.X = 0;
 		cursorPos.Y = 2;
 		SetConsoleCursorPosition(hStdout, cursorPos);
-		std::cout << textBuffer  << std::endl;
-	
+		std::cout << textBuffer << std::endl;
+		lastCharLen = strlen(textBuffer);
 	}
 	CloseHandle(hStdout);
 	return 0;

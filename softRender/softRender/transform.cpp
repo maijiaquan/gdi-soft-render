@@ -371,13 +371,12 @@ int Cull_OBJECT4DV1(OBJECT4DV1_PTR obj, CAM4DV1_PTR cam, int cull_flags)
 {
 
     POINT4D sphere_pos;
-    Mat_Mul_VECTOR4D_4X4(&obj->world_pos, &cam->mcam, &sphere_pos);
+    Mat_Mul_VECTOR4D_4X4(&obj->world_pos, &cam->mcam, &sphere_pos); //将包围球转换到相机空间
 
     if (cull_flags & CULL_OBJECT_Z_PLANE)
     {
 
-        if (((sphere_pos.z - obj->max_radius) > cam->far_clip_z) ||
-            ((sphere_pos.z + obj->max_radius) < cam->near_clip_z))
+        if (((sphere_pos.z - obj->max_radius) > cam->far_clip_z) || ((sphere_pos.z + obj->max_radius) < cam->near_clip_z))
         {
             SET_BIT(obj->state, OBJECT4DV1_STATE_CULLED);
             return (1);
@@ -389,8 +388,7 @@ int Cull_OBJECT4DV1(OBJECT4DV1_PTR obj, CAM4DV1_PTR cam, int cull_flags)
 
         float z_test = (0.5) * cam->viewplane_width * sphere_pos.z / cam->view_dist;
 
-        if (((sphere_pos.x - obj->max_radius) > z_test) ||
-            ((sphere_pos.x + obj->max_radius) < -z_test))
+        if (((sphere_pos.x - obj->max_radius) > z_test) || ((sphere_pos.x + obj->max_radius) < -z_test))
         {
             SET_BIT(obj->state, OBJECT4DV1_STATE_CULLED);
             return (1);
@@ -402,8 +400,7 @@ int Cull_OBJECT4DV1(OBJECT4DV1_PTR obj, CAM4DV1_PTR cam, int cull_flags)
 
         float z_test = (0.5) * cam->viewplane_height * sphere_pos.z / cam->view_dist;
 
-        if (((sphere_pos.y - obj->max_radius) > z_test) ||
-            ((sphere_pos.y + obj->max_radius) < -z_test))
+        if (((sphere_pos.y - obj->max_radius) > z_test) || ((sphere_pos.y + obj->max_radius) < -z_test))
         {
             SET_BIT(obj->state, OBJECT4DV1_STATE_CULLED);
             return (1);

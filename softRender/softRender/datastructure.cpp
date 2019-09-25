@@ -369,7 +369,7 @@ void MAT_IDENTITY_4X4(MATRIX4X4_PTR m)
     memcpy((void *)(m), (void *)&IMAT_4X4, sizeof(MATRIX4X4));
 }
 
-//矩阵乘向量
+//向量va 乘 矩阵mv，得到新的向量vprod
 void Mat_Mul_VECTOR4D_4X4(VECTOR4D_PTR va, MATRIX4X4_PTR mb, VECTOR4D_PTR vprod)
 {
     for (int col = 0; col < 4; col++)

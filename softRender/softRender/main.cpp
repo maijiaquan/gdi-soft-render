@@ -624,36 +624,61 @@ void DrawDemo7_4()
 	else if (KEY_DOWN(VK_LEFT))
 		cam.dir.y += 1;
 
+	
 	Build_XYZ_Rotation_MATRIX4X4(0, gRotationAngle, 0, &mrot);
 	Transform_OBJECT4DV1(&obj, &mrot, TRANSFORM_LOCAL_ONLY, 1);
-	int idxLine = 0;
+	int idxLine = 4;	//控制台打印行号
+	cursorPos.X = 0;
+	cursorPos.Y = idxLine;
+
+	SetConsoleCursorPosition(hStdout, cursorPos);
+	std::cout << "cam.far z = " << cam.far_clip_z << ", cam.near z =" << cam.near_clip_z  << std::endl;
+	idxLine++;
+
 	for (int x = -NUM_OBJECTS / 2; x < NUM_OBJECTS / 2; x++)
 	{
 		for (int z = -NUM_OBJECTS / 2; z < NUM_OBJECTS / 2; z++)
 		{
 			POINT4D sphere_pos;
 			Mat_Mul_VECTOR4D_4X4(&obj.world_pos, &cam.mcam, &sphere_pos); //将包围球转换到相机空间
-			
-			char tmpText[1024];
 
-			strcpy(tmpText, "Sphere pos: ");
-			char textInt[10];
+			char textCharArray[1024];
 
-			_itoa(sphere_pos.x, textInt, 10);
-			strcat(tmpText, textInt);
+			strcpy(textCharArray, "Sphere pos: ");
+			char intCharArray[10];
 
-			_itoa(sphere_pos.y, textInt, 10);
-			strcat(tmpText, textInt);
+			_itoa(sphere_pos.x, intCharArray, 10);
+			strcat(textCharArray, intCharArray);
 
-			_itoa(sphere_pos.z, textInt, 10);
-			strcat(tmpText, textInt);
+			_itoa(sphere_pos.y, intCharArray, 10);
+			strcat(textCharArray, intCharArray);
 
-			DrawTextOnScreen(tmpText, (x+1)*10+20, (z+1)*10+20);
+			_itoa(sphere_pos.z, intCharArray, 10);
+			strcat(textCharArray, intCharArray);
+
+			//DrawTextOnScreen(textCharArray, (x+1)*10+20, (z+1)*10+20);
 
 			cursorPos.X = 0;
 			cursorPos.Y = 4 + idxLine++;
 			SetConsoleCursorPosition(hStdout, cursorPos);
-			std::cout << "pos = " << sphere_pos.x<< ", "<<sphere_pos.y<<", "<< sphere_pos.z << std::endl;
+
+			float z_test = (0.5) * cam.viewplane_width * sphere_pos.z / cam.view_dist;
+
+			std::cout << x<<", "<< z <<" pos.z > " << ((sphere_pos.z - obj.max_radius) > cam.far_clip_z);
+			std::cout <<" pos.z < " << ((sphere_pos.z + obj.max_radius) < cam.near_clip_z);
+			std::cout <<" pos.x > " << ((sphere_pos.x - obj.max_radius) > z_test);
+			std::cout <<" pos.x < " << ((sphere_pos.x + obj.max_radius) < -z_test);
+			std::cout <<" pos.y > " << ((sphere_pos.y - obj.max_radius) > z_test);
+			std::cout <<" pos.y < " << ((sphere_pos.y + obj.max_radius) < -z_test);
+
+			std::cout<<std::endl;
+			
+			idxLine++;
+			idxLine++;
+			idxLine++;
+			idxLine++;
+
+
 			Reset_OBJECT4DV1(&obj);
 
 			obj.world_pos.x = x * OBJECT_SPACING + OBJECT_SPACING / 2;

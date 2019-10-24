@@ -415,7 +415,7 @@ void DrawDemo7_1();
 void InitDemo7_2();
 void DrawDemo7_2();
 
-void InitDemo7_4();
+void Initmo7_4();
 void DrawDemo7_4();
 
 void InitDemo7_1()
@@ -578,7 +578,8 @@ void InitDemo7_4()
 	POINT4D cam_pos = {0, 200, 0, 1};
 	VECTOR4D cam_dir = {0, 0, 0, 1};
 
-	VECTOR4D vscale = {1.0, 1.0, 1.0, 1}, // scale of object
+	// VECTOR4D vscale = {1.0, 1.0, 1.0, 1}, // scale of object
+	VECTOR4D vscale = {10.0, 10.0, 10.0, 1}, // scale of object
 		vpos = {0, 0, 0, 1},			  // position of object
 		vrot = {0, 0, 0, 1};			  // initial orientation of object
 
@@ -586,7 +587,9 @@ void InitDemo7_4()
 	Init_CAM4DV1(&cam, CAM_MODEL_EULER, &cam_pos, &cam_dir, NULL, 50.0, 1000.0, 90.0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	// load the object
-	Load_OBJECT4DV1_PLG(&obj, "./plg/tank1.plg", &vscale, &vpos, &vrot);
+    Load_OBJECT4DV1_PLG(&obj, "./plg/cube1.plg", &vscale, &vpos, &vrot);
+	// Load_OBJECT4DV1_PLG(&obj, "./plg/cube2.plg", &vscale, &vpos, &vrot);
+	// Load_OBJECT4DV1_PLG(&obj, "./plg/tank1.plg", &vscale, &vpos, &vrot);
 
 	// set the default position of the object in the world
 	obj.world_pos.x = 0;
@@ -664,7 +667,8 @@ void DrawDemo7_4()
 
 			float z_test = (0.5) * cam.viewplane_width * sphere_pos.z / cam.view_dist;
 
-			std::cout << x<<", "<< z <<" pos.z > " << ((sphere_pos.z - obj.max_radius) > cam.far_clip_z);
+			std::cout << x<<", "<< z ;
+			std::cout<<" pos.z > " << ((sphere_pos.z - obj.max_radius) > cam.far_clip_z);
 			std::cout <<" pos.z < " << ((sphere_pos.z + obj.max_radius) < cam.near_clip_z);
 			std::cout <<" pos.x > " << ((sphere_pos.x - obj.max_radius) > z_test);
 			std::cout <<" pos.x < " << ((sphere_pos.x + obj.max_radius) < -z_test);
@@ -673,8 +677,6 @@ void DrawDemo7_4()
 
 			std::cout<<std::endl;
 			
-			idxLine++;
-			idxLine++;
 			idxLine++;
 			idxLine++;
 
@@ -698,7 +700,12 @@ void DrawDemo7_4()
 		}
 	}
 
+	SetConsoleCursorPosition(hStdout, cursorPos);
+	std::cout<<rend_list.num_polys<<std::endl;
+
 	Build_CAM4DV1_Matrix_Euler(&cam, CAM_ROT_SEQ_ZYX);
+
+
 
 	// remove backfaces
 	Remove_Backfaces_RENDERLIST4DV1(&rend_list, &cam);

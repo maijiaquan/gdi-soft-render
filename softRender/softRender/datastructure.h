@@ -130,6 +130,7 @@ typedef unsigned short USHORT;
 #define CULL_OBJECT_XYZ_PLANES (CULL_OBJECT_X_PLANE | CULL_OBJECT_Y_PLANE | CULL_OBJECT_Z_PLANE)
 
 
+#define RAND_RANGE(x,y) ( (x) + (rand()%((y)-(x)+1)))
 float Fast_Sin(float theta);
 float Fast_Cos(float theta);
 

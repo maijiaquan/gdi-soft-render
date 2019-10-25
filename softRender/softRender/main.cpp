@@ -107,8 +107,12 @@ void device_clear(device_t *device, int mode)
 		// IUINT32 cc = (height - 1 - y) * 230 / (height - 1);
 		// IUINT32 cc = (height - 1 - 0) * 255 / (height - 1);
 		IUINT32 cc = (height - 1 - 0) * 0 / (height - 1); //黑色背景
-		cc = (cc << 16) | (cc << 8) | cc;
-		// std::cout<<"cc = "<<cc<<std::endl;
+		int R = 0;
+		int G = 0;
+		int B = 0;
+		//cc = (cc << 16) | (cc << 8) | cc;
+		cc = (R << 16) | (G << 8) | B;
+
 		if (mode == 0)
 			cc = device->background;
 		for (x = device->width; x > 0; dst++, x--)
@@ -730,9 +734,11 @@ void DrawDemo7_4()
 		float x3 = rend_list_ptr->poly_ptrs[poly]->tvlist[2].x;
 		float y3 = rend_list_ptr->poly_ptrs[poly]->tvlist[2].y;
 
-		device_draw_line(&device, x1, y1, x2, y2, device.foreground); //3 1
-		device_draw_line(&device, x1, y1, x3, y3, device.foreground); //3 1
-		device_draw_line(&device, x2, y2, x3, y3, device.foreground); //3 1
+		IUINT32 c = (255 << 16) | (255 << 8) | 255;
+
+		device_draw_line(&device, x1, y1, x2, y2, c);
+		device_draw_line(&device, x1, y1, x3, y3, c);
+		device_draw_line(&device, x2, y2, x3, y3, c);
 	}
 
 	// char text[100] = "Rotation Angle: ";
@@ -835,7 +841,6 @@ int main(void)
 		deltaTime = ((float)time_end - (float)time_start);
 
 		//   标准输出句柄
-
 		cursorPos.X = 0;
 		cursorPos.Y = 1;
 		SetConsoleCursorPosition(hStdout, cursorPos);

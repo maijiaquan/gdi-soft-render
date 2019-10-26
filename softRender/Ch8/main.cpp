@@ -548,7 +548,6 @@ void DrawTopTriangle(int x1, int y1, int x2, int y2, int x3, int y3,  IUINT32 co
 		x2 >= min_clip_x && x2 <= max_clip_x &&
 		x3 >= min_clip_x && x3 <= max_clip_x)
 	{
-		std::cout<<"kkk"<<std::endl;
 		// draw the triangle
 		//for (temp_y = y1; temp_y <= y3; temp_y++, dest_addr += mempitch)
 		for (temp_y = y1; temp_y <= y3; temp_y++)
@@ -566,7 +565,6 @@ void DrawTopTriangle(int x1, int y1, int x2, int y2, int x3, int y3,  IUINT32 co
 	} // end if no x clipping needed
 	else
 	{
-		std::cout<<"fff"<<std::endl;
 		// clip x axis with slower version
 
 		// draw the triangle
@@ -598,8 +596,8 @@ void DrawTopTriangle(int x1, int y1, int x2, int y2, int x3, int y3,  IUINT32 co
 			}
 
 			// draw the line
-			IUINT32 c = (0 << 16) | (255 << 8) | 0;
-			device_draw_line(&device, left, temp_y, right, temp_y, c);
+			// IUINT32 c = (0 << 16) | (255 << 8) | 0;
+			device_draw_line(&device, left, temp_y, right, temp_y, color);
 		} // end for
 
 	} // end else x clipping needed
@@ -767,21 +765,18 @@ void DrawTrianglePureColor(int x1, int y1, int x2, int y2, int x3, int y3, IUINT
 		if (y1 == y2)
 		{
 
-			IUINT32 c = (0 << 16) | (255 << 8) | 0;
-			DrawTopTriangle(x1, y1, x2, y2, x3, y3, c);
+			DrawTopTriangle(x1, y1, x2, y2, x3, y3, color);
 		} // end if
 		else if (y2 == y3)
 		{
-			IUINT32 c = (0 << 16) | (255 << 8) | 0;
-			DrawDownTriangle(x1, y1, x2, y2, x3, y3, c);
+			DrawDownTriangle(x1, y1, x2, y2, x3, y3, color);
 		} // end if bottom is flat
 		else
 		{
 			// draw each sub-triangle
-			IUINT32 c = (0 << 16) | (255 << 8) | 0;
 			new_x = x1 + (int)(0.5 + (float)(y2 - y1) * (float)(x3 - x1) / (float)(y3 - y1));
-			DrawDownTriangle(x1, y1, new_x, y2, x2, y2, c);
-			DrawTopTriangle(x2, y2, new_x, y2, x3, y3, c);
+			DrawDownTriangle(x1, y1, new_x, y2, x2, y2, color);
+			DrawTopTriangle(x2, y2, new_x, y2, x3, y3, color);
 		} // end else
 
 }
@@ -1676,16 +1671,19 @@ void DrawDemo8_4()
 		float x3 = rend_list_ptr->poly_ptrs[poly]->tvlist[2].x;
 		float y3 = rend_list_ptr->poly_ptrs[poly]->tvlist[2].y;
 
-		IUINT32 c = (255 << 16) | (255 << 8) | 255;
 
-		device_draw_line(&device, x1, y1, x2, y2, c);
-		device_draw_line(&device, x1, y1, x3, y3, c);
-		device_draw_line(&device, x2, y2, x3, y3, c);
+		// IUINT32 c = (255 << 16) | (255 << 8) | 255;
+
+		int c = rend_list_ptr->poly_ptrs[poly]->color;
+		DrawTrianglePureColor(x1, y1, x2, y2, x3, y3, c);
+		// device_draw_line(&device, x1, y1, x2, y2, c);
+		// device_draw_line(&device, x1, y1, x3, y3, c);
+		// device_draw_line(&device, x2, y2, x3, y3, c);
 	}
 
 }
 
-int gDemoIndex = 1;
+int gDemoIndex = 84;
 
 void GameInit()
 {

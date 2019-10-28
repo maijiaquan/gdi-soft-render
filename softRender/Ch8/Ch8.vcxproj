@@ -12,11 +12,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="datastructure.cpp" />
+    <ClCompile Include="device.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="transform.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="datastructure.h" />
+    <ClInclude Include="device.h" />
     <ClInclude Include="header.h" />
     <ClInclude Include="transform.h" />
   </ItemGroup>

@@ -24,6 +24,9 @@
     <ClCompile Include="transform.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="device.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="datastructure.h">
@@ -33,6 +36,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="transform.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="device.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

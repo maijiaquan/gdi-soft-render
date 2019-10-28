@@ -25,7 +25,10 @@
 #include <direct.h>
 #include <wchar.h>
 
+#include "device.h"
 // defines for objects version 1
+
+
 
 // transformation control flags
 #define TRANSFORM_LOCAL_ONLY 0
@@ -116,12 +119,11 @@ USHORT RGB16Bit565(int r, int g, int b);
 // float *sin_look;
 
 typedef unsigned short USHORT;
+
 #define POLY4DV1_STATE_ACTIVE 0x0001
 #define CAM_MODEL_EULER 0x0008
 #define CAM_MODEL_UVN 0x0010
 
-#define WINDOW_WIDTH 400 // size of window
-#define WINDOW_HEIGHT 400
 
 // general culling flags
 #define CULL_OBJECT_X_PLANE 0x0001 // cull on the x clipping planes
@@ -396,3 +398,4 @@ float Compute_OBJECT4DV1_Radius(OBJECT4DV1_PTR obj);
 #define SET_BIT(word, bit_flag) ((word) = ((word) | (bit_flag)))
 
 void Build_Sin_Cos_Tables(void);
+

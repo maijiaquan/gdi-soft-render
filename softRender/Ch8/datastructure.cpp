@@ -1041,7 +1041,6 @@ void VECTOR4D_Cross(VECTOR4D_PTR va, VECTOR4D_PTR vb, VECTOR4D_PTR vn)
     vn->y = -((va->x * vb->z) - (va->z * vb->x));
     vn->z = ((va->x * vb->y) - (va->y * vb->x));
     vn->w = 1;
-
 }
 
 //оРа©╡ФЁк

@@ -14,6 +14,7 @@
 #include <windows.h>
 #include "conio.h"
 
+#define _RGB565FROM16BIT(RGB, r,g,b) { *r = ( ((RGB) >> 11) & 0x1f); *g = (((RGB) >> 5) & 0x3f); *b = ((RGB) & 0x1f); }
 
 #define RENDER_STATE_WIREFRAME 1 // ????
 #define RENDER_STATE_TEXTURE 2   // ????
@@ -54,6 +55,6 @@ void device_clear(device_t *device, int mode);
 #define min_clip_y  0
 #define max_clip_y  (WINDOW_HEIGHT - 1)
 
-void DrawTopTriangle(device_t *device, int x1, int y1, int x2, int y2, int x3, int y3,  IUINT32 color);
-void DrawDownTriangle(device_t *device,int x1, int y1, int x2, int y2, int x3, int y3,  IUINT32 color);
-void DrawTrianglePureColor(device_t *device, int x1, int y1, int x2, int y2, int x3, int y3, IUINT32 color);
+void DrawTopTriangle(device_t *device, int x1, int y1, int x2, int y2, int x3, int y3,  int color);
+void DrawDownTriangle(device_t *device,int x1, int y1, int x2, int y2, int x3, int y3,  int color);
+void DrawTrianglePureColor(device_t *device, int x1, int y1, int x2, int y2, int x3, int y3, int color);

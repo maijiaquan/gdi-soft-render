@@ -364,26 +364,35 @@ void DrawDownTriangle(device_t *device, int x1, int y1, int x2, int y2, int x3, 
     } // end else x clipping needed
 }
 
-void DrawTrianglePureColor(device_t *device, int x1, int y1, int x2, int y2, int x3, int y3, IUINT32 color)
+void DrawTrianglePureColor(device_t *device, int x1, int y1, int x2, int y2, int x3, int y3, int color)
 {
+	//还原RGB值
+	int r_base, g_base, b_base;
+	_RGB565FROM16BIT(color, &r_base, &g_base, &b_base);
+	// scale to 8 bit
+	r_base <<= 3;
+	g_base <<= 2;
+	b_base <<= 3;
+	IUINT32 c = (r_base << 16) | (g_base << 8) | b_base;
 
-		int temp_x, // used for sorting
-			temp_y,
-			new_x;
 
-		// test for h lines and v lines
-		if ((x1 == x2 && x2 == x3) || (y1 == y2 && y2 == y3))
-			return;
+	int temp_x, // used for sorting
+		temp_y,
+		new_x;
 
-		//根据y的大小排序
-		if (y2 < y1)
-		{
-			temp_x = x2;
-			temp_y = y2;
-			x2 = x1;
-			y2 = y1;
-			x1 = temp_x;
-			y1 = temp_y;
+	// test for h lines and v lines
+	if ((x1 == x2 && x2 == x3) || (y1 == y2 && y2 == y3))
+		return;
+
+	//根据y的大小排序
+	if (y2 < y1)
+	{
+		temp_x = x2;
+		temp_y = y2;
+		x2 = x1;
+		y2 = y1;
+		x1 = temp_x;
+		y1 = temp_y;
 		} // end if
 
 		// now we know that p1 and p2 are in order
@@ -419,18 +428,18 @@ void DrawTrianglePureColor(device_t *device, int x1, int y1, int x2, int y2, int
 		if (y1 == y2)
 		{
 
-			DrawTopTriangle(device, x1, y1, x2, y2, x3, y3, color);
+			DrawTopTriangle(device, x1, y1, x2, y2, x3, y3, c);
 		} // end if
 		else if (y2 == y3)
 		{
-			DrawDownTriangle(device, x1, y1, x2, y2, x3, y3, color);
+			DrawDownTriangle(device, x1, y1, x2, y2, x3, y3, c);
 		} // end if bottom is flat
 		else
 		{
 			// draw each sub-triangle
 			new_x = x1 + (int)(0.5 + (float)(y2 - y1) * (float)(x3 - x1) / (float)(y3 - y1));
-			DrawDownTriangle(device, x1, y1, new_x, y2, x2, y2, color);
-			DrawTopTriangle(device, x2, y2, new_x, y2, x3, y3, color);
+			DrawDownTriangle(device, x1, y1, new_x, y2, x2, y2, c);
+			DrawTopTriangle(device, x2, y2, new_x, y2, x3, y3, c);
 		} // end else
 
 }

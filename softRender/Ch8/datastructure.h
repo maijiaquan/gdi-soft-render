@@ -30,6 +30,11 @@
 
 
 
+// used to compute the min and max of two expresions
+#define MIN(a, b)  (((a) < (b)) ? (a) : (b)) 
+#define MAX(a, b)  (((a) > (b)) ? (a) : (b)) 
+#define SWAP(a,b,t) {t=a; a=b; b=t;}
+
 // transformation control flags
 #define TRANSFORM_LOCAL_ONLY 0
 #define TRANSFORM_TRANS_ONLY 1
@@ -384,6 +389,44 @@ typedef struct CAM4DV1_TYP
 
 } CAM4DV1, *CAM4DV1_PTR;
 
+
+// RGB+alpha color
+typedef struct RGBAV1_TYP
+{
+union 
+    {
+    int rgba;                    // compressed format
+    UCHAR rgba_M[4];             // array format
+    struct {  UCHAR a,b,g,r;  }; // explict name format
+    }; // end union
+    
+} RGBAV1, *RGBAV1_PTR;
+
+// first light structure
+typedef struct LIGHTV1_TYP
+{
+	int state; // state of light
+	int id;	// id of light
+	int attr;  // type of light, and extra qualifiers
+
+	RGBAV1 c_ambient;  // ambient light intensity
+	RGBAV1 c_diffuse;  // diffuse light intensity
+	RGBAV1 c_specular; // specular light intensity
+
+	POINT4D pos;	  // position of light
+	VECTOR4D dir;	 // direction of light
+	float kc, kl, kq; // attenuation factors
+	float spot_inner; // inner angle for spot light
+	float spot_outer; // outer angle for spot light
+	float pf;		  // power factor/falloff for spot lights
+
+	int iaux1, iaux2; // auxiliary vars for future expansion
+	float faux1, faux2;
+	void *ptr;
+
+} LIGHTV1, *LIGHTV1_PTR;
+
+
 // void Reset_RENDERLIST4DV1(RENDERLIST4DV1_PTR renderList);
 void Init_CAM4DV1(CAM4DV1_PTR cam, int attr, POINT4D_PTR cam_pos, VECTOR4D_PTR cam_dir, VECTOR4D_PTR cam_target, float near_clip_z, float far_clip_z, float fov, float viewport_width, float viewport_height);
 
@@ -399,3 +442,69 @@ float Compute_OBJECT4DV1_Radius(OBJECT4DV1_PTR obj);
 
 void Build_Sin_Cos_Tables(void);
 
+
+
+//光照宏定义
+// create some constants for ease of access
+#define AMBIENT_LIGHT_INDEX 0  // ambient light index
+#define INFINITE_LIGHT_INDEX 1 // infinite light index
+#define POINT_LIGHT_INDEX 2	// point light index
+#define SPOT_LIGHT_INDEX 3	 // spot light index
+
+#define LIGHTV1_STATE_ON          1         // light on
+#define LIGHTV1_STATE_OFF         0         // light off
+
+// defines for light types
+#define LIGHTV1_ATTR_AMBIENT      0x0001    // basic ambient light
+#define LIGHTV1_ATTR_INFINITE     0x0002    // infinite light source
+#define LIGHTV1_ATTR_DIRECTIONAL  0x0002    // infinite light source (alias)
+#define LIGHTV1_ATTR_POINT        0x0004    // point light source
+#define LIGHTV1_ATTR_SPOTLIGHT1   0x0008    // spotlight type 1 (simple)
+#define LIGHTV1_ATTR_SPOTLIGHT2   0x0010    // spotlight type 2 (complex)
+//光照计算
+int Light_RENDERLIST4DV1_World16(RENDERLIST4DV1_PTR rend_list,  // list to process
+                                 CAM4DV1_PTR cam,     // camera position
+                                 LIGHTV1_PTR lights,  // light list (might have more than one)
+                                 int max_lights);     // maximum lights in list
+
+#define MAX_LIGHTS                8         // good luck with 1!
+
+int Reset_Lights_LIGHTV1(void);
+
+// lighting system
+int Init_Light_LIGHTV1(int           index,      // index of light to create (0..MAX_LIGHTS-1)
+                       int          _state,      // state of light
+                       int          _attr,       // type of light, and extra qualifiers
+                       RGBAV1       _c_ambient,  // ambient light intensity
+                       RGBAV1       _c_diffuse,  // diffuse light intensity
+                       RGBAV1       _c_specular, // specular light intensity
+                       POINT4D_PTR  _pos,        // position of light
+                       VECTOR4D_PTR _dir,        // direction of light
+                       float        _kc,         // attenuation factors
+                       float        _kl, 
+                       float        _kq, 
+                       float        _spot_inner, // inner angle for spot light
+                       float        _spot_outer, // outer angle for spot light
+                       float        _pf);        // power factor/falloff for spot lights
+
+#define _RGBA32BIT(r,g,b,a) ((a) + ((b) << 8) + ((g) << 16) + ((r) << 24))
+
+void VECTOR4D_Normalize(VECTOR4D_PTR va);
+float VECTOR4D_Length_Fast(VECTOR4D_PTR va);
+float Fast_Distance_3D(float x, float y, float z);
+
+extern LIGHTV1 lights[MAX_LIGHTS];  // lights in system
+extern int num_lights;              // current number of lights
+
+// flags for sorting algorithm
+#define SORT_POLYLIST_AVGZ  0  // sorts on average of all vertices
+#define SORT_POLYLIST_NEARZ 1  // sorts on closest z vertex of each poly
+#define SORT_POLYLIST_FARZ  2  // sorts on farthest z vertex of each poly
+void Sort_RENDERLIST4DV1(RENDERLIST4DV1_PTR rend_list, int sort_method=SORT_POLYLIST_AVGZ);
+
+// avg z-compare
+int Compare_AvgZ_POLYF4DV1(const void *arg1, const void *arg2);
+// near z-compare
+int Compare_NearZ_POLYF4DV1(const void *arg1, const void *arg2);
+// far z-compare
+int Compare_FarZ_POLYF4DV1(const void *arg1, const void *arg2);

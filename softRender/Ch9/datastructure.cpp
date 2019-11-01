@@ -2627,7 +2627,8 @@ int Load_OBJECT4DV2_COB(OBJECT4DV2_PTR obj, // pointer to object
         // we need to know what color depth we are dealing with, so check
         // the bits per pixel, this assumes that the system has already
         // made the call to DDraw_Init() or set the bit depth
-        if (screen_bpp == 16)
+        // if (screen_bpp == 16)
+        if (true)
         {
             // cool, 16 bit mode
             SET_BIT(obj->plist[curr_poly].attr, POLY4DV1_ATTR_RGB16);
@@ -4863,6 +4864,7 @@ for (int poly = 0; poly < obj->num_polys; poly++)
     {
     // acquire polygon
     POLY4DV2_PTR curr_poly = &obj->plist[poly];
+    // std::cout << curr_poly->color << std::endl;
 
     // first is this polygon even visible?
     if (!(curr_poly->state & POLY4DV2_STATE_ACTIVE) ||
@@ -5117,13 +5119,13 @@ for (int poly=0; poly < rend_list->num_polys; poly++)
 
        // step 1: extract the base color out in RGB mode
        // assume 565 format
-       _RGB565FROM16BIT(curr_poly->color, &r_base, &g_base, &b_base);
-
+        _RGB565FROM16BIT(curr_poly->color, &r_base, &g_base, &b_base);
        // scale to 8 bit 
        r_base <<= 3;
        g_base <<= 2;
        b_base <<= 3;
 
+        // std::cout<<"color = " << r_base<<" "<< g_base <<" "<< b_base<<std::endl;
        //Write_Error("\nBase color=%d,%d,%d", r_base, g_base, b_base);
 
        // initialize color sum

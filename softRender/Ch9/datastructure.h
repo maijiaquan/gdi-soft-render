@@ -48,11 +48,6 @@
 #define PI ((float)3.141592654f)
 #define DEG_TO_RAD(ang) ((ang)*PI / 180.0)
 
-// defines for small numbers
-#define EPSILON_E3 (float)(1E-3)
-#define EPSILON_E4 (float)(1E-4)
-#define EPSILON_E5 (float)(1E-5)
-#define EPSILON_E6 (float)(1E-6)
 
 // states of polygons and faces
 #define POLY4DV1_STATE_ACTIVE 0x0001

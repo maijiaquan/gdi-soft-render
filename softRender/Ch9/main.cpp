@@ -1300,11 +1300,16 @@ void DrawDemo9_2()
 
 		IUINT32 c = (255 << 16) | (255 << 8) | 255;
 
-		int color = rend_list_ptr->poly_ptrs[poly]->color;
-		DrawTrianglePureColor(&device, x1, y1, x2, y2, x3, y3, color);
-		device_draw_line(&device, x1, y1, x2, y2, c);
-		device_draw_line(&device, x1, y1, x3, y3, c);
-		device_draw_line(&device, x2, y2, x3, y3, c);
+		
+		 int color = rend_list_ptr->poly_ptrs[poly]->lit_color[0];
+		//  std::cout<<"color = "<<color<<std::endl;
+		//  int color = rend_list_ptr->poly_ptrs[poly]->color;
+		//  rend_list->poly_ptrs[poly]->lit_color[0]
+			 // DrawTrianglePureColor(&device, x1, y1, x2, y2, x3, y3, color);
+		 DrawTrianglePureColor2(&device, x1, y1, x2, y2, x3, y3, color);
+		//  device_draw_line(&device, x1, y1, x2, y2, c);
+		//  device_draw_line(&device, x1, y1, x3, y3, c);
+		//  device_draw_line(&device, x2, y2, x3, y3, c);
 	}
 
 }
@@ -1350,6 +1355,7 @@ void GameMain()
 		DrawDemo8_6();
 		break;
 	case 92:
+		Sleep(20);
 		DrawDemo9_2();
 		break;
 	default:

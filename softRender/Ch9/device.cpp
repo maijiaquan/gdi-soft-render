@@ -9,7 +9,6 @@ void device_pixel(device_t *device, int x, int y, IUINT32 color)
 	}
 }
 
-
 // 设备初始化，fb为外部帧缓存，非 NULL 将引用外部帧缓存（每行 4字节对齐）
 void device_init(device_t *device, int width, int height, void *fb)
 {
@@ -155,213 +154,213 @@ void device_draw_line(device_t *device, int x1, int y1, int x2, int y2, IUINT32 
 void DrawTopTriangle(device_t *device, int x1, int y1, int x2, int y2, int x3, int y3, IUINT32 color)
 {
 
-    float dx_right, // the dx/dy ratio of the right edge of line
-        dx_left,    // the dx/dy ratio of the left edge of line
-        xs, xe,     // the starting and ending points of the edges
-        height;     // the height of the triangle
+	float dx_right, // the dx/dy ratio of the right edge of line
+		dx_left,	// the dx/dy ratio of the left edge of line
+		xs, xe,		// the starting and ending points of the edges
+		height;		// the height of the triangle
 
-    int temp_x, // used during sorting as temps
-        temp_y,
-        right, // used by clipping
-        left;
+	int temp_x, // used during sorting as temps
+		temp_y,
+		right, // used by clipping
+		left;
 
-    // test order of x1 and x2
-    //保证 x1 < x2
-    if (x2 < x1)
-    {
-        temp_x = x2;
-        x2 = x1;
-        x1 = temp_x;
-    } // end if swap
+	// test order of x1 and x2
+	//保证 x1 < x2
+	if (x2 < x1)
+	{
+		temp_x = x2;
+		x2 = x1;
+		x1 = temp_x;
+	} // end if swap
 
-    // compute delta's
-    height = y3 - y1;
+	// compute delta's
+	height = y3 - y1;
 
-    dx_left = (x3 - x1) / height;
-    dx_right = (x3 - x2) / height;
+	dx_left = (x3 - x1) / height;
+	dx_right = (x3 - x2) / height;
 
-    // set starting points
-    xs = (float)x1;
-    xe = (float)x2; // +(float)0.5;
+	// set starting points
+	xs = (float)x1;
+	xe = (float)x2; // +(float)0.5;
 
-    // perform y clipping
-    if (y1 < min_clip_y)
-    {
-        // compute new xs and ys
-        xs = xs + dx_left * (float)(-y1 + min_clip_y);
-        xe = xe + dx_right * (float)(-y1 + min_clip_y);
+	// perform y clipping
+	if (y1 < min_clip_y)
+	{
+		// compute new xs and ys
+		xs = xs + dx_left * (float)(-y1 + min_clip_y);
+		xe = xe + dx_right * (float)(-y1 + min_clip_y);
 
-        // reset y1
-        y1 = min_clip_y;
+		// reset y1
+		y1 = min_clip_y;
 
-    } // end if top is off screen
+	} // end if top is off screen
 
-    if (y3 > max_clip_y)
-        y3 = max_clip_y;
+	if (y3 > max_clip_y)
+		y3 = max_clip_y;
 
-    // compute starting address in video memory
+	// compute starting address in video memory
 
-    // test if x clipping is needed
-    if (x1 >= min_clip_x && x1 <= max_clip_x &&
-        x2 >= min_clip_x && x2 <= max_clip_x &&
-        x3 >= min_clip_x && x3 <= max_clip_x)
-    {
-        // draw the triangle
-        //for (temp_y = y1; temp_y <= y3; temp_y++, dest_addr += mempitch)
-        for (temp_y = y1; temp_y <= y3; temp_y++)
-        {
-            // draw the line
+	// test if x clipping is needed
+	if (x1 >= min_clip_x && x1 <= max_clip_x &&
+		x2 >= min_clip_x && x2 <= max_clip_x &&
+		x3 >= min_clip_x && x3 <= max_clip_x)
+	{
+		// draw the triangle
+		//for (temp_y = y1; temp_y <= y3; temp_y++, dest_addr += mempitch)
+		for (temp_y = y1; temp_y <= y3; temp_y++)
+		{
+			// draw the line
 
-            device_draw_line(device, xs, temp_y, xe, temp_y, color);
+			device_draw_line(device, xs, temp_y, xe, temp_y, color);
 
-            xs += dx_left;
-            xe += dx_right;
+			xs += dx_left;
+			xe += dx_right;
 
-        } // end for
+		} // end for
 
-    } // end if no x clipping needed
-    else
-    {
-        // clip x axis with slower version
+	} // end if no x clipping needed
+	else
+	{
+		// clip x axis with slower version
 
-        // draw the triangle
-        for (temp_y = y1; temp_y <= y3; temp_y++)
-        {
-            // do x clip
-            left = (int)xs;
-            right = (int)xe;
+		// draw the triangle
+		for (temp_y = y1; temp_y <= y3; temp_y++)
+		{
+			// do x clip
+			left = (int)xs;
+			right = (int)xe;
 
-            // adjust starting point and ending point
-            xs += dx_left;
-            xe += dx_right;
+			// adjust starting point and ending point
+			xs += dx_left;
+			xe += dx_right;
 
-            // clip line
-            if (left < min_clip_x)
-            {
-                left = min_clip_x;
+			// clip line
+			if (left < min_clip_x)
+			{
+				left = min_clip_x;
 
-                if (right < min_clip_x)
-                    continue;
-            }
+				if (right < min_clip_x)
+					continue;
+			}
 
-            if (right > max_clip_x)
-            {
-                right = max_clip_x;
+			if (right > max_clip_x)
+			{
+				right = max_clip_x;
 
-                if (left > max_clip_x)
-                    continue;
-            }
+				if (left > max_clip_x)
+					continue;
+			}
 
-            // draw the line
-            // IUINT32 c = (0 << 16) | (255 << 8) | 0;
-            device_draw_line(device, left, temp_y, right, temp_y, color);
-        } // end for
+			// draw the line
+			// IUINT32 c = (0 << 16) | (255 << 8) | 0;
+			device_draw_line(device, left, temp_y, right, temp_y, color);
+		} // end for
 
-    } // end else x clipping needed
+	} // end else x clipping needed
 }
 
 void DrawDownTriangle(device_t *device, int x1, int y1, int x2, int y2, int x3, int y3, IUINT32 color)
 {
 
-    float dx_right, // the dx/dy ratio of the right edge of line
-        dx_left,    // the dx/dy ratio of the left edge of line
-        xs, xe,     // the starting and ending points of the edges
-        height;     // the height of the triangle
+	float dx_right, // the dx/dy ratio of the right edge of line
+		dx_left,	// the dx/dy ratio of the left edge of line
+		xs, xe,		// the starting and ending points of the edges
+		height;		// the height of the triangle
 
-    int temp_x, // used during sorting as temps
-        temp_y,
-        right, // used by clipping
-        left;
+	int temp_x, // used during sorting as temps
+		temp_y,
+		right, // used by clipping
+		left;
 
-    // test order of x1 and x2
-    if (x3 < x2)
-    {
-        temp_x = x2;
-        x2 = x3;
-        x3 = temp_x;
-    } // end if swap
+	// test order of x1 and x2
+	if (x3 < x2)
+	{
+		temp_x = x2;
+		x2 = x3;
+		x3 = temp_x;
+	} // end if swap
 
-    // compute delta's
-    height = y3 - y1;
+	// compute delta's
+	height = y3 - y1;
 
-    dx_left = (x2 - x1) / height;
-    dx_right = (x3 - x1) / height;
+	dx_left = (x2 - x1) / height;
+	dx_right = (x3 - x1) / height;
 
-    // set starting points
-    xs = (float)x1;
-    xe = (float)x1; // +(float)0.5;
+	// set starting points
+	xs = (float)x1;
+	xe = (float)x1; // +(float)0.5;
 
-    // perform y clipping
-    if (y1 < min_clip_y)
-    {
-        // compute new xs and ys
-        xs = xs + dx_left * (float)(-y1 + min_clip_y);
-        xe = xe + dx_right * (float)(-y1 + min_clip_y);
+	// perform y clipping
+	if (y1 < min_clip_y)
+	{
+		// compute new xs and ys
+		xs = xs + dx_left * (float)(-y1 + min_clip_y);
+		xe = xe + dx_right * (float)(-y1 + min_clip_y);
 
-        // reset y1
-        y1 = min_clip_y;
+		// reset y1
+		y1 = min_clip_y;
 
-    } // end if top is off screen
+	} // end if top is off screen
 
-    if (y3 > max_clip_y)
-        y3 = max_clip_y;
+	if (y3 > max_clip_y)
+		y3 = max_clip_y;
 
-    // compute starting address in video memory
+	// compute starting address in video memory
 
-    // test if x clipping is needed
-    if (x1 >= min_clip_x && x1 <= max_clip_x &&
-        x2 >= min_clip_x && x2 <= max_clip_x &&
-        x3 >= min_clip_x && x3 <= max_clip_x)
-    {
-        // draw the triangle
-        for (temp_y = y1; temp_y <= y3; temp_y++)
-        {
-            // draw the line
-            device_draw_line(device, xs, temp_y, xe, temp_y, color);
+	// test if x clipping is needed
+	if (x1 >= min_clip_x && x1 <= max_clip_x &&
+		x2 >= min_clip_x && x2 <= max_clip_x &&
+		x3 >= min_clip_x && x3 <= max_clip_x)
+	{
+		// draw the triangle
+		for (temp_y = y1; temp_y <= y3; temp_y++)
+		{
+			// draw the line
+			device_draw_line(device, xs, temp_y, xe, temp_y, color);
 
-            // adjust starting point and ending point
-            xs += dx_left;
-            xe += dx_right;
+			// adjust starting point and ending point
+			xs += dx_left;
+			xe += dx_right;
 
-        } // end for
+		} // end for
 
-    } // end if no x clipping needed
-    else
-    {
-        // clip x axis with slower version
+	} // end if no x clipping needed
+	else
+	{
+		// clip x axis with slower version
 
-        // draw the triangle
-        for (temp_y = y1; temp_y <= y3; temp_y++)
-        {
-            // do x clip
-            left = (int)xs;
-            right = (int)xe;
+		// draw the triangle
+		for (temp_y = y1; temp_y <= y3; temp_y++)
+		{
+			// do x clip
+			left = (int)xs;
+			right = (int)xe;
 
-            // adjust starting point and ending point
-            xs += dx_left;
-            xe += dx_right;
+			// adjust starting point and ending point
+			xs += dx_left;
+			xe += dx_right;
 
-            // clip line
-            if (left < min_clip_x)
-            {
-                left = min_clip_x;
+			// clip line
+			if (left < min_clip_x)
+			{
+				left = min_clip_x;
 
-                if (right < min_clip_x)
-                    continue;
-            }
+				if (right < min_clip_x)
+					continue;
+			}
 
-            if (right > max_clip_x)
-            {
-                right = max_clip_x;
+			if (right > max_clip_x)
+			{
+				right = max_clip_x;
 
-                if (left > max_clip_x)
-                    continue;
-            }
-            // draw the line
-            device_draw_line(device, left, temp_y, right, temp_y, color);
-        } // end for
+				if (left > max_clip_x)
+					continue;
+			}
+			// draw the line
+			device_draw_line(device, left, temp_y, right, temp_y, color);
+		} // end for
 
-    } // end else x clipping needed
+	} // end else x clipping needed
 }
 
 void DrawTrianglePureColor(device_t *device, int x1, int y1, int x2, int y2, int x3, int y3, int color)
@@ -374,7 +373,6 @@ void DrawTrianglePureColor(device_t *device, int x1, int y1, int x2, int y2, int
 	g_base <<= 2;
 	b_base <<= 3;
 	IUINT32 c = (r_base << 16) | (g_base << 8) | b_base;
-
 
 	int temp_x, // used for sorting
 		temp_y,
@@ -393,53 +391,430 @@ void DrawTrianglePureColor(device_t *device, int x1, int y1, int x2, int y2, int
 		y2 = y1;
 		x1 = temp_x;
 		y1 = temp_y;
-		} // end if
+	} // end if
 
-		// now we know that p1 and p2 are in order
-		if (y3 < y1)
+	// now we know that p1 and p2 are in order
+	if (y3 < y1)
+	{
+		temp_x = x3;
+		temp_y = y3;
+		x3 = x1;
+		y3 = y1;
+		x1 = temp_x;
+		y1 = temp_y;
+	} // end if
+
+	// finally test y3 against y2
+	if (y3 < y2)
+	{
+		temp_x = x3;
+		temp_y = y3;
+		x3 = x2;
+		y3 = y2;
+		x2 = temp_x;
+		y2 = temp_y;
+
+	} // end if
+
+	// do trivial rejection tests for clipping
+	if (y3 < min_clip_y || y1 > max_clip_y ||
+		(x1 < min_clip_x && x2 < min_clip_x && x3 < min_clip_x) ||
+		(x1 > max_clip_x && x2 > max_clip_x && x3 > max_clip_x))
+		return;
+
+	// test if top of triangle is flat
+	if (y1 == y2)
+	{
+
+		DrawTopTriangle(device, x1, y1, x2, y2, x3, y3, c);
+	} // end if
+	else if (y2 == y3)
+	{
+		DrawDownTriangle(device, x1, y1, x2, y2, x3, y3, c);
+	} // end if bottom is flat
+	else
+	{
+		// draw each sub-triangle
+		new_x = x1 + (int)(0.5 + (float)(y2 - y1) * (float)(x3 - x1) / (float)(y3 - y1));
+		DrawDownTriangle(device, x1, y1, new_x, y2, x2, y2, c);
+		DrawTopTriangle(device, x2, y2, new_x, y2, x3, y3, c);
+	} // end else
+}
+
+//等价于函数 Draw_Triangle_2D2_16
+void DrawTrianglePureColor2(device_t *device, float x1, float y1, float x2, float y2, float x3, float y3, int color)
+{
+	//还原RGB值
+	int r_base, g_base, b_base;
+	_RGB565FROM16BIT(color, &r_base, &g_base, &b_base);
+	// scale to 8 bit
+	r_base <<= 3;
+	g_base <<= 2;
+	b_base <<= 3;
+	IUINT32 c = (r_base << 16) | (g_base << 8) | b_base;
+
+	int temp_x, // used for sorting
+		temp_y,
+		new_x;
+
+	if ((FCMP(x1, x2) && FCMP(x2, x3)) || (FCMP(y1, y2) && FCMP(y2, y3)))
+		return;
+	// test for h lines and v lines
+	// if ((x1 == x2 && x2 == x3) || (y1 == y2 && y2 == y3))
+	// 	return;
+	// sort p1,p2,p3 in ascending y order
+	if (y2 < y1)
+	{
+		SWAP(x1, x2, temp_x);
+		SWAP(y1, y2, temp_y);
+	} // end if
+
+	// now we know that p1 and p2 are in order
+	if (y3 < y1)
+	{
+		SWAP(x1, x3, temp_x);
+		SWAP(y1, y3, temp_y);
+	} // end if
+
+	// finally test y3 against y2
+	if (y3 < y2)
+	{
+		SWAP(x2, x3, temp_x);
+		SWAP(y2, y3, temp_y);
+	} // end if
+
+	// do trivial rejection tests for clipping
+	if (y3 < min_clip_y || y1 > max_clip_y ||
+		(x1 < min_clip_x && x2 < min_clip_x && x3 < min_clip_x) ||
+		(x1 > max_clip_x && x2 > max_clip_x && x3 > max_clip_x))
+		return;
+
+	// test if top of triangle is flat
+	if (FCMP(y1, y2))
+	{
+
+		DrawTopTriangle(device, x1, y1, x2, y2, x3, y3, c);
+		// DrawTopTriangle2(device, x1, y1, x2, y2, x3, y3, c);
+	} // end if
+	else if (FCMP(y2, y3))
+	{
+		DrawDownTriangle(device, x1, y1, x2, y2, x3, y3, c);
+		// DrawDownTriangle2(device, x1, y1, x2, y2, x3, y3, c);
+	} // end if bottom is flat
+	else
+	{
+		// draw each sub-triangle
+		// new_x = x1 + (int)(0.5 + (float)(y2 - y1) * (float)(x3 - x1) / (float)(y3 - y1));
+		new_x = x1 + (y2 - y1) * (x3 - x1) / (y3 - y1);
+		DrawDownTriangle(device, x1, y1, new_x, y2, x2, y2, c);
+		// DrawDownTriangle2(device, x1, y1, new_x, y2, x2, y2, c);
+		DrawTopTriangle(device, x2, y2, new_x, y2, x3, y3, c);
+		// DrawTopTriangle2(device, x2, y2, new_x, y2, x3, y3, c);
+	} // end else
+}
+
+void DrawDownTriangle2(device_t *device, float x1, float y1, float x2, float y2, float x3, float y3, int color)
+{
+
+	float dx_right, // the dx/dy ratio of the right edge of line
+		dx_left,	// the dx/dy ratio of the left edge of line
+		xs, xe,		// the starting and ending points of the edges
+		height,		// the height of the triangle
+		temp_x,		// used during sorting as temps
+		temp_y,
+		right, // used by clipping
+		left;
+
+	int iy1, iy3, loop_y;
+
+	// test order of x1 and x2
+	if (x3 < x2)
+	{
+		SWAP(x2, x3, temp_x);
+	} // end if swap
+
+	// compute delta's
+	height = y3 - y1;
+
+	dx_left = (x2 - x1) / height;
+	dx_right = (x3 - x1) / height;
+
+	// set starting points
+	xs = x1;
+	xe = x1;
+
+#if (RASTERIZER_MODE == RASTERIZER_ACCURATE)
+	// perform y clipping
+	if (y1 < min_clip_y)
+	{
+		// compute new xs and ys
+		xs = xs + dx_left * (-y1 + min_clip_y);
+		xe = xe + dx_right * (-y1 + min_clip_y);
+
+		// reset y1
+		y1 = min_clip_y;
+
+		// make sure top left fill convention is observed
+		iy1 = y1;
+	} // end if top is off screen
+	else
+	{
+		// make sure top left fill convention is observed
+		iy1 = ceil(y1);
+
+		// bump xs and xe appropriately
+		xs = xs + dx_left * (iy1 - y1);
+		xe = xe + dx_right * (iy1 - y1);
+	} // end else
+
+	if (y3 > max_clip_y)
+	{
+		// clip y
+		y3 = max_clip_y;
+
+		// make sure top left fill convention is observed
+		iy3 = y3 - 1;
+	} // end if
+	else
+	{
+		// make sure top left fill convention is observed
+		iy3 = ceil(y3) - 1;
+	} // end else
+#endif
+
+#if ((RASTERIZER_MODE == RASTERIZER_FAST) || (RASTERIZER_MODE == RASTERIZER_FASTEST))
+	// perform y clipping
+	if (y1 < min_clip_y)
+	{
+		// compute new xs and ys
+		xs = xs + dx_left * (-y1 + min_clip_y);
+		xe = xe + dx_right * (-y1 + min_clip_y);
+
+		// reset y1
+		y1 = min_clip_y;
+	} // end if top is off screen
+
+	if (y3 > max_clip_y)
+		y3 = max_clip_y;
+
+	// make sure top left fill convention is observed
+	iy1 = ceil(y1);
+	iy3 = ceil(y3) - 1;
+#endif
+
+	//Write_Error("\nTri-Bottom: xs=%f, xe=%f, y1=%f, y3=%f, iy1=%d, iy3=%d", xs,xe,y1,y3,iy1,iy3);
+
+	// test if x clipping is needed
+	if (x1 >= min_clip_x && x1 <= max_clip_x &&
+		x2 >= min_clip_x && x2 <= max_clip_x &&
+		x3 >= min_clip_x && x3 <= max_clip_x)
+	{
+		// draw the triangle
+		for (loop_y = iy1; loop_y <= iy3; loop_y++)
 		{
-			temp_x = x3;
-			temp_y = y3;
-			x3 = x1;
-			y3 = y1;
-			x1 = temp_x;
-			y1 = temp_y;
-		} // end if
+			//Write_Error("\nxs=%f, xe=%f", xs,xe);
+			// draw the line
+			// Mem_Set_WORD(dest_addr + (unsigned int)(xs), color, (unsigned int)((int)xe - (int)xs + 1));
+			device_draw_line(device, xs, loop_y, xe, loop_y, color);
 
-		// finally test y3 against y2
-		if (y3 < y2)
+			// adjust starting point and ending point
+			xs += dx_left;
+			xe += dx_right;
+		} // end for
+
+	} // end if no x clipping needed
+	else
+	{
+		// clip x axis with slower version
+
+		// draw the triangle
+		for (loop_y = iy1; loop_y <= iy3; loop_y++)
 		{
-			temp_x = x3;
-			temp_y = y3;
-			x3 = x2;
-			y3 = y2;
-			x2 = temp_x;
-			y2 = temp_y;
+			// do x clip
+			left = xs;
+			right = xe;
 
-		} // end if
+			// adjust starting point and ending point
+			xs += dx_left;
+			xe += dx_right;
 
-		// do trivial rejection tests for clipping
-		if (y3 < min_clip_y || y1 > max_clip_y ||
-			(x1 < min_clip_x && x2 < min_clip_x && x3 < min_clip_x) ||
-			(x1 > max_clip_x && x2 > max_clip_x && x3 > max_clip_x))
-			return;
+			// clip line
+			if (left < min_clip_x)
+			{
+				left = min_clip_x;
 
-		// test if top of triangle is flat
-		if (y1 == y2)
-		{
+				if (right < min_clip_x)
+					continue;
+			}
 
-			DrawTopTriangle(device, x1, y1, x2, y2, x3, y3, c);
-		} // end if
-		else if (y2 == y3)
-		{
-			DrawDownTriangle(device, x1, y1, x2, y2, x3, y3, c);
-		} // end if bottom is flat
-		else
-		{
-			// draw each sub-triangle
-			new_x = x1 + (int)(0.5 + (float)(y2 - y1) * (float)(x3 - x1) / (float)(y3 - y1));
-			DrawDownTriangle(device, x1, y1, new_x, y2, x2, y2, c);
-			DrawTopTriangle(device, x2, y2, new_x, y2, x3, y3, c);
-		} // end else
+			if (right > max_clip_x)
+			{
+				right = max_clip_x;
 
+				if (left > max_clip_x)
+					continue;
+			}
+
+			//Write_Error("\nleft=%f, right=%f", left,right);
+			// draw the line
+			device_draw_line(device, left, loop_y, right, loop_y, color);
+			// Mem_Set_WORD(dest_addr + (unsigned int)(left), color, (unsigned int)((int)right - (int)left + 1));
+
+		} // end for
+
+	} // end else x clipping needed
+}
+
+void DrawTopTriangle2(device_t *device, float x1, float y1, float x2, float y2, float x3, float y3, int color)
+{
+
+	float dx_right, // the dx/dy ratio of the right edge of line
+		dx_left,	// the dx/dy ratio of the left edge of line
+		xs, xe,		// the starting and ending points of the edges
+		height,		// the height of the triangle
+		temp_x,		// used during sorting as temps
+		temp_y,
+		right, // used by clipping
+		left;
+
+	int iy1, iy3, loop_y; // integers for y looping
+
+	// test order of x1 and x2
+	if (x2 < x1)
+	{
+		SWAP(x1, x2, temp_x);
+	} // end if swap
+
+	// compute delta's
+	height = y3 - y1;
+
+	dx_left = (x3 - x1) / height;
+	dx_right = (x3 - x2) / height;
+
+	// set starting points
+	xs = x1;
+	xe = x2;
+
+#if (RASTERIZER_MODE == RASTERIZER_ACCURATE)
+
+	// perform y clipping
+	if (y1 < min_clip_y)
+	{
+		// compute new xs and ys
+		xs = xs + dx_left * (-y1 + min_clip_y);
+		xe = xe + dx_right * (-y1 + min_clip_y);
+
+		// reset y1
+		y1 = min_clip_y;
+
+		// make sure top left fill convention is observed
+		iy1 = y1;
+	} // end if top is off screen
+	else
+	{
+		// make sure top left fill convention is observed
+		iy1 = ceil(y1);
+
+		// bump xs and xe appropriately
+		xs = xs + dx_left * (iy1 - y1);
+		xe = xe + dx_right * (iy1 - y1);
+	} // end else
+
+	if (y3 > max_clip_y)
+	{
+		// clip y
+		y3 = max_clip_y;
+
+		// make sure top left fill convention is observed
+		iy3 = y3 - 1;
+	} // end if
+	else
+	{
+		// make sure top left fill convention is observed
+		iy3 = ceil(y3) - 1;
+	} // end else
+#endif
+
+#if ( (RASTERIZER_MODE==RASTERIZER_FAST) || (RASTERIZER_MODE==RASTERIZER_FASTEST) )
+// perform y clipping
+if (y1 < min_clip_y)
+   {
+   // compute new xs and ys
+   xs = xs+dx_left*(-y1+min_clip_y);
+   xe = xe+dx_right*(-y1+min_clip_y);
+
+   // reset y1
+   y1 = min_clip_y;
+   } // end if top is off screen
+
+if (y3 > max_clip_y)
+   y3 = max_clip_y;
+
+// make sure top left fill convention is observed
+iy1 = ceil(y1);
+iy3 = ceil(y3)-1;
+#endif 
+
+//Write_Error("\nTri-Top: xs=%f, xe=%f, y1=%f, y3=%f, iy1=%d, iy3=%d", xs,xe,y1,y3,iy1,iy3);
+
+// compute starting address in video memory
+
+// test if x clipping is needed
+if (x1 >= min_clip_x && x1 <= max_clip_x &&
+    x2 >= min_clip_x && x2 <= max_clip_x &&
+    x3 >= min_clip_x && x3 <= max_clip_x)
+    {
+    // draw the triangle
+    for (loop_y=iy1; loop_y <= iy3; loop_y++)
+        {
+        //Write_Error("\nxs=%f, xe=%f", xs,xe);
+        // draw the line
+        // Mem_Set_WORD(dest_addr+(unsigned int)(xs),color,(unsigned int)((int)xe-(int)xs+1));
+		device_draw_line(device, xs, loop_y, xe, loop_y, color);
+
+		// adjust starting point and ending point
+        xs+=dx_left;
+        xe+=dx_right;
+        } // end for
+
+    } // end if no x clipping needed
+else
+   {
+   // clip x axis with slower version
+
+   // draw the triangle
+   for (loop_y=iy1; loop_y <= iy3; loop_y++)
+       {
+       // do x clip
+       left  = xs;
+       right = xe;
+
+       // adjust starting point and ending point
+       xs+=dx_left;
+       xe+=dx_right;
+
+       // clip line
+       if (left < min_clip_x)
+          {
+          left = min_clip_x;
+
+          if (right < min_clip_x)
+             continue;
+          }
+
+       if (right > max_clip_x)
+          {
+          right = max_clip_x;
+
+          if (left > max_clip_x)
+             continue;
+          }
+        //Write_Error("\nleft=%f, right=%f", left,right);
+        // draw the line
+        // Mem_Set_WORD(dest_addr+(unsigned int)(left),color,(unsigned int)((int)right-(int)left+1));
+		device_draw_line(device, left, loop_y, right, loop_y, color);
+
+       } // end for
+
+   } // end else x clipping needed
 }

@@ -58,3 +58,16 @@ void device_clear(device_t *device, int mode);
 void DrawTopTriangle(device_t *device, int x1, int y1, int x2, int y2, int x3, int y3,  int color);
 void DrawDownTriangle(device_t *device,int x1, int y1, int x2, int y2, int x3, int y3,  int color);
 void DrawTrianglePureColor(device_t *device, int x1, int y1, int x2, int y2, int x3, int y3, int color);
+
+
+void DrawTopTriangle2(device_t *device, float x1, float y1, float x2, float y2, float x3, float y3,  int color);
+void DrawDownTriangle2(device_t *device,float x1, float y1, float x2, float y2, float x3, float y3,  int color);
+void DrawTrianglePureColor2(device_t *device, float x1, float y1, float x2, float y2, float x3, float y3, int color);
+
+// defines for small numbers
+#define EPSILON_E3 (float)(1E-3)
+#define EPSILON_E4 (float)(1E-4)
+#define EPSILON_E5 (float)(1E-5)
+#define EPSILON_E6 (float)(1E-6)
+#define FCMP(a,b) ( (fabs(a-b) < EPSILON_E3) ? 1 : 0)
+#define SWAP(a,b,t) {t=a; a=b; b=t;}

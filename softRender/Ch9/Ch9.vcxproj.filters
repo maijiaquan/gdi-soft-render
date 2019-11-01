@@ -18,13 +18,13 @@
     <ClCompile Include="datastructure.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="transform.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="device.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="main-ch8.cpp">
+    <ClCompile Include="main.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="transform.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -32,13 +32,13 @@
     <ClInclude Include="datastructure.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="device.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
     <ClInclude Include="header.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="transform.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="device.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,4 +1,5 @@
 
+#include "device.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,189 +18,17 @@
 #include <windows.h>
 #include "conio.h"
 
+
 HANDLE hStdout;
 //   光标位置
 COORD cursorPos;
 
 static DWORD time_start, time_end;
 
-typedef unsigned int IUINT32;
+// typedef unsigned int IUINT32;
 
 int CMID(int x, int min, int max) { return (x < min) ? min : ((x > max) ? max : x); }
 
-//=====================================================================
-// 渲染设备
-//=====================================================================
-typedef struct
-{
-	int width;			   // 窗口宽度
-	int height;			   // 窗口高度
-	IUINT32 **framebuffer; // 像素缓存：framebuffer[y] 代表第 y行
-	float **zbuffer;	   // 深度缓存：zbuffer[y] 为第 y行指针
-	IUINT32 **texture;	 // 纹理：同样是每行索引
-	int tex_width;		   // 纹理宽度
-	int tex_height;		   // 纹理高度
-	float max_u;		   // 纹理最大宽度：tex_width - 1
-	float max_v;		   // 纹理最大高度：tex_height - 1
-	int render_state;	  // 渲染状态
-	IUINT32 background;	// 背景颜色
-	IUINT32 foreground;	// 线框颜色
-} device_t;
-
-#define RENDER_STATE_WIREFRAME 1 // 渲染线框
-#define RENDER_STATE_TEXTURE 2   // 渲染纹理
-#define RENDER_STATE_COLOR 4	 // 渲染颜色
-
-// 设备初始化，fb为外部帧缓存，非 NULL 将引用外部帧缓存（每行 4字节对齐）
-void device_init(device_t *device, int width, int height, void *fb)
-{
-	int need = sizeof(void *) * (height * 2 + 1024) + width * height * 8;
-	char *ptr = (char *)malloc(need + 64);
-	char *framebuf, *zbuf;
-	int j;
-	assert(ptr);
-	device->framebuffer = (IUINT32 **)ptr;
-	device->zbuffer = (float **)(ptr + sizeof(void *) * height);
-	ptr += sizeof(void *) * height * 2;
-	device->texture = (IUINT32 **)ptr;
-	ptr += sizeof(void *) * 1024;
-	framebuf = (char *)ptr;
-	zbuf = (char *)ptr + width * height * 4;
-	ptr += width * height * 8;
-	if (fb != NULL)
-		framebuf = (char *)fb;
-	for (j = 0; j < height; j++)
-	{
-		device->framebuffer[j] = (IUINT32 *)(framebuf + width * 4 * j);
-		device->zbuffer[j] = (float *)(zbuf + width * 4 * j);
-	}
-	device->texture[0] = (IUINT32 *)ptr;
-	device->texture[1] = (IUINT32 *)(ptr + 16);
-	memset(device->texture[0], 0, 64);
-	device->tex_width = 2;
-	device->tex_height = 2;
-	device->max_u = 1.0f;
-	device->max_v = 1.0f;
-	device->width = width;
-	device->height = height;
-	device->background = 0xc0c0c0;
-	device->foreground = 0xc0c0c0;
-	device->render_state = RENDER_STATE_WIREFRAME;
-}
-
-// 删除设备
-void device_destroy(device_t *device)
-{
-	if (device->framebuffer)
-		free(device->framebuffer);
-	device->framebuffer = NULL;
-	device->zbuffer = NULL;
-	device->texture = NULL;
-}
-
-// 清空 framebuffer 和 zbuffer
-void device_clear(device_t *device, int mode)
-{
-	int y, x, height = device->height;
-	for (y = 0; y < device->height; y++)
-	{
-		IUINT32 *dst = device->framebuffer[y];
-		// IUINT32 cc = (height - 1 - y) * 230 / (height - 1);
-		// IUINT32 cc = (height - 1 - 0) * 255 / (height - 1);
-		IUINT32 cc = (height - 1 - 0) * 0 / (height - 1); //黑色背景
-		int R = 0;
-		int G = 0;
-		int B = 0;
-		//cc = (cc << 16) | (cc << 8) | cc;
-		cc = (R << 16) | (G << 8) | B;
-
-		if (mode == 0)
-			cc = device->background;
-		for (x = device->width; x > 0; dst++, x--)
-			dst[0] = cc;
-	}
-	for (y = 0; y < device->height; y++)
-	{
-		float *dst = device->zbuffer[y];
-		for (x = device->width; x > 0; dst++, x--)
-			dst[0] = 0.0f;
-	}
-}
-
-// 画点
-void device_pixel(device_t *device, int x, int y, IUINT32 color)
-{
-	if (((IUINT32)x) < (IUINT32)device->width && ((IUINT32)y) < (IUINT32)device->height)
-	{
-		device->framebuffer[y][x] = color;
-	}
-}
-
-// 绘制线段
-void device_draw_line(device_t *device, int x1, int y1, int x2, int y2, IUINT32 c)
-{
-	// std::cout<<"x1 = "<<x1<<"y1 = "<<y1<<std::endl;
-	// std::cout<<"x2 = "<<x2<<"y2 = "<<y2<<std::endl;
-
-	int x, y, rem = 0;
-	if (x1 == x2 && y1 == y2)
-	{
-		device_pixel(device, x1, y1, c);
-	}
-	else if (x1 == x2)
-	{
-		int inc = (y1 <= y2) ? 1 : -1;
-		for (y = y1; y != y2; y += inc)
-			device_pixel(device, x1, y, c);
-		device_pixel(device, x2, y2, c);
-	}
-	else if (y1 == y2)
-	{
-		int inc = (x1 <= x2) ? 1 : -1;
-		for (x = x1; x != x2; x += inc)
-			device_pixel(device, x, y1, c);
-		device_pixel(device, x2, y2, c);
-	}
-	else
-	{
-		int dx = (x1 < x2) ? x2 - x1 : x1 - x2;
-		int dy = (y1 < y2) ? y2 - y1 : y1 - y2;
-		if (dx >= dy)
-		{
-			if (x2 < x1)
-				x = x1, y = y1, x1 = x2, y1 = y2, x2 = x, y2 = y;
-			for (x = x1, y = y1; x <= x2; x++)
-			{
-				device_pixel(device, x, y, c);
-				rem += dy;
-				if (rem >= dx)
-				{
-					rem -= dx;
-					y += (y2 >= y1) ? 1 : -1;
-					device_pixel(device, x, y, c);
-				}
-			}
-			device_pixel(device, x2, y2, c);
-		}
-		else
-		{
-			if (y2 < y1)
-				x = x1, y = y1, x1 = x2, y1 = y2, x2 = x, y2 = y;
-			for (x = x1, y = y1; y <= y2; y++)
-			{
-				device_pixel(device, x, y, c);
-				rem += dx;
-				if (rem >= dy)
-				{
-					rem -= dy;
-					x += (x2 >= x1) ? 1 : -1;
-					device_pixel(device, x, y, c);
-				}
-			}
-			device_pixel(device, x2, y2, c);
-		}
-	}
-}
 
 //=====================================================================
 // Win32 窗口及图形绘制：为 device 提供一个 DibSection 的 FB
@@ -416,14 +245,11 @@ USHORT(*RGB16Bit)
 
 void InitDemo7_1();
 void DrawDemo7_1();
-void InitDemo7_2();
-void DrawDemo7_2();
 
 void Initmo7_4();
 void DrawDemo7_4();
 
 void Initmo7_6();
-void DrawDemo7_6();
 
 void InitDemo7_1()
 {
@@ -451,7 +277,8 @@ void InitDemo7_1()
 	poly1.vlist[1].w = 1;
 
 	poly1.vlist[2].x = -50;
-	poly1.vlist[2].y = -50;
+	// poly1.vlist[2].y = -50;
+	poly1.vlist[2].y = -100;
 	poly1.vlist[2].z = 0;
 	poly1.vlist[2].w = 1;
 
@@ -460,29 +287,6 @@ void InitDemo7_1()
 	// initialize the camera with 90 FOV, normalized coordinates
 	Init_CAM4DV1(&cam, CAM_MODEL_EULER, &cam_pos, &cam_dir, NULL, 50.0, 500.0, 90.0, WINDOW_WIDTH, WINDOW_HEIGHT);
 }
-
-void InitDemo7_2()
-{
-	POINT4D cam_pos = {0, 0, -100, 1};
-	VECTOR4D cam_dir = {0, 0, 0, 1};
-
-	VECTOR4D vscale = {5.0, 5.0, 5.0, 1}, // scale of object
-		vpos = {0, 0, 0, 1},			  // position of object
-		vrot = {0, 0, 0, 1};			  // initial orientation of object
-
-	RGB16Bit = RGB16Bit565;
-
-	Init_CAM4DV1(&cam, CAM_MODEL_EULER, &cam_pos, &cam_dir, NULL, 50.0, 500.0, 90.0, WINDOW_WIDTH, WINDOW_HEIGHT);
-
-	// Load_OBJECT4DV1_PLG(&obj, "./plg/tank1.plg", &vscale, &vpos, &vrot);
-	Load_OBJECT4DV1_PLG(&obj, "./plg/cube2.plg", &vscale, &vpos, &vrot);
-	// Load_OBJECT4DV1_PLG(&obj, "cube1.plg", &vscale, &vpos, &vrot);
-
-	obj.world_pos.x = 0;
-	obj.world_pos.y = 0;
-	obj.world_pos.z = 100;
-}
-
 void DrawDemo7_1()
 {
 	char text[100] = "Rotation Angle: ";
@@ -516,6 +320,26 @@ void DrawDemo7_1()
 
 	RENDERLIST4DV1_PTR rend_list_ptr = &rend_list;
 
+
+	//纯色填充模式
+	//x1,y1,x2,y2,x3,y3,color
+
+	IUINT32 c = (0 << 16) | (255 << 8) | 0;
+
+	for (int poly = 0; poly < rend_list_ptr->num_polys; poly++)
+	{
+
+		float x1 = rend_list_ptr->poly_ptrs[poly]->tvlist[0].x;
+		float y1 = rend_list_ptr->poly_ptrs[poly]->tvlist[0].y;
+		float x2 = rend_list_ptr->poly_ptrs[poly]->tvlist[1].x;
+		float y2 = rend_list_ptr->poly_ptrs[poly]->tvlist[1].y;
+		float x3 = rend_list_ptr->poly_ptrs[poly]->tvlist[2].x;
+		float y3 = rend_list_ptr->poly_ptrs[poly]->tvlist[2].y;
+		DrawTrianglePureColor(&device, x1, y1, x2, y2, x3, y3, c);
+
+	}
+
+	//线框模式
 	for (int poly = 0; poly < rend_list_ptr->num_polys; poly++)
 	{
 		float x1 = rend_list_ptr->poly_ptrs[poly]->tvlist[0].x;
@@ -528,233 +352,18 @@ void DrawDemo7_1()
 		device_draw_line(&device, x1, y1, x2, y2, device.foreground); //3 1
 		device_draw_line(&device, x1, y1, x3, y3, device.foreground); //3 1
 		device_draw_line(&device, x2, y2, x3, y3, device.foreground); //3 1
+
+
+			// DrawDownTriangle(50, 0, 0, 100, 100, 100, c);
+			// DrawTopTriangle(0, 100, 100, 100, 50, 200, c);
 	}
-}
 
-void DrawDemo7_2()
-{
-	char text[100] = "Rotation Angle: ";
-	int tmp = gRotationAngle;
-	char textInt[10];
-	_itoa(tmp, textInt, 10);
-	strcat(text, textInt);
-	DrawText(text);
-
-	Sleep(10);
-
-	static MATRIX4X4 mrot; // general rotation matrix
-
-	gRotationAngle = 1;
-
-	Reset_OBJECT4DV1(&obj);
-
-	Build_XYZ_Rotation_MATRIX4X4(0, gRotationAngle, 0, &mrot); //构造旋转矩阵，绕y轴旋转
-
-	Transform_OBJECT4DV1(&obj, &mrot, TRANSFORM_LOCAL_ONLY, 1);
-
-	Model_To_World_OBJECT4DV1(&obj, TRANSFORM_LOCAL_TO_TRANS);
-
-	Remove_Backfaces_OBJECT4DV1(&obj, &cam);
-
-	Build_CAM4DV1_Matrix_Euler(&cam, CAM_ROT_SEQ_ZYX);
-	World_To_Camera_OBJECT4DV1(&obj, &cam);
-	Camera_To_Perspective_OBJECT4DV1(&obj, &cam);
-	Perspective_To_Screen_OBJECT4DV1(&obj, &cam);
-
-	OBJECT4DV1_PTR obj_ptr = &obj;
-	for (int poly = 0; poly < obj_ptr->num_polys; poly++)
-	{
-		if (!(obj_ptr->plist[poly].state & POLY4DV1_STATE_ACTIVE) || (obj_ptr->plist[poly].state & POLY4DV1_STATE_CLIPPED) || (obj_ptr->plist[poly].state & POLY4DV1_STATE_BACKFACE))
-			continue;
-
-		int vindex_0 = obj_ptr->plist[poly].vert[0];
-		int vindex_1 = obj_ptr->plist[poly].vert[1];
-		int vindex_2 = obj_ptr->plist[poly].vert[2];
-
-		device_draw_line(&device, obj_ptr->vlist_trans[vindex_0].x, obj_ptr->vlist_trans[vindex_0].y, obj_ptr->vlist_trans[vindex_1].x, obj_ptr->vlist_trans[vindex_1].y, device.foreground); //3 1
-		device_draw_line(&device, obj_ptr->vlist_trans[vindex_1].x, obj_ptr->vlist_trans[vindex_1].y, obj_ptr->vlist_trans[vindex_2].x, obj_ptr->vlist_trans[vindex_2].y, device.foreground); //3 1
-		device_draw_line(&device, obj_ptr->vlist_trans[vindex_2].x, obj_ptr->vlist_trans[vindex_2].y, obj_ptr->vlist_trans[vindex_0].x, obj_ptr->vlist_trans[vindex_0].y, device.foreground); //3 1
-	}
 }
 
 char *work_string;
 char *textBuffer; // used to print text
 
-void InitDemo7_4()
-{
-	POINT4D cam_pos = {0, 200, 0, 1};
-	VECTOR4D cam_dir = {0, 0, 0, 1};
-
-	// VECTOR4D vscale = {1.0, 1.0, 1.0, 1}, // scale of object
-	VECTOR4D vscale = {10.0, 10.0, 10.0, 1}, // scale of object
-		vpos = {0, 0, 0, 1},			  // position of object
-		vrot = {0, 0, 0, 1};			  // initial orientation of object
-
-	RGB16Bit = RGB16Bit565;
-	Init_CAM4DV1(&cam, CAM_MODEL_EULER, &cam_pos, &cam_dir, NULL, 50.0, 1000.0, 90.0, WINDOW_WIDTH, WINDOW_HEIGHT);
-
-	// load the object
-    //Load_OBJECT4DV1_PLG(&obj, "./plg/cube1.plg", &vscale, &vpos, &vrot);
-	Load_OBJECT4DV1_PLG(&obj, "./plg/cube2.plg", &vscale, &vpos, &vrot);
-	// Load_OBJECT4DV1_PLG(&obj, "./plg/tank1.plg", &vscale, &vpos, &vrot);
-
-	// set the default position of the object in the world
-	obj.world_pos.x = 0;
-	obj.world_pos.y = 0;
-	obj.world_pos.z = 400;
-}
-
-void DrawDemo7_4()
-{
-	Sleep(20);
-
 #define KEY_DOWN(vk_code) ((GetAsyncKeyState(vk_code) & 0x8000) ? 1 : 0)
-
-	const int NUM_OBJECTS = 2;		// number of objects on a row
-	const int OBJECT_SPACING = 250; // spacing between objects
-
-	work_string = new char[256];
-	textBuffer = new char[1024]; // used to print text
-
-	strcpy(textBuffer, "Objects Culled: ");
-
-	static MATRIX4X4 mrot;
-	gRotationAngle = 1;
-	Reset_RENDERLIST4DV1(&rend_list);
-
-	// is user trying to rotate camera
-	if (KEY_DOWN(VK_DOWN))
-		cam.dir.x += 1;
-	else if (KEY_DOWN(VK_UP))
-		cam.dir.x -= 1;
-
-	// is user trying to rotate camera
-	if (KEY_DOWN(VK_RIGHT))
-		cam.dir.y -= 1;
-	else if (KEY_DOWN(VK_LEFT))
-		cam.dir.y += 1;
-
-	
-	Build_XYZ_Rotation_MATRIX4X4(0, gRotationAngle, 0, &mrot);
-	Transform_OBJECT4DV1(&obj, &mrot, TRANSFORM_LOCAL_ONLY, 1);
-	int idxLine = 4;	//控制台打印行号
-	cursorPos.X = 0;
-	cursorPos.Y = idxLine;
-
-	SetConsoleCursorPosition(hStdout, cursorPos);
-	std::cout << "cam.far z = " << cam.far_clip_z << ", cam.near z =" << cam.near_clip_z  << std::endl;
-	idxLine++;
-
-	for (int x = -NUM_OBJECTS / 2; x < NUM_OBJECTS / 2; x++)
-	{
-		for (int z = -NUM_OBJECTS / 2; z < NUM_OBJECTS / 2; z++)
-		{
-			POINT4D sphere_pos;
-			Mat_Mul_VECTOR4D_4X4(&obj.world_pos, &cam.mcam, &sphere_pos); //将包围球转换到相机空间
-
-			char textCharArray[1024];
-
-			strcpy(textCharArray, "Sphere pos: ");
-			char intCharArray[10];
-
-			_itoa(sphere_pos.x, intCharArray, 10);
-			strcat(textCharArray, intCharArray);
-
-			_itoa(sphere_pos.y, intCharArray, 10);
-			strcat(textCharArray, intCharArray);
-
-			_itoa(sphere_pos.z, intCharArray, 10);
-			strcat(textCharArray, intCharArray);
-
-			//DrawTextOnScreen(textCharArray, (x+1)*10+20, (z+1)*10+20);
-
-			cursorPos.X = 0;
-			cursorPos.Y = 4 + idxLine++;
-			SetConsoleCursorPosition(hStdout, cursorPos);
-
-			float z_test = (0.5) * cam.viewplane_width * sphere_pos.z / cam.view_dist;
-
-			std::cout << x<<", "<< z ;
-			std::cout<<" pos.z > " << ((sphere_pos.z - obj.max_radius) > cam.far_clip_z);
-			std::cout <<" pos.z < " << ((sphere_pos.z + obj.max_radius) < cam.near_clip_z);
-			std::cout <<" pos.x > " << ((sphere_pos.x - obj.max_radius) > z_test);
-			std::cout <<" pos.x < " << ((sphere_pos.x + obj.max_radius) < -z_test);
-			std::cout <<" pos.y > " << ((sphere_pos.y - obj.max_radius) > z_test);
-			std::cout <<" pos.y < " << ((sphere_pos.y + obj.max_radius) < -z_test);
-
-			std::cout<<std::endl;
-			
-			idxLine++;
-			idxLine++;
-
-
-			Reset_OBJECT4DV1(&obj);
-
-			obj.world_pos.x = x * OBJECT_SPACING + OBJECT_SPACING / 2;
-			obj.world_pos.y = 0;
-			obj.world_pos.z = 500 + z * OBJECT_SPACING + OBJECT_SPACING / 2;
-
-			if (Cull_OBJECT4DV1(&obj, &cam, CULL_OBJECT_XYZ_PLANES))
-			{
-				sprintf(work_string, "[%d, %d] ", x, z);
-				strcat(textBuffer, work_string);
-			}
-			else
-			{
-				Model_To_World_OBJECT4DV1(&obj);
-				Insert_OBJECT4DV1_RENDERLIST4DV1(&rend_list, &obj); //将物体插入到渲染列表
-			}
-		}
-	}
-
-	SetConsoleCursorPosition(hStdout, cursorPos);
-	std::cout<<rend_list.num_polys<<std::endl;
-
-	Build_CAM4DV1_Matrix_Euler(&cam, CAM_ROT_SEQ_ZYX);
-
-
-
-	// remove backfaces
-	Remove_Backfaces_RENDERLIST4DV1(&rend_list, &cam);
-
-	// apply world to camera transform
-	World_To_Camera_RENDERLIST4DV1(&rend_list, &cam);
-
-	// apply camera to perspective transformation
-	Camera_To_Perspective_RENDERLIST4DV1(&rend_list, &cam);
-
-	// apply screen transform
-	Perspective_To_Screen_RENDERLIST4DV1(&rend_list, &cam);
-
-	RENDERLIST4DV1_PTR rend_list_ptr = &rend_list;
-
-	for (int poly = 0; poly < rend_list_ptr->num_polys; poly++)
-	{
-
-		if (!(rend_list_ptr->poly_ptrs[poly]->state & POLY4DV1_STATE_ACTIVE) ||(rend_list_ptr->poly_ptrs[poly]->state & POLY4DV1_STATE_CLIPPED) ||(rend_list_ptr->poly_ptrs[poly]->state & POLY4DV1_STATE_BACKFACE))
-			continue; 
-
-		float x1 = rend_list_ptr->poly_ptrs[poly]->tvlist[0].x;
-		float y1 = rend_list_ptr->poly_ptrs[poly]->tvlist[0].y;
-		float x2 = rend_list_ptr->poly_ptrs[poly]->tvlist[1].x;
-		float y2 = rend_list_ptr->poly_ptrs[poly]->tvlist[1].y;
-		float x3 = rend_list_ptr->poly_ptrs[poly]->tvlist[2].x;
-		float y3 = rend_list_ptr->poly_ptrs[poly]->tvlist[2].y;
-
-		IUINT32 c = (255 << 16) | (255 << 8) | 255;
-
-		device_draw_line(&device, x1, y1, x2, y2, c);
-		device_draw_line(&device, x1, y1, x3, y3, c);
-		device_draw_line(&device, x2, y2, x3, y3, c);
-	}
-
-	// char text[100] = "Rotation Angle: ";
-	// int tmp = gRotationAngle;
-	// char textInt[10];
-	// _itoa(tmp, textInt, 10);
-	// strcat(text, textInt);
-}
-
 
 // defines for objects
 #define NUM_TOWERS        96
@@ -777,9 +386,13 @@ OBJECT4DV1 obj_tower, // used to hold the master tower
 POINT4D towers[NUM_TOWERS],
 	tanks[NUM_TANKS];
 
-void InitDemo7_6()
-{
 
+void InitDemo8_4();
+void DrawDemo8_4();
+
+
+void InitDemo8_4()
+{
 	// all your initialization code goes here...
 	VECTOR4D vscale = {1.0, 1.0, 1.0, 1},
 			 vpos = {0, 0, 0, 1},
@@ -797,11 +410,11 @@ void InitDemo7_6()
 
 	// load the master tank object
 	VECTOR4D_INITXYZ(&vscale, 0.75, 0.75, 0.75);
-	Load_OBJECT4DV1_PLG(&obj_tank, "./plg/tank2.plg", &vscale, &vpos, &vrot);
+	Load_OBJECT4DV1_PLG(&obj_tank, "./plg/tank3.plg", &vscale, &vpos, &vrot);
 
 	// load player object for 3rd person view
 	VECTOR4D_INITXYZ(&vscale, 0.75, 0.75, 0.75);
-	Load_OBJECT4DV1_PLG(&obj_player, "./plg/tank3.plg", &vscale, &vpos, &vrot);
+	Load_OBJECT4DV1_PLG(&obj_player, "./plg/tank2.plg", &vscale, &vpos, &vrot);
 
 	// load the master tower object
 	VECTOR4D_INITXYZ(&vscale, 1.0, 2.0, 1.0);
@@ -829,11 +442,12 @@ void InitDemo7_6()
 		towers[index].y = 0; // obj_tower.max_radius;
 		towers[index].z = RAND_RANGE(-UNIVERSE_RADIUS, UNIVERSE_RADIUS);
 	} // end for
+
 }
 
-void DrawDemo7_6()
+void DrawDemo8_4()
 {
-	Sleep(20);
+	// Sleep(20);
 	static MATRIX4X4 mrot; // general rotation matrix
 
 	static float view_angle = 0;
@@ -852,8 +466,6 @@ void DrawDemo7_6()
 	//Draw_Rectangle(0, WINDOW_HEIGHT / 2, WINDOW_WIDTH - 1, WINDOW_HEIGHT - 1, RGB16Bit(103, 62, 3), lpddsback);
 
 	Reset_RENDERLIST4DV1(&rend_list);
-
-	
 
 	// turbo
 	if (KEY_DOWN(VK_SPACE))
@@ -1035,6 +647,7 @@ void DrawDemo7_6()
 	RENDERLIST4DV1_PTR rend_list_ptr = &rend_list;
 	std::cout<<rend_list_ptr->num_polys<<std::endl;
 
+	//填充天空和地面
 	for(int y = 0; y < WINDOW_HEIGHT/2; y++)
 	{
 		device_draw_line(&device, 0, y, WINDOW_WIDTH-1, y, IUINT32((0 << 16) | (140 << 8) | 192));
@@ -1056,15 +669,396 @@ void DrawDemo7_6()
 		float x3 = rend_list_ptr->poly_ptrs[poly]->tvlist[2].x;
 		float y3 = rend_list_ptr->poly_ptrs[poly]->tvlist[2].y;
 
-		IUINT32 c = (255 << 16) | (255 << 8) | 255;
 
-		device_draw_line(&device, x1, y1, x2, y2, c);
-		device_draw_line(&device, x1, y1, x3, y3, c);
-		device_draw_line(&device, x2, y2, x3, y3, c);
+		// IUINT32 c = (255 << 16) | (255 << 8) | 255;
+
+		int c = rend_list_ptr->poly_ptrs[poly]->color;
+		DrawTrianglePureColor(&device, x1, y1, x2, y2, x3, y3, c);
+		// device_draw_line(&device, x1, y1, x2, y2, c);
+		// device_draw_line(&device, x1, y1, x3, y3, c);
+		// device_draw_line(&device, x2, y2, x3, y3, c);
 	}
+
 }
 
-int gDemoIndex = 6;
+void InitDemo8_6();
+void DrawDemo8_6();
+
+void InitDemo8_6()
+{
+	// all your initialization code goes here...
+	VECTOR4D vscale = {1.0, 1.0, 1.0, 1},
+			 vpos = {0, 0, 0, 1},
+			 vrot = {0, 0, 0, 1};
+
+	// initialize camera position and direction
+	POINT4D cam_pos = {0, 40, 0, 1};
+	POINT4D cam_target = {0, 0, 0, 1};
+	VECTOR4D cam_dir = {0, 0, 0, 1};
+
+	int index; // looping var
+
+	srand(13);
+	Init_CAM4DV1(&cam, CAM_MODEL_EULER, &cam_pos, &cam_dir, &cam_target, 200.0, 12000.0, 120.0, WINDOW_WIDTH, WINDOW_HEIGHT);
+
+	// load the master tank object
+	VECTOR4D_INITXYZ(&vscale, 0.75, 0.75, 0.75);
+	Load_OBJECT4DV1_PLG(&obj_tank, "./plg/tank3.plg", &vscale, &vpos, &vrot);
+	// Load_OBJECT4DV1_PLG(&obj_tank, "./plg/tankg3.plg", &vscale, &vpos, &vrot);
+
+	// load player object for 3rd person view
+	VECTOR4D_INITXYZ(&vscale, 0.75, 0.75, 0.75);
+	Load_OBJECT4DV1_PLG(&obj_player, "./plg/tank2.plg", &vscale, &vpos, &vrot);
+	// Load_OBJECT4DV1_PLG(&obj_player, "./plg/tankg2.plg", &vscale, &vpos, &vrot);
+
+	// load the master tower object
+	VECTOR4D_INITXYZ(&vscale, 1.0, 2.0, 1.0);
+	Load_OBJECT4DV1_PLG(&obj_tower, "./plg/tower1.plg", &vscale, &vpos, &vrot);
+
+	// load the master ground marker
+	VECTOR4D_INITXYZ(&vscale, 3.0, 3.0, 3.0);
+	Load_OBJECT4DV1_PLG(&obj_marker, "./plg/marker1.plg", &vscale, &vpos, &vrot);
+
+	// position the tanks
+	for (index = 0; index < NUM_TANKS; index++)
+	{
+		// randomly position the tanks
+		tanks[index].x = RAND_RANGE(-UNIVERSE_RADIUS, UNIVERSE_RADIUS);
+		tanks[index].y = 0; // obj_tank.max_radius;
+		tanks[index].z = RAND_RANGE(-UNIVERSE_RADIUS, UNIVERSE_RADIUS);
+		tanks[index].w = RAND_RANGE(0, 360);
+	} // end for
+
+	// position the towers
+	for (index = 0; index < NUM_TOWERS; index++)
+	{
+		// randomly position the tower
+		towers[index].x = RAND_RANGE(-UNIVERSE_RADIUS, UNIVERSE_RADIUS);
+		towers[index].y = 0; // obj_tower.max_radius;
+		towers[index].z = RAND_RANGE(-UNIVERSE_RADIUS, UNIVERSE_RADIUS);
+	} // end for
+	// set up lights
+	Reset_Lights_LIGHTV1();
+
+	// create some working colors
+	RGBAV1 white, gray, black, red, green, blue;
+
+	white.rgba = _RGBA32BIT(255, 255, 255, 0);
+	gray.rgba = _RGBA32BIT(100, 100, 100, 0);
+	black.rgba = _RGBA32BIT(0, 0, 0, 0);
+	red.rgba = _RGBA32BIT(255, 0, 0, 0);
+	green.rgba = _RGBA32BIT(0, 255, 0, 0);
+	blue.rgba = _RGBA32BIT(0, 0, 255, 0);
+
+	// ambient light
+	Init_Light_LIGHTV1(AMBIENT_LIGHT_INDEX,
+					   LIGHTV1_STATE_ON,	 // turn the light on
+					   LIGHTV1_ATTR_AMBIENT, // ambient light type
+					   gray, black, black,   // color for ambient term only
+					   NULL, NULL,			 // no need for pos or dir
+					   0, 0, 0,				 // no need for attenuation
+					   0, 0, 0);			 // spotlight info NA
+
+	VECTOR4D dlight_dir = {-1, 0, -1, 0};
+
+	// directional light
+	Init_Light_LIGHTV1(INFINITE_LIGHT_INDEX,
+					   LIGHTV1_STATE_ON,	  // turn the light on
+					   LIGHTV1_ATTR_INFINITE, // infinite light type
+					   black, gray, black,	// color for diffuse term only
+					   NULL, &dlight_dir,	 // need direction only
+					   0, 0, 0,				  // no need for attenuation
+					   0, 0, 0);			  // spotlight info NA
+
+	VECTOR4D plight_pos = {0, 200, 0, 0};
+
+	// point light
+	Init_Light_LIGHTV1(POINT_LIGHT_INDEX,
+					   LIGHTV1_STATE_ON,	// turn the light on
+					   LIGHTV1_ATTR_POINT,  // pointlight type
+					   black, green, black, // color for diffuse term only
+					   &plight_pos, NULL,   // need pos only
+					   0, .001, 0,			// linear attenuation only
+					   0, 0, 1);			// spotlight info NA
+
+	VECTOR4D slight_pos = {0, 200, 0, 0};
+	VECTOR4D slight_dir = {-1, 0, -1, 0};
+
+	// spot light
+	Init_Light_LIGHTV1(SPOT_LIGHT_INDEX,
+					   LIGHTV1_STATE_ON,		 // turn the light on
+					   LIGHTV1_ATTR_SPOTLIGHT2,  // spot light type 2
+					   black, red, black,		 // color for diffuse term only
+					   &slight_pos, &slight_dir, // need pos only
+					   0, .001, 0,				 // linear attenuation only
+					   0, 0, 1);
+
+	// // create lookup for lighting engine
+	// RGB_16_8_IndexedRGB_Table_Builder(DD_PIXEL_FORMAT565, // format we want to build table for
+	// 								  palette,			  // source palette
+	// 								  rgblookup);		  // lookup table
+}
+void DrawDemo8_6()
+{
+	// Sleep(20);
+	static MATRIX4X4 mrot; // general rotation matrix
+
+	static float view_angle = 0;
+	static float camera_distance = 6000;
+	static VECTOR4D pos = {0, 0, 0, 0};
+	static float tank_speed;
+	static float turning = 0;
+
+	char work_string[256]; // temp string
+
+	int index; // looping var
+
+	//Draw_Rectangle(0, 0, WINDOW_WIDTH - 1, WINDOW_HEIGHT / 2, RGB16Bit(0, 140, 192), lpddsback);
+
+	// draw the ground
+	//Draw_Rectangle(0, WINDOW_HEIGHT / 2, WINDOW_WIDTH - 1, WINDOW_HEIGHT - 1, RGB16Bit(103, 62, 3), lpddsback);
+
+	Reset_RENDERLIST4DV1(&rend_list);
+
+	// turbo
+	if (KEY_DOWN(VK_SPACE))
+		tank_speed = 5 * TANK_SPEED;
+	else
+		tank_speed = TANK_SPEED;
+
+	// forward/backward
+	if (KEY_DOWN(VK_UP))
+	{
+		// move forward
+		cam.pos.x += tank_speed * Fast_Sin(cam.dir.y);
+
+		cam.pos.z += tank_speed * Fast_Cos(cam.dir.y);
+	} // end if
+
+	if (KEY_DOWN(VK_DOWN))
+	{
+		// move backward
+		cam.pos.x -= tank_speed * Fast_Sin(cam.dir.y);
+		cam.pos.z -= tank_speed * Fast_Cos(cam.dir.y);
+	} // end if
+
+	// rotate
+	if (KEY_DOWN(VK_RIGHT))
+	{
+		cam.dir.y += 3;
+
+		// add a little turn to object
+		if ((turning += 2) > 15)
+			turning = 15;
+
+	} // end if
+
+	if (KEY_DOWN(VK_LEFT))
+	{
+		cam.dir.y -= 3;
+
+		// add a little turn to object
+		if ((turning -= 2) < -15)
+			turning = -15;
+
+	}	// end if
+	else // center heading again
+	{
+		if (turning > 0)
+			turning -= 1;
+		else if (turning < 0)
+			turning += 1;
+
+	} // end else
+
+	static float plight_ang = 0, slight_ang = 0; // angles for light motion
+
+	// move point light source in ellipse around game world
+	lights[POINT_LIGHT_INDEX].pos.x = 4000 * Fast_Cos(plight_ang);
+	lights[POINT_LIGHT_INDEX].pos.y = 200;
+	lights[POINT_LIGHT_INDEX].pos.z = 4000 * Fast_Sin(plight_ang);
+
+	if ((plight_ang += 3) > 360)
+		plight_ang = 0;
+
+	// move spot light source in ellipse around game world
+	lights[SPOT_LIGHT_INDEX].pos.x = 2000 * Fast_Cos(slight_ang);
+	lights[SPOT_LIGHT_INDEX].pos.y = 200;
+	lights[SPOT_LIGHT_INDEX].pos.z = 2000 * Fast_Sin(slight_ang);
+
+	if ((slight_ang -= 5) < 0)
+		slight_ang = 360;
+
+	// generate camera matrix
+	Build_CAM4DV1_Matrix_Euler(&cam, CAM_ROT_SEQ_ZYX);
+
+	// insert the tanks in the world
+	for (index = 0; index < NUM_TANKS; index++)
+	{
+		// reset the object (this only matters for backface and object removal)
+		Reset_OBJECT4DV1(&obj_tank);
+
+		// generate rotation matrix around y axis
+		Build_XYZ_Rotation_MATRIX4X4(0, tanks[index].w, 0, &mrot);
+
+		// rotate the local coords of the object
+		Transform_OBJECT4DV1(&obj_tank, &mrot, TRANSFORM_LOCAL_TO_TRANS, 1);
+
+		// set position of tank
+		obj_tank.world_pos.x = tanks[index].x;
+		obj_tank.world_pos.y = tanks[index].y;
+		obj_tank.world_pos.z = tanks[index].z;
+
+		// attempt to cull object
+		if (!Cull_OBJECT4DV1(&obj_tank, &cam, CULL_OBJECT_XYZ_PLANES))
+		{
+			// if we get here then the object is visible at this world position
+			// so we can insert it into the rendering list
+			// perform local/model to world transform
+			Model_To_World_OBJECT4DV1(&obj_tank, TRANSFORM_TRANS_ONLY);
+
+			// insert the object into render list
+			Insert_OBJECT4DV1_RENDERLIST4DV1(&rend_list, &obj_tank);
+		} // end if
+
+	} // end for
+
+	// insert the player into the world
+	// reset the object (this only matters for backface and object removal)
+	Reset_OBJECT4DV1(&obj_player);
+
+	// set position of tank
+	obj_player.world_pos.x = cam.pos.x + 300 * Fast_Sin(cam.dir.y);
+	obj_player.world_pos.y = cam.pos.y - 70;
+	obj_player.world_pos.z = cam.pos.z + 300 * Fast_Cos(cam.dir.y);
+
+	// generate rotation matrix around y axis
+	Build_XYZ_Rotation_MATRIX4X4(0, cam.dir.y + turning, 0, &mrot);
+
+	// rotate the local coords of the object
+	Transform_OBJECT4DV1(&obj_player, &mrot, TRANSFORM_LOCAL_TO_TRANS, 1);
+
+	// perform world transform
+	Model_To_World_OBJECT4DV1(&obj_player, TRANSFORM_TRANS_ONLY);
+
+	// insert the object into render list
+	Insert_OBJECT4DV1_RENDERLIST4DV1(&rend_list, &obj_player);
+
+	// insert the towers in the world
+	for (index = 0; index < NUM_TOWERS; index++)
+	{
+		// reset the object (this only matters for backface and object removal)
+		Reset_OBJECT4DV1(&obj_tower);
+
+		// set position of tower
+		obj_tower.world_pos.x = towers[index].x;
+		obj_tower.world_pos.y = towers[index].y;
+		obj_tower.world_pos.z = towers[index].z;
+
+		// attempt to cull object
+		if (!Cull_OBJECT4DV1(&obj_tower, &cam, CULL_OBJECT_XYZ_PLANES))
+		{
+			// if we get here then the object is visible at this world position
+			// so we can insert it into the rendering list
+			// perform local/model to world transform
+			Model_To_World_OBJECT4DV1(&obj_tower);
+
+			// insert the object into render list
+			Insert_OBJECT4DV1_RENDERLIST4DV1(&rend_list, &obj_tower);
+		} // end if
+
+	} // end for
+
+	// seed number generator so that modulation of markers is always the same
+	srand(13);
+
+	// insert the ground markers into the world
+	for (int index_x = 0; index_x < NUM_POINTS_X; index_x++)
+		for (int index_z = 0; index_z < NUM_POINTS_Z; index_z++)
+		{
+			// reset the object (this only matters for backface and object removal)
+			Reset_OBJECT4DV1(&obj_marker);
+
+			// set position of tower
+			obj_marker.world_pos.x = RAND_RANGE(-100, 100) - UNIVERSE_RADIUS + index_x * POINT_SIZE;
+			obj_marker.world_pos.y = obj_marker.max_radius;
+			obj_marker.world_pos.z = RAND_RANGE(-100, 100) - UNIVERSE_RADIUS + index_z * POINT_SIZE;
+
+			// attempt to cull object
+			if (!Cull_OBJECT4DV1(&obj_marker, &cam, CULL_OBJECT_XYZ_PLANES))
+			{
+				// if we get here then the object is visible at this world position
+				// so we can insert it into the rendering list
+				// perform local/model to world transform
+				Model_To_World_OBJECT4DV1(&obj_marker);
+
+				// insert the object into render list
+				Insert_OBJECT4DV1_RENDERLIST4DV1(&rend_list, &obj_marker);
+			} // end if
+
+		} // end for
+
+	// remove backfaces
+	Remove_Backfaces_RENDERLIST4DV1(&rend_list, &cam);
+
+	//光照计算
+	Light_RENDERLIST4DV1_World16(&rend_list, &cam, lights, 4);
+
+	// apply world to camera transform
+	World_To_Camera_RENDERLIST4DV1(&rend_list, &cam);
+
+	Sort_RENDERLIST4DV1(&rend_list, SORT_POLYLIST_AVGZ);
+
+	// apply camera to perspective transformation
+	Camera_To_Perspective_RENDERLIST4DV1(&rend_list, &cam);
+
+	// apply screen transform
+	Perspective_To_Screen_RENDERLIST4DV1(&rend_list, &cam);
+
+
+	// render the object
+	//Draw_RENDERLIST4DV1_Wire16(&rend_list, back_buffer, back_lpitch);
+
+
+	RENDERLIST4DV1_PTR rend_list_ptr = &rend_list;
+	std::cout<<rend_list_ptr->num_polys<<std::endl;
+
+	//填充天空和地面
+	for(int y = 0; y < WINDOW_HEIGHT/2; y++)
+	{
+		device_draw_line(&device, 0, y, WINDOW_WIDTH-1, y, IUINT32((0 << 16) | (140 << 8) | 192));
+	}
+	
+	for(int y = WINDOW_HEIGHT/2; y < WINDOW_HEIGHT-1; y++)
+	{
+		device_draw_line(&device, 0, y, WINDOW_WIDTH-1, y, IUINT32((103 << 16) | (62 << 8) | 3));
+	}
+
+	for (int poly = 0; poly < rend_list_ptr->num_polys; poly++)
+	{
+		if (!(rend_list_ptr->poly_ptrs[poly]->state & POLY4DV1_STATE_ACTIVE) ||(rend_list_ptr->poly_ptrs[poly]->state & POLY4DV1_STATE_CLIPPED) ||(rend_list_ptr->poly_ptrs[poly]->state & POLY4DV1_STATE_BACKFACE))
+			continue; 
+		float x1 = rend_list_ptr->poly_ptrs[poly]->tvlist[0].x;
+		float y1 = rend_list_ptr->poly_ptrs[poly]->tvlist[0].y;
+		float x2 = rend_list_ptr->poly_ptrs[poly]->tvlist[1].x;
+		float y2 = rend_list_ptr->poly_ptrs[poly]->tvlist[1].y;
+		float x3 = rend_list_ptr->poly_ptrs[poly]->tvlist[2].x;
+		float y3 = rend_list_ptr->poly_ptrs[poly]->tvlist[2].y;
+
+
+		// IUINT32 c = (255 << 16) | (255 << 8) | 255;
+
+		int color = rend_list_ptr->poly_ptrs[poly]->color;
+		DrawTrianglePureColor(&device, x1, y1, x2, y2, x3, y3, color);
+		// device_draw_line(&device, x1, y1, x2, y2, c);
+		// device_draw_line(&device, x1, y1, x3, y3, c);
+		// device_draw_line(&device, x2, y2, x3, y3, c);
+	}
+
+}
+
+
+int gDemoIndex = 86;
 
 void GameInit()
 {
@@ -1075,14 +1069,11 @@ void GameInit()
 	case 1:
 		InitDemo7_1();
 		break;
-	case 2:
-		InitDemo7_2();
+	case 84:
+		InitDemo8_4();
 		break;
-	case 4:
-		InitDemo7_4();
-		break;
-	case 6:
-		InitDemo7_6();
+	case 86:
+		InitDemo8_6();
 		break;
 	default:
 		break;
@@ -1096,14 +1087,12 @@ void GameMain()
 	case 1:
 		DrawDemo7_1();
 		break;
-	case 2:
-		DrawDemo7_2();
+	case 84:
+		DrawDemo8_4();
 		break;
-	case 4:
-		DrawDemo7_4();
-		break;
-	case 6:
-		DrawDemo7_6();
+	case 86:
+		Sleep(20);
+		DrawDemo8_6();
 		break;
 	default:
 		break;

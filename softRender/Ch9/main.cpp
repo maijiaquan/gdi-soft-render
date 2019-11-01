@@ -1068,7 +1068,7 @@ OBJECT4DV2 obj_constant_water,
 
 void InitDemo9_2()
 {
-	point4d cam_pos = {0, 0, 0, 1};
+	POINT4D cam_pos = {0, 0, 0, 1};
 	POINT4D cam_target = {0, 0, 0, 1};
 	VECTOR4D cam_dir = {0, 0, 0, 1};
 
@@ -1079,7 +1079,7 @@ void InitDemo9_2()
 
 	VECTOR4D_INITXYZ(&vscale, 10.00, 10.00, 10.00);
 
-   Load_OBJECT4DV2_COB(&obj_constant_water, "water_constant_01.cob",
+   Load_OBJECT4DV2_COB(&obj_constant_water, "./cob/water_constant_01.cob",
                        &vscale, &vpos, &vrot, VERTEX_FLAGS_SWAP_YZ | VERTEX_FLAGS_TRANSFORM_LOCAL | VERTEX_FLAGS_TRANSFORM_LOCAL_WORLD);
 
 	int index; // looping var

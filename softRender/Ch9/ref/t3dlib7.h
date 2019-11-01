@@ -525,7 +525,6 @@ int Load_OBJECT4DV2_3DSASC(OBJECT4DV2_PTR obj,   // pointer to object
                            VECTOR4D_PTR rot,     // initial rotations
                            int vertex_flags=0);  // flags to re-order vertices
 
-
 int Load_OBJECT4DV2_COB(OBJECT4DV2_PTR obj,   // pointer to object
                         char *filename,       // filename of Caligari COB file
                         VECTOR4D_PTR scale,   // initial scaling factors

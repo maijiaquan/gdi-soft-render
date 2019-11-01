@@ -47,8 +47,8 @@ void device_init(device_t *device, int width, int height, void *fb);
 void device_destroy(device_t *device);
 void device_clear(device_t *device, int mode);
 
-#define WINDOW_WIDTH 400 // size of window
-#define WINDOW_HEIGHT 400
+#define WINDOW_WIDTH 600 // size of window
+#define WINDOW_HEIGHT 600
 
 #define min_clip_x  0 // clipping rectangle
 #define max_clip_x  (WINDOW_WIDTH - 1)
@@ -71,3 +71,5 @@ void DrawTrianglePureColor2(device_t *device, float x1, float y1, float x2, floa
 #define EPSILON_E6 (float)(1E-6)
 #define FCMP(a,b) ( (fabs(a-b) < EPSILON_E3) ? 1 : 0)
 #define SWAP(a,b,t) {t=a; a=b; b=t;}
+
+void RGBFrom565(int color, IUINT32 &c);

@@ -1113,10 +1113,10 @@ int main(void)
 	// TCHAR *title = _T("Mini3d (software render tutorial) - ") _T("Left/Right: rotation, Up/Down: forward/backward, Space: switch state");
 	TCHAR *title = _T("Wireframe");
 
-	if (screen_init(400, 400, title))
+	if (screen_init(600, 600, title))
 		return -1;
 
-	device_init(&device, 400, 400, screen_fb);
+	device_init(&device, 600, 600, screen_fb);
 
 	//init_texture(&device);
 	device.render_state = RENDER_STATE_TEXTURE;

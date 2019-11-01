@@ -1285,6 +1285,7 @@ void DrawDemo9_2()
 	
 	//  RENDERLIST4DV1_PTR rend_list_ptr = &rend_list;
 
+	POLYF4DV2 face; // temp face used to render polygon
 
 	for (int poly = 0; poly < rend_list_ptr->num_polys; poly++)
 	{
@@ -1297,11 +1298,13 @@ void DrawDemo9_2()
 		float x3 = rend_list_ptr->poly_ptrs[poly]->tvlist[2].x;
 		float y3 = rend_list_ptr->poly_ptrs[poly]->tvlist[2].y;
 
+		int color = rend_list_ptr->poly_ptrs[poly]->lit_color[0];
+		if ((rend_list_ptr->poly_ptrs[poly]->attr & POLY4DV2_ATTR_SHADE_MODE_FLAT) ||
+			(rend_list_ptr->poly_ptrs[poly]->attr & POLY4DV2_ATTR_SHADE_MODE_CONSTANT))
+		{
 
-		IUINT32 c = (255 << 16) | (255 << 8) | 255;
+			IUINT32 c = (255 << 16) | (255 << 8) | 255;
 
-		
-		 int color = rend_list_ptr->poly_ptrs[poly]->lit_color[0];
 		//  std::cout<<"color = "<<color<<std::endl;
 		//  int color = rend_list_ptr->poly_ptrs[poly]->color;
 		//  rend_list->poly_ptrs[poly]->lit_color[0]
@@ -1310,8 +1313,29 @@ void DrawDemo9_2()
 		//  device_draw_line(&device, x1, y1, x2, y2, c);
 		//  device_draw_line(&device, x1, y1, x3, y3, c);
 		//  device_draw_line(&device, x2, y2, x3, y3, c);
-	}
+		}
+		else if (rend_list_ptr->poly_ptrs[poly]->attr & POLY4DV2_ATTR_SHADE_MODE_GOURAUD)
+		{
+			// {andre take advantage of the data structures later..}
+			// set the vertices
+			face.tvlist[0].x = (int)rend_list_ptr->poly_ptrs[poly]->tvlist[0].x;
+			face.tvlist[0].y = (int)rend_list_ptr->poly_ptrs[poly]->tvlist[0].y;
+			face.lit_color[0] = rend_list_ptr->poly_ptrs[poly]->lit_color[0];
 
+			face.tvlist[1].x = (int)rend_list_ptr->poly_ptrs[poly]->tvlist[1].x;
+			face.tvlist[1].y = (int)rend_list_ptr->poly_ptrs[poly]->tvlist[1].y;
+			face.lit_color[1] = rend_list_ptr->poly_ptrs[poly]->lit_color[1];
+
+			face.tvlist[2].x = (int)rend_list_ptr->poly_ptrs[poly]->tvlist[2].x;
+			face.tvlist[2].y = (int)rend_list_ptr->poly_ptrs[poly]->tvlist[2].y;
+			face.lit_color[2] = rend_list_ptr->poly_ptrs[poly]->lit_color[2];
+
+			// draw the gouraud shaded triangle
+			// Draw_Gouraud_Triangle16(&face, video_buffer, lpitch);
+			Draw_Gouraud_Triangle16(&device, &face);
+			// DrawTrianglePureColor2(&device, x1, y1, x2, y2, x3, y3, color);
+		} // end if gouraud
+	}
 }
 
 
@@ -1377,10 +1401,10 @@ int main(void)
 	// TCHAR *title = _T("Mini3d (software render tutorial) - ") _T("Left/Right: rotation, Up/Down: forward/backward, Space: switch state");
 	TCHAR *title = _T("Wireframe");
 
-	if (screen_init(400, 400, title))
+	if (screen_init(600, 600, title))
 		return -1;
 
-	device_init(&device, 400, 400, screen_fb);
+	device_init(&device, 600, 600, screen_fb);
 
 	//init_texture(&device);
 	device.render_state = RENDER_STATE_TEXTURE;

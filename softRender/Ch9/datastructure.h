@@ -913,8 +913,8 @@ extern int screen_width,                            // width of screen
            screen_bpp,                              // bits per pixel 
            screen_windowed;                         // is this a windowed app? 
 
-#define SCREEN_WIDTH        400  // size of screen
-#define SCREEN_HEIGHT       400
+#define SCREEN_WIDTH        600  // size of screen
+#define SCREEN_HEIGHT       600
 #define SCREEN_BPP          8    // bits per pixel
 int RGBto8BitIndex(UCHAR r, UCHAR g, UCHAR b, LPPALETTEENTRY palette, int flush_cache);
 extern PALETTEENTRY         palette[256];         // color palette
@@ -1049,3 +1049,19 @@ int dist = (z + 11 * (y >> 5) + (x >> 2) );
 return((float)(dist >> 10));
 
 } // end VECTOR4D_Length_Fast2
+
+#define TRI_TYPE_NONE           0
+#define TRI_TYPE_FLAT_TOP       1 
+#define TRI_TYPE_FLAT_BOTTOM	2
+#define TRI_TYPE_FLAT_MASK      3
+#define TRI_TYPE_GENERAL        4
+#define INTERP_LHS              0
+#define INTERP_RHS              1
+#define MAX_VERTICES_PER_POLY   6
+
+#define FIXP16_SHIFT     16
+#define FIXP16_MAG       65536
+#define FIXP16_DP_MASK   0x0000ffff
+#define FIXP16_WP_MASK   0xffff0000
+#define FIXP16_ROUND_UP  0x00008000
+void Draw_Gouraud_Triangle16(device_t *device, POLYF4DV2_PTR face); 

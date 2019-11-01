@@ -363,17 +363,29 @@ void DrawDownTriangle(device_t *device, int x1, int y1, int x2, int y2, int x3, 
 	} // end else x clipping needed
 }
 
+void RGBFrom565(int color, IUINT32 &c)
+{
+	int r, g, b;
+	_RGB565FROM16BIT(color, &r, &g, &b);
+	r <<= 3;
+	g <<= 2;
+	b <<= 3;
+	c = (r<< 16) | (g << 8) | b ;
+}
+
 void DrawTrianglePureColor(device_t *device, int x1, int y1, int x2, int y2, int x3, int y3, int color)
 {
 	//还原RGB值
-	int r_base, g_base, b_base;
-	_RGB565FROM16BIT(color, &r_base, &g_base, &b_base);
-	// scale to 8 bit
-	r_base <<= 3;
-	g_base <<= 2;
-	b_base <<= 3;
-	IUINT32 c = (r_base << 16) | (g_base << 8) | b_base;
+	// int r_base, g_base, b_base;
+	// _RGB565FROM16BIT(color, &r_base, &g_base, &b_base);
+	// // scale to 8 bit
+	// r_base <<= 3;
+	// g_base <<= 2;
+	// b_base <<= 3;
+	// IUINT32 c = (r_base << 16) | (g_base << 8) | b_base;
 
+	IUINT32 c; 
+	 RGBFrom565( color,  c);
 	int temp_x, // used for sorting
 		temp_y,
 		new_x;

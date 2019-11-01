@@ -9,15 +9,15 @@ int num_materials;              // current number of materials
 
 char texture_path[80] = "./"; // root path to ALL textures, make current directory for now
 
-BITMAP_FILE          bitmap16bit;            // a 16 bit bitmap file
+BITMAP_FILE bitmap16bit; // a 16 bit bitmap file
 // these are overwritten globally by DDraw_Init()
 
-int screen_width    = SCREEN_WIDTH,            // width of screen
-    screen_height   = SCREEN_HEIGHT,           // height of screen
-    screen_bpp      = SCREEN_BPP,              // bits per pixel
-    screen_windowed = 0;                       // is this a windowed app?    
+int screen_width = SCREEN_WIDTH,   // width of screen
+    screen_height = SCREEN_HEIGHT, // height of screen
+    screen_bpp = SCREEN_BPP,       // bits per pixel
+    screen_windowed = 0;           // is this a windowed app?
 
-PALETTEENTRY         palette[MAX_COLORS_PALETTE];         // color palette
+PALETTEENTRY palette[MAX_COLORS_PALETTE]; // color palette
 
 USHORT RGB16Bit565(int r, int g, int b)
 {
@@ -2639,8 +2639,8 @@ int Load_OBJECT4DV2_COB(OBJECT4DV2_PTR obj, // pointer to object
                 obj->plist[curr_poly].color = RGB16Bit565(255, 255, 255);
             else
                 obj->plist[curr_poly].color = RGB16Bit565(materials[poly_material[curr_poly]].color.r,
-                                                       materials[poly_material[curr_poly]].color.g,
-                                                       materials[poly_material[curr_poly]].color.b);
+                                                          materials[poly_material[curr_poly]].color.g,
+                                                          materials[poly_material[curr_poly]].color.b);
             //Write_Error("\nPolygon 16-bit");
         } // end
         else
@@ -2727,7 +2727,7 @@ int Load_OBJECT4DV2_COB(OBJECT4DV2_PTR obj, // pointer to object
     // now fix up all texture coordinates
     if (obj->texture)
     {
-for (int tvertex = 0; tvertex < num_texture_vertices; tvertex++)
+        for (int tvertex = 0; tvertex < num_texture_vertices; tvertex++)
         {
             // step 1: scale the texture coordinates by the texture size
             int texture_size = obj->texture->width;
@@ -3523,8 +3523,8 @@ void Print_Mat_4X4(MATRIX4X4_PTR ma, char *name = "M")
     // prints out a 4x4 matrix
     //Write_Error("\n%s=\n", name);
     //for (int r = 0; r < 4; r++)
-		//for (int c = 0; c < 4; c++)
-           // Write_Error("%f ", ma->M[r][c]);
+    //for (int c = 0; c < 4; c++)
+    // Write_Error("%f ", ma->M[r][c]);
 
 } // end Print_Mat_4X4gg
 
@@ -3599,302 +3599,299 @@ int Init_OBJECT4DV2(OBJECT4DV2_PTR obj, // object to allocate
 
 } // end Init_OBJECT4DV2
 
-
 float Compute_OBJECT4DV2_Radius(OBJECT4DV2_PTR obj)
 {
-// this function computes the average and maximum radius for 
-// sent object and opdates the object data for the "current frame"
-// it's up to the caller to make sure Set_Frame() for this object
-// has been called to set the object up properly
+    // this function computes the average and maximum radius for
+    // sent object and opdates the object data for the "current frame"
+    // it's up to the caller to make sure Set_Frame() for this object
+    // has been called to set the object up properly
 
-// reset incase there's any residue
-obj->avg_radius[obj->curr_frame] = 0;
-obj->max_radius[obj->curr_frame] = 0;
+    // reset incase there's any residue
+    obj->avg_radius[obj->curr_frame] = 0;
+    obj->max_radius[obj->curr_frame] = 0;
 
-// loop thru and compute radius
-for (int vertex = 0; vertex < obj->num_vertices; vertex++)
+    // loop thru and compute radius
+    for (int vertex = 0; vertex < obj->num_vertices; vertex++)
     {
-    // update the average and maximum radius
-    float dist_to_vertex = 
-          sqrt(obj->vlist_local[vertex].x*obj->vlist_local[vertex].x +
-               obj->vlist_local[vertex].y*obj->vlist_local[vertex].y +
-               obj->vlist_local[vertex].z*obj->vlist_local[vertex].z);
-    
-    // accumulate total radius
-    obj->avg_radius[obj->curr_frame]+=dist_to_vertex;
+        // update the average and maximum radius
+        float dist_to_vertex =
+            sqrt(obj->vlist_local[vertex].x * obj->vlist_local[vertex].x +
+                 obj->vlist_local[vertex].y * obj->vlist_local[vertex].y +
+                 obj->vlist_local[vertex].z * obj->vlist_local[vertex].z);
 
-    // update maximum radius   
-    if (dist_to_vertex > obj->max_radius[obj->curr_frame])
-       obj->max_radius[obj->curr_frame] = dist_to_vertex; 
- 
+        // accumulate total radius
+        obj->avg_radius[obj->curr_frame] += dist_to_vertex;
+
+        // update maximum radius
+        if (dist_to_vertex > obj->max_radius[obj->curr_frame])
+            obj->max_radius[obj->curr_frame] = dist_to_vertex;
+
     } // end for vertex
 
-// finallize average radius computation
-obj->avg_radius[obj->curr_frame]/=obj->num_vertices;
+    // finallize average radius computation
+    obj->avg_radius[obj->curr_frame] /= obj->num_vertices;
 
-// return max radius of frame 0
-return(obj->max_radius[0]);
+    // return max radius of frame 0
+    return (obj->max_radius[0]);
 
 } // end Compute_OBJECT4DV2_Radius
 
 int ReplaceChars(char *string_in, char *string_out, char *replace_chars, char rep_char, int case_on)
 {
-   // this function simply replaces the characters from the input string that
-   // are listed in replace with the replace char, the results are stored in
-   // string_out, string_in and isn't touched, the number of replacments is
-   // returned. if case_on = 1 then case is checked, other it's case insensitive
+    // this function simply replaces the characters from the input string that
+    // are listed in replace with the replace char, the results are stored in
+    // string_out, string_in and isn't touched, the number of replacments is
+    // returned. if case_on = 1 then case is checked, other it's case insensitive
 
-   int num_replacements = 0,            // tracks number of characters replaced
-       index_in = 0,                    // curr index into input
-       index_out = 0,                   // curr index into output
-       sindex,                          // loop var into strip array
-       slength = strlen(replace_chars); // length of strip string
+    int num_replacements = 0,            // tracks number of characters replaced
+        index_in = 0,                    // curr index into input
+        index_out = 0,                   // curr index into output
+        sindex,                          // loop var into strip array
+        slength = strlen(replace_chars); // length of strip string
 
-   // do some error checking
-   if (!string_in || !string_out || strlen(string_in) == 0)
-      return (0);
+    // do some error checking
+    if (!string_in || !string_out || strlen(string_in) == 0)
+        return (0);
 
-   // nothing to replace
-   if (!replace_chars || strlen(replace_chars) == 0)
-   {
-      strcpy(string_out, string_in);
-      return (0);
-   } // end if
+    // nothing to replace
+    if (!replace_chars || strlen(replace_chars) == 0)
+    {
+        strcpy(string_out, string_in);
+        return (0);
+    } // end if
 
-   // determine if case is important
-   if (case_on == 1)
-   {
-      // perform char by char copy
-      while (string_in[index_in])
-      {
-         for (sindex = 0; sindex < slength; sindex++)
-            if (string_in[index_in] == replace_chars[sindex])
-            {
-               // replace it
-               string_out[index_out++] = rep_char;
-               index_in++;
-               num_replacements++;
-               break;
-            } // end if
+    // determine if case is important
+    if (case_on == 1)
+    {
+        // perform char by char copy
+        while (string_in[index_in])
+        {
+            for (sindex = 0; sindex < slength; sindex++)
+                if (string_in[index_in] == replace_chars[sindex])
+                {
+                    // replace it
+                    string_out[index_out++] = rep_char;
+                    index_in++;
+                    num_replacements++;
+                    break;
+                } // end if
 
-         // was a replacement performed?, no just copy then
-         if (sindex >= slength)
-            string_out[index_out++] = string_in[index_in++];
+            // was a replacement performed?, no just copy then
+            if (sindex >= slength)
+                string_out[index_out++] = string_in[index_in++];
 
-      } // end while
-   }    // end if case_on
-   else
-   {
-      // perform char by char copy with case insensitivity
-      while (string_in[index_in])
-      {
-         for (sindex = 0; sindex < slength; sindex++)
-            if (toupper(string_in[index_in]) == toupper(replace_chars[sindex]))
-            {
-               // replace it
-               string_out[index_out++] = rep_char;
-               index_in++;
-               num_replacements++;
-               break;
-            } // end if
+        } // end while
+    }     // end if case_on
+    else
+    {
+        // perform char by char copy with case insensitivity
+        while (string_in[index_in])
+        {
+            for (sindex = 0; sindex < slength; sindex++)
+                if (toupper(string_in[index_in]) == toupper(replace_chars[sindex]))
+                {
+                    // replace it
+                    string_out[index_out++] = rep_char;
+                    index_in++;
+                    num_replacements++;
+                    break;
+                } // end if
 
-         // was a strip char found?
-         if (sindex >= slength)
-            string_out[index_out++] = string_in[index_in++];
+            // was a strip char found?
+            if (sindex >= slength)
+                string_out[index_out++] = string_in[index_in++];
 
-      } // end while
-   }    // end if case_off
+        } // end while
+    }     // end if case_off
 
-   // terminate output string
-   string_out[index_out] = 0;
+    // terminate output string
+    string_out[index_out] = 0;
 
-   // return extracts
-   return (num_replacements);
-
+    // return extracts
+    return (num_replacements);
 }
 
 char *Extract_Filename_From_Path(char *filepath, char *filename)
 {
-// this function extracts the filename from a complete path and file
-// "../folder/.../filname.ext"
-// the function operates by scanning backward and looking for the first 
-// occurance of "\" or "/" then copies the filename from there to the end
-// test of filepath is valid
-if (!filepath || strlen(filepath)==0) 
-    return(NULL);
+    // this function extracts the filename from a complete path and file
+    // "../folder/.../filname.ext"
+    // the function operates by scanning backward and looking for the first
+    // occurance of "\" or "/" then copies the filename from there to the end
+    // test of filepath is valid
+    if (!filepath || strlen(filepath) == 0)
+        return (NULL);
 
-int index_end = strlen(filepath)-1;
+    int index_end = strlen(filepath) - 1;
 
-// find filename
-while( (filepath[index_end]!='\\') && 
-       (filepath[index_end]!='/') && 
-       (filepath[index_end] > 0) ) 
-     index_end--; 
-        
-// copy file name out into filename var
-memcpy(filename, &filepath[index_end+1], strlen(filepath) - index_end);
+    // find filename
+    while ((filepath[index_end] != '\\') &&
+           (filepath[index_end] != '/') &&
+           (filepath[index_end] > 0))
+        index_end--;
 
-// return result
-return(filename);
-      
+    // copy file name out into filename var
+    memcpy(filename, &filepath[index_end + 1], strlen(filepath) - index_end);
+
+    // return result
+    return (filename);
+
 } // end Extract_Filename_From_Path // end ReplaceChars
 
 int Load_Bitmap_File(BITMAP_FILE_PTR bitmap, char *filename)
 {
-// this function opens a bitmap file and loads the data into bitmap
+    // this function opens a bitmap file and loads the data into bitmap
 
-int file_handle,  // the file handle
-    index;        // looping index
+    int file_handle, // the file handle
+        index;       // looping index
 
-UCHAR   *temp_buffer = NULL; // used to convert 24 bit images to 16 bit
-OFSTRUCT file_data;          // the file data information
+    UCHAR *temp_buffer = NULL; // used to convert 24 bit images to 16 bit
+    OFSTRUCT file_data;        // the file data information
 
-// open the file if it exists
-if ((file_handle = OpenFile(filename,&file_data,OF_READ))==-1)
-   return(0);
+    // open the file if it exists
+    if ((file_handle = OpenFile(filename, &file_data, OF_READ)) == -1)
+        return (0);
 
-// now load the bitmap file header
-_lread(file_handle, &bitmap->bitmapfileheader,sizeof(BITMAPFILEHEADER));
+    // now load the bitmap file header
+    _lread(file_handle, &bitmap->bitmapfileheader, sizeof(BITMAPFILEHEADER));
 
-// test if this is a bitmap file
-if (bitmap->bitmapfileheader.bfType!=BITMAP_ID)
-   {
-   // close the file
-   _lclose(file_handle);
+    // test if this is a bitmap file
+    if (bitmap->bitmapfileheader.bfType != BITMAP_ID)
+    {
+        // close the file
+        _lclose(file_handle);
 
-   // return error
-   return(0);
-   } // end if
+        // return error
+        return (0);
+    } // end if
 
-// now we know this is a bitmap, so read in all the sections
+    // now we know this is a bitmap, so read in all the sections
 
-// first the bitmap infoheader
+    // first the bitmap infoheader
 
-// now load the bitmap file header
-_lread(file_handle, &bitmap->bitmapinfoheader,sizeof(BITMAPINFOHEADER));
+    // now load the bitmap file header
+    _lread(file_handle, &bitmap->bitmapinfoheader, sizeof(BITMAPINFOHEADER));
 
-// now load the color palette if there is one
-if (bitmap->bitmapinfoheader.biBitCount == 8)
-   {
-   _lread(file_handle, &bitmap->palette,MAX_COLORS_PALETTE*sizeof(PALETTEENTRY));
+    // now load the color palette if there is one
+    if (bitmap->bitmapinfoheader.biBitCount == 8)
+    {
+        _lread(file_handle, &bitmap->palette, MAX_COLORS_PALETTE * sizeof(PALETTEENTRY));
 
-   // now set all the flags in the palette correctly and fix the reversed 
-   // BGR RGBQUAD data format
-   for (index=0; index < MAX_COLORS_PALETTE; index++)
-       {
-       // reverse the red and green fields
-       int temp_color                = bitmap->palette[index].peRed;
-       bitmap->palette[index].peRed  = bitmap->palette[index].peBlue;
-       bitmap->palette[index].peBlue = temp_color;
-       
-       // always set the flags word to this
-       bitmap->palette[index].peFlags = PC_NOCOLLAPSE;
-       } // end for index
+        // now set all the flags in the palette correctly and fix the reversed
+        // BGR RGBQUAD data format
+        for (index = 0; index < MAX_COLORS_PALETTE; index++)
+        {
+            // reverse the red and green fields
+            int temp_color = bitmap->palette[index].peRed;
+            bitmap->palette[index].peRed = bitmap->palette[index].peBlue;
+            bitmap->palette[index].peBlue = temp_color;
+
+            // always set the flags word to this
+            bitmap->palette[index].peFlags = PC_NOCOLLAPSE;
+        } // end for index
 
     } // end if
 
-// finally the image data itself
-_lseek(file_handle,-(int)(bitmap->bitmapinfoheader.biSizeImage),SEEK_END);
+    // finally the image data itself
+    _lseek(file_handle, -(int)(bitmap->bitmapinfoheader.biSizeImage), SEEK_END);
 
-// now read in the image
-if (bitmap->bitmapinfoheader.biBitCount==8 || bitmap->bitmapinfoheader.biBitCount==16) 
-   {
-   // delete the last image if there was one
-   if (bitmap->buffer)
-       free(bitmap->buffer);
+    // now read in the image
+    if (bitmap->bitmapinfoheader.biBitCount == 8 || bitmap->bitmapinfoheader.biBitCount == 16)
+    {
+        // delete the last image if there was one
+        if (bitmap->buffer)
+            free(bitmap->buffer);
 
-   // allocate the memory for the image
-   if (!(bitmap->buffer = (UCHAR *)malloc(bitmap->bitmapinfoheader.biSizeImage)))
-      {
-      // close the file
-      _lclose(file_handle);
+        // allocate the memory for the image
+        if (!(bitmap->buffer = (UCHAR *)malloc(bitmap->bitmapinfoheader.biSizeImage)))
+        {
+            // close the file
+            _lclose(file_handle);
 
-      // return error
-      return(0);
-      } // end if
+            // return error
+            return (0);
+        } // end if
 
-   // now read it in
-   _lread(file_handle,bitmap->buffer,bitmap->bitmapinfoheader.biSizeImage);
+        // now read it in
+        _lread(file_handle, bitmap->buffer, bitmap->bitmapinfoheader.biSizeImage);
 
-   } // end if
-else
-if (bitmap->bitmapinfoheader.biBitCount==24)
-   {
-   // allocate temporary buffer to load 24 bit image
-   if (!(temp_buffer = (UCHAR *)malloc(bitmap->bitmapinfoheader.biSizeImage)))
-      {
-      // close the file
-      _lclose(file_handle);
+    } // end if
+    else if (bitmap->bitmapinfoheader.biBitCount == 24)
+    {
+        // allocate temporary buffer to load 24 bit image
+        if (!(temp_buffer = (UCHAR *)malloc(bitmap->bitmapinfoheader.biSizeImage)))
+        {
+            // close the file
+            _lclose(file_handle);
 
-      // return error
-      return(0);
-      } // end if
-   
-   // allocate final 16 bit storage buffer
-   if (!(bitmap->buffer=(UCHAR *)malloc(2*bitmap->bitmapinfoheader.biWidth*bitmap->bitmapinfoheader.biHeight)))
-      {
-      // close the file
-      _lclose(file_handle);
+            // return error
+            return (0);
+        } // end if
 
-      // release working buffer
-      free(temp_buffer);
+        // allocate final 16 bit storage buffer
+        if (!(bitmap->buffer = (UCHAR *)malloc(2 * bitmap->bitmapinfoheader.biWidth * bitmap->bitmapinfoheader.biHeight)))
+        {
+            // close the file
+            _lclose(file_handle);
 
-      // return error
-      return(0);
-      } // end if
+            // release working buffer
+            free(temp_buffer);
 
-   // now read the file in
-   _lread(file_handle,temp_buffer,bitmap->bitmapinfoheader.biSizeImage);
+            // return error
+            return (0);
+        } // end if
 
-   // now convert each 24 bit RGB value into a 16 bit value
-   for (index=0; index < bitmap->bitmapinfoheader.biWidth*bitmap->bitmapinfoheader.biHeight; index++)
-       {
-       // build up 16 bit color word
-       USHORT color;
-       
-       // build pixel based on format of directdraw surface
-       if (false)
-    //    if (dd_pixel_format==DD_PIXEL_FORMAT555)
-           {
-           // extract RGB components (in BGR order), note the scaling
-           UCHAR blue  = (temp_buffer[index*3 + 0] >> 3),
-                 green = (temp_buffer[index*3 + 1] >> 3),
-                 red   = (temp_buffer[index*3 + 2] >> 3); 
-           // use the 555 macro
-        //    color = _RGB16BIT555(red,green,blue);
-           } // end if 555
-       else
-    //    if (dd_pixel_format==DD_PIXEL_FORMAT565) 
-       if (true) 
-          {
-          // extract RGB components (in BGR order), note the scaling
-           UCHAR blue  = (temp_buffer[index*3 + 0] >> 3),
-                 green = (temp_buffer[index*3 + 1] >> 2),
-                 red   = (temp_buffer[index*3 + 2] >> 3);
+        // now read the file in
+        _lread(file_handle, temp_buffer, bitmap->bitmapinfoheader.biSizeImage);
 
-           // use the 565 macro
-           color = _RGB16BIT565(red,green,blue);
+        // now convert each 24 bit RGB value into a 16 bit value
+        for (index = 0; index < bitmap->bitmapinfoheader.biWidth * bitmap->bitmapinfoheader.biHeight; index++)
+        {
+            // build up 16 bit color word
+            USHORT color;
 
-          } // end if 565
+            // build pixel based on format of directdraw surface
+            if (false)
+            //    if (dd_pixel_format==DD_PIXEL_FORMAT555)
+            {
+                // extract RGB components (in BGR order), note the scaling
+                UCHAR blue = (temp_buffer[index * 3 + 0] >> 3),
+                      green = (temp_buffer[index * 3 + 1] >> 3),
+                      red = (temp_buffer[index * 3 + 2] >> 3);
+                // use the 555 macro
+                //    color = _RGB16BIT555(red,green,blue);
+            } // end if 555
+            else
+                //    if (dd_pixel_format==DD_PIXEL_FORMAT565)
+                if (true)
+            {
+                // extract RGB components (in BGR order), note the scaling
+                UCHAR blue = (temp_buffer[index * 3 + 0] >> 3),
+                      green = (temp_buffer[index * 3 + 1] >> 2),
+                      red = (temp_buffer[index * 3 + 2] >> 3);
 
-       // write color to buffer
-       ((USHORT *)bitmap->buffer)[index] = color;
+                // use the 565 macro
+                color = _RGB16BIT565(red, green, blue);
 
-       } // end for index
+            } // end if 565
 
-   // finally write out the correct number of bits
-   bitmap->bitmapinfoheader.biBitCount=16;
+            // write color to buffer
+            ((USHORT *)bitmap->buffer)[index] = color;
 
-   // release working buffer
-   free(temp_buffer);
+        } // end for index
 
-   } // end if 24 bit
-else
-   {
-   // serious problem
-   return(0);
+        // finally write out the correct number of bits
+        bitmap->bitmapinfoheader.biBitCount = 16;
 
-   } // end else
+        // release working buffer
+        free(temp_buffer);
+
+    } // end if 24 bit
+    else
+    {
+        // serious problem
+        return (0);
+
+    } // end else
 
 #if 0
 // write the file info out 
@@ -3908,647 +3905,642 @@ printf("\nfilename:%s \nsize=%d \nwidth=%d \nheight=%d \nbitsperpixel=%d \ncolor
         bitmap->bitmapinfoheader.biClrImportant);
 #endif
 
-// close the file
-_lclose(file_handle);
+    // close the file
+    _lclose(file_handle);
 
-// flip the bitmap
-Flip_Bitmap(bitmap->buffer, 
-            bitmap->bitmapinfoheader.biWidth*(bitmap->bitmapinfoheader.biBitCount/8), 
-            bitmap->bitmapinfoheader.biHeight);
+    // flip the bitmap
+    Flip_Bitmap(bitmap->buffer,
+                bitmap->bitmapinfoheader.biWidth * (bitmap->bitmapinfoheader.biBitCount / 8),
+                bitmap->bitmapinfoheader.biHeight);
 
-// return success
-return(1);
+    // return success
+    return (1);
 
 } // end Load_Bitmap_File
 
 int Create_Bitmap(BITMAP_IMAGE_PTR image, int x, int y, int width, int height, int bpp)
 {
-// this function is used to intialize a bitmap, 8 or 16 bit
+    // this function is used to intialize a bitmap, 8 or 16 bit
 
-// allocate the memory
-if (!(image->buffer = (UCHAR *)malloc(width*height*(bpp>>3))))
-   return(0);
+    // allocate the memory
+    if (!(image->buffer = (UCHAR *)malloc(width * height * (bpp >> 3))))
+        return (0);
 
-// initialize variables
-image->state     = BITMAP_STATE_ALIVE;
-image->attr      = 0;
-image->width     = width;
-image->height    = height;
-image->bpp       = bpp;
-image->x         = x;
-image->y         = y;
-image->num_bytes = width*height*(bpp>>3);
+    // initialize variables
+    image->state = BITMAP_STATE_ALIVE;
+    image->attr = 0;
+    image->width = width;
+    image->height = height;
+    image->bpp = bpp;
+    image->x = x;
+    image->y = y;
+    image->num_bytes = width * height * (bpp >> 3);
 
-// clear memory out
-memset(image->buffer,0,width*height*(bpp>>3));
+    // clear memory out
+    memset(image->buffer, 0, width * height * (bpp >> 3));
 
-// return success
-return(1);
+    // return success
+    return (1);
 
 } // end Create_Bitmap
 
-int Load_Image_Bitmap16(BITMAP_IMAGE_PTR image,  // bitmap image to load with data
-                        BITMAP_FILE_PTR bitmap,  // bitmap to scan image data from
-                        int cx,int cy,   // cell or absolute pos. to scan image from
-                        int mode)        // if 0 then cx,cy is cell position, else 
-                                       // cx,cy are absolute coords
+int Load_Image_Bitmap16(BITMAP_IMAGE_PTR image, // bitmap image to load with data
+                        BITMAP_FILE_PTR bitmap, // bitmap to scan image data from
+                        int cx, int cy,         // cell or absolute pos. to scan image from
+                        int mode)               // if 0 then cx,cy is cell position, else
+                                                // cx,cy are absolute coords
 {
-// this function extracts a 16-bit bitmap out of a 16-bit bitmap file
+    // this function extracts a 16-bit bitmap out of a 16-bit bitmap file
 
-// is this a valid bitmap
-if (!image)
-   return(0);
+    // is this a valid bitmap
+    if (!image)
+        return (0);
 
-// must be a 16bit bitmap
-USHORT *source_ptr,   // working pointers
-       *dest_ptr;
+    // must be a 16bit bitmap
+    USHORT *source_ptr, // working pointers
+        *dest_ptr;
 
-// test the mode of extraction, cell based or absolute
-if (mode==BITMAP_EXTRACT_MODE_CELL)
-   {
-   // re-compute x,y
-   cx = cx*(image->width+1) + 1;
-   cy = cy*(image->height+1) + 1;
-   } // end if
-
-// extract bitmap data
-source_ptr = (USHORT *)bitmap->buffer + 
-             cy*bitmap->bitmapinfoheader.biWidth+cx;
-
-// assign a pointer to the bimap image
-dest_ptr = (USHORT *)image->buffer;
-
-int bytes_per_line = image->width*2;
-
-// iterate thru each scanline and copy bitmap
-for (int index_y=0; index_y < image->height; index_y++)
+    // test the mode of extraction, cell based or absolute
+    if (mode == BITMAP_EXTRACT_MODE_CELL)
     {
-    // copy next line of data to destination
-    memcpy(dest_ptr, source_ptr,bytes_per_line);
+        // re-compute x,y
+        cx = cx * (image->width + 1) + 1;
+        cy = cy * (image->height + 1) + 1;
+    } // end if
 
-    // advance pointers
-    dest_ptr   += image->width;
-    source_ptr += bitmap->bitmapinfoheader.biWidth;
+    // extract bitmap data
+    source_ptr = (USHORT *)bitmap->buffer +
+                 cy * bitmap->bitmapinfoheader.biWidth + cx;
+
+    // assign a pointer to the bimap image
+    dest_ptr = (USHORT *)image->buffer;
+
+    int bytes_per_line = image->width * 2;
+
+    // iterate thru each scanline and copy bitmap
+    for (int index_y = 0; index_y < image->height; index_y++)
+    {
+        // copy next line of data to destination
+        memcpy(dest_ptr, source_ptr, bytes_per_line);
+
+        // advance pointers
+        dest_ptr += image->width;
+        source_ptr += bitmap->bitmapinfoheader.biWidth;
     } // end for index_y
 
-// set state to loaded
-image->attr |= BITMAP_ATTR_LOADED;
+    // set state to loaded
+    image->attr |= BITMAP_ATTR_LOADED;
 
-// return success
-return(1);
+    // return success
+    return (1);
 
 } // end Load_Image_Bitmap16
 
-int Load_Image_Bitmap(BITMAP_IMAGE_PTR image,  // bitmap image to load with data
-                      BITMAP_FILE_PTR bitmap,  // bitmap to scan image data from
-                      int cx,int cy,   // cell or absolute pos. to scan image from
-                      int mode)        // if 0 then cx,cy is cell position, else 
-                                       // cx,cy are absolute coords
+int Load_Image_Bitmap(BITMAP_IMAGE_PTR image, // bitmap image to load with data
+                      BITMAP_FILE_PTR bitmap, // bitmap to scan image data from
+                      int cx, int cy,         // cell or absolute pos. to scan image from
+                      int mode)               // if 0 then cx,cy is cell position, else
+                                              // cx,cy are absolute coords
 {
-// this function extracts a bitmap out of a bitmap file
+    // this function extracts a bitmap out of a bitmap file
 
-// is this a valid bitmap
-if (!image)
-   return(0);
+    // is this a valid bitmap
+    if (!image)
+        return (0);
 
-UCHAR *source_ptr,   // working pointers
-      *dest_ptr;
+    UCHAR *source_ptr, // working pointers
+        *dest_ptr;
 
-// test the mode of extraction, cell based or absolute
-if (mode==BITMAP_EXTRACT_MODE_CELL)
-   {
-   // re-compute x,y
-   cx = cx*(image->width+1) + 1;
-   cy = cy*(image->height+1) + 1;
-   } // end if
-
-// extract bitmap data
-source_ptr = bitmap->buffer +
-      cy*bitmap->bitmapinfoheader.biWidth+cx;
-
-// assign a pointer to the bimap image
-dest_ptr = (UCHAR *)image->buffer;
-
-// iterate thru each scanline and copy bitmap
-for (int index_y=0; index_y<image->height; index_y++)
+    // test the mode of extraction, cell based or absolute
+    if (mode == BITMAP_EXTRACT_MODE_CELL)
     {
-    // copy next line of data to destination
-    memcpy(dest_ptr, source_ptr,image->width);
+        // re-compute x,y
+        cx = cx * (image->width + 1) + 1;
+        cy = cy * (image->height + 1) + 1;
+    } // end if
 
-    // advance pointers
-    dest_ptr   += image->width;
-    source_ptr += bitmap->bitmapinfoheader.biWidth;
+    // extract bitmap data
+    source_ptr = bitmap->buffer +
+                 cy * bitmap->bitmapinfoheader.biWidth + cx;
+
+    // assign a pointer to the bimap image
+    dest_ptr = (UCHAR *)image->buffer;
+
+    // iterate thru each scanline and copy bitmap
+    for (int index_y = 0; index_y < image->height; index_y++)
+    {
+        // copy next line of data to destination
+        memcpy(dest_ptr, source_ptr, image->width);
+
+        // advance pointers
+        dest_ptr += image->width;
+        source_ptr += bitmap->bitmapinfoheader.biWidth;
     } // end for index_y
 
-// set state to loaded
-image->attr |= BITMAP_ATTR_LOADED;
+    // set state to loaded
+    image->attr |= BITMAP_ATTR_LOADED;
 
-// return success
-return(1);
+    // return success
+    return (1);
 
 } // end Load_Image_Bitmap
 
-
 int Unload_Bitmap_File(BITMAP_FILE_PTR bitmap)
 {
-// this function releases all memory associated with "bitmap"
-if (bitmap->buffer)
-   {
-   // release memory
-   free(bitmap->buffer);
+    // this function releases all memory associated with "bitmap"
+    if (bitmap->buffer)
+    {
+        // release memory
+        free(bitmap->buffer);
 
-   // reset pointer
-   bitmap->buffer = NULL;
+        // reset pointer
+        bitmap->buffer = NULL;
 
-   } // end if
+    } // end if
 
-// return success
-return(1);
+    // return success
+    return (1);
 
 } // end Unload_Bitmap_File
 
-
 int RGBto8BitIndex(UCHAR r, UCHAR g, UCHAR b, LPPALETTEENTRY palette, int flush_cache = 0)
 {
-   // this function hunts thru the loaded 8-bit palette and tries to find the
-   // best match to the sent rgb color, the 8-bit index is returned. The algorithm
-   // performings a least squares match on the values in the CLUT, also to speed up
-   // the process, the last few translated colored are stored in a stack in the format
-   // rgbi, so when a new rgb comes in, it is compared against the rgb entries in the
-   // table, if found then that index is used, else, the rgb is translated and added to
-   // the table, and the table is shifted one slot, so the last element is thrown away,
-   // hence the table is FIFO in as much as the first discarded value will be the first
-   // this way the system keeps previously translated colors cached, so the fairly long
-   // least squared scan doesn't take forever!
-   // also note the compression of the RGBI data, a compare is performed on the upper 24 bits only
-   // also, if flush_cache = 1 then the local cache is flushed, for example a new palette is loaded
+    // this function hunts thru the loaded 8-bit palette and tries to find the
+    // best match to the sent rgb color, the 8-bit index is returned. The algorithm
+    // performings a least squares match on the values in the CLUT, also to speed up
+    // the process, the last few translated colored are stored in a stack in the format
+    // rgbi, so when a new rgb comes in, it is compared against the rgb entries in the
+    // table, if found then that index is used, else, the rgb is translated and added to
+    // the table, and the table is shifted one slot, so the last element is thrown away,
+    // hence the table is FIFO in as much as the first discarded value will be the first
+    // this way the system keeps previously translated colors cached, so the fairly long
+    // least squared scan doesn't take forever!
+    // also note the compression of the RGBI data, a compare is performed on the upper 24 bits only
+    // also, if flush_cache = 1 then the local cache is flushed, for example a new palette is loaded
 
 #define COLOR_CACHE_SIZE 16 // 16 entries should do for now
 
-   typedef struct
-   {
-      UCHAR r, g, b; // the rgb value of this translated color
-      UCHAR index;   // the color index that matched is most closely
-   } RGBINDEX, *RGBINDEX_PTR;
+    typedef struct
+    {
+        UCHAR r, g, b; // the rgb value of this translated color
+        UCHAR index;   // the color index that matched is most closely
+    } RGBINDEX, *RGBINDEX_PTR;
 
-   static RGBINDEX color_cache[COLOR_CACHE_SIZE]; // the color cache
-   static int cache_entries = 0;                  // number of entries in the cache
+    static RGBINDEX color_cache[COLOR_CACHE_SIZE]; // the color cache
+    static int cache_entries = 0;                  // number of entries in the cache
 
-   // test for flush cache command, new palette coming in...
-   if (flush_cache == 1)
-      cache_entries = 0;
+    // test for flush cache command, new palette coming in...
+    if (flush_cache == 1)
+        cache_entries = 0;
 
-   // test if the color is in the cache
-   for (int cache_index = 0; cache_index < cache_entries; cache_index++)
-   {
-      // is this a match?
-      if (r == color_cache[cache_index].r &&
-          g == color_cache[cache_index].g &&
-          b == color_cache[cache_index].b)
-         return (color_cache[cache_index].index);
+    // test if the color is in the cache
+    for (int cache_index = 0; cache_index < cache_entries; cache_index++)
+    {
+        // is this a match?
+        if (r == color_cache[cache_index].r &&
+            g == color_cache[cache_index].g &&
+            b == color_cache[cache_index].b)
+            return (color_cache[cache_index].index);
 
-   } // end for
+    } // end for
 
-   // if we get here then we had no luck, so least sqaures scan for best match
-   // and make sure to add results to cache
+    // if we get here then we had no luck, so least sqaures scan for best match
+    // and make sure to add results to cache
 
-   int curr_index = -1;       // current color index of best match
-   long curr_error = INT_MAX; // distance in color space to nearest match or "error"
+    int curr_index = -1;       // current color index of best match
+    long curr_error = INT_MAX; // distance in color space to nearest match or "error"
 
-   for (int color_index = 0; color_index < 256; color_index++)
-   {
-      // compute distance to color from target
-      long delta_red = abs(palette[color_index].peRed - r);
-      long delta_green = abs(palette[color_index].peGreen - g);
-      long delta_blue = abs(palette[color_index].peBlue - b);
+    for (int color_index = 0; color_index < 256; color_index++)
+    {
+        // compute distance to color from target
+        long delta_red = abs(palette[color_index].peRed - r);
+        long delta_green = abs(palette[color_index].peGreen - g);
+        long delta_blue = abs(palette[color_index].peBlue - b);
 
-      long error = (delta_red * delta_red) + (delta_green * delta_green) + (delta_blue * delta_blue);
+        long error = (delta_red * delta_red) + (delta_green * delta_green) + (delta_blue * delta_blue);
 
-      // is this color a better match?
-      if (error < curr_error)
-      {
-         curr_index = color_index;
-         curr_error = error;
-      } // end if
+        // is this color a better match?
+        if (error < curr_error)
+        {
+            curr_index = color_index;
+            curr_error = error;
+        } // end if
 
-   } // end for color_index
+    } // end for color_index
 
-   // at this point we have the new color, insert it into cache
-   // shift cache over one entry, copy elements [0 - (n-1)] -> [1 - n]
-   memmove((void *)&color_cache[1], (void *)&color_cache[0], COLOR_CACHE_SIZE * sizeof(RGBINDEX) - sizeof(RGBINDEX));
+    // at this point we have the new color, insert it into cache
+    // shift cache over one entry, copy elements [0 - (n-1)] -> [1 - n]
+    memmove((void *)&color_cache[1], (void *)&color_cache[0], COLOR_CACHE_SIZE * sizeof(RGBINDEX) - sizeof(RGBINDEX));
 
-   // now insert the new element
-   color_cache[0].r = r;
-   color_cache[0].b = b;
-   color_cache[0].g = g;
-   color_cache[0].index = curr_index;
+    // now insert the new element
+    color_cache[0].r = r;
+    color_cache[0].b = b;
+    color_cache[0].g = g;
+    color_cache[0].index = curr_index;
 
-   // increment number of elements in the cache until saturation
-   if (++cache_entries > COLOR_CACHE_SIZE)
-      cache_entries = COLOR_CACHE_SIZE;
+    // increment number of elements in the cache until saturation
+    if (++cache_entries > COLOR_CACHE_SIZE)
+        cache_entries = COLOR_CACHE_SIZE;
 
-   // return results
-   return (curr_index);
+    // return results
+    return (curr_index);
 
 } // end RGBto8BitIndex
 
 int Compute_OBJECT4DV2_Poly_Normals(OBJECT4DV2_PTR obj)
 {
-// the normal of a polygon is commonly needed in a number 
-// of functions, however, to store a normal turns out to
-// be counterproductive in most cases since the transformation
-// to rotate the normal ends up taking as long as computing the
-// normal -- HOWEVER, if the normal must have unit length, then
-// pre-computing the length of the normal, and then in real-time
-// dividing by this save a length computation, so we get the 
-// best of both worlds... thus, this function computes the length
-// of a polygon's normal, but care must be taken, so that we compute
-// the length based on the EXACT same two vectors that all other 
-// functions will use when computing the normal
-// in most cases the functions of interest are the lighting functions
-// if we can pre-compute the normal length
-// for all these functions then that will save at least:
-// num_polys_per_frame * (time to compute length of vector)
+    // the normal of a polygon is commonly needed in a number
+    // of functions, however, to store a normal turns out to
+    // be counterproductive in most cases since the transformation
+    // to rotate the normal ends up taking as long as computing the
+    // normal -- HOWEVER, if the normal must have unit length, then
+    // pre-computing the length of the normal, and then in real-time
+    // dividing by this save a length computation, so we get the
+    // best of both worlds... thus, this function computes the length
+    // of a polygon's normal, but care must be taken, so that we compute
+    // the length based on the EXACT same two vectors that all other
+    // functions will use when computing the normal
+    // in most cases the functions of interest are the lighting functions
+    // if we can pre-compute the normal length
+    // for all these functions then that will save at least:
+    // num_polys_per_frame * (time to compute length of vector)
 
-// the way we have written the engine, in all cases the normals 
-// during lighting are computed as u = v0->v1, and v = v1->v2
-// so as long as we follow that convention we are fine.
-// also, since the new OBJECT4DV2 format supports multiple frames
-// we must perform these calculations for EACH frame of the animation
-// since although the poly indices don't change, the vertice positions
-// do and thus, so do the normals!!!
+    // the way we have written the engine, in all cases the normals
+    // during lighting are computed as u = v0->v1, and v = v1->v2
+    // so as long as we follow that convention we are fine.
+    // also, since the new OBJECT4DV2 format supports multiple frames
+    // we must perform these calculations for EACH frame of the animation
+    // since although the poly indices don't change, the vertice positions
+    // do and thus, so do the normals!!!
 
-// is this object valid
-if (!obj)
-   return(0); 
+    // is this object valid
+    if (!obj)
+        return (0);
 
-// iterate thru the poly list of the object and compute normals
-// each polygon
-for (int poly=0; poly < obj->num_polys; poly++)
+    // iterate thru the poly list of the object and compute normals
+    // each polygon
+    for (int poly = 0; poly < obj->num_polys; poly++)
     {
- 
-    // extract vertex indices into master list, rember the polygons are 
-    // NOT self contained, but based on the vertex list stored in the object
-    // itself
-    int vindex_0 = obj->plist[poly].vert[0];
-    int vindex_1 = obj->plist[poly].vert[1];
-    int vindex_2 = obj->plist[poly].vert[2];
-    
-    // we need to compute the normal of this polygon face, and recall
-    // that the vertices are in cw order, u=p0->p1, v=p0->p2, n=uxv
-    VECTOR4D u, v, n;
- 
-    // build u, v
-    VECTOR4D_Build(&obj->vlist_local[ vindex_0 ].v, &obj->vlist_local[ vindex_1 ].v, &u);
-    VECTOR4D_Build(&obj->vlist_local[ vindex_0 ].v, &obj->vlist_local[ vindex_2 ].v, &v);
 
-    // compute cross product
-    VECTOR4D_Cross(&u, &v, &n);
+        // extract vertex indices into master list, rember the polygons are
+        // NOT self contained, but based on the vertex list stored in the object
+        // itself
+        int vindex_0 = obj->plist[poly].vert[0];
+        int vindex_1 = obj->plist[poly].vert[1];
+        int vindex_2 = obj->plist[poly].vert[2];
 
-    // compute length of normal accurately and store in poly nlength
-    // +- epsilon later to fix over/underflows
-    obj->plist[poly].nlength = VECTOR4D_Length(&n); 
+        // we need to compute the normal of this polygon face, and recall
+        // that the vertices are in cw order, u=p0->p1, v=p0->p2, n=uxv
+        VECTOR4D u, v, n;
+
+        // build u, v
+        VECTOR4D_Build(&obj->vlist_local[vindex_0].v, &obj->vlist_local[vindex_1].v, &u);
+        VECTOR4D_Build(&obj->vlist_local[vindex_0].v, &obj->vlist_local[vindex_2].v, &v);
+
+        // compute cross product
+        VECTOR4D_Cross(&u, &v, &n);
+
+        // compute length of normal accurately and store in poly nlength
+        // +- epsilon later to fix over/underflows
+        obj->plist[poly].nlength = VECTOR4D_Length(&n);
     } // end for poly
 
-// return success
-return(1);
+    // return success
+    return (1);
 
 } // end Compute_OBJECT4DV2_Poly_Normals
 
 int Compute_OBJECT4DV2_Vertex_Normals(OBJECT4DV2_PTR obj)
 {
-// the vertex normals of each polygon are commonly needed in a number 
-// functions, most importantly lighting calculations for gouraud shading
-// however, we only need to compute the vertex normals for polygons that are
-// gouraud shader, so for every vertex we must determine the polygons that
-// share the vertex then compute the average normal, to determine if a polygon
-// contributes we look at the shading flags for the polygon
+    // the vertex normals of each polygon are commonly needed in a number
+    // functions, most importantly lighting calculations for gouraud shading
+    // however, we only need to compute the vertex normals for polygons that are
+    // gouraud shader, so for every vertex we must determine the polygons that
+    // share the vertex then compute the average normal, to determine if a polygon
+    // contributes we look at the shading flags for the polygon
 
-// is this object valid
-if (!obj)
-   return(0); 
+    // is this object valid
+    if (!obj)
+        return (0);
 
-// algorithm: we are going to scan the polygon list and for every polygon
-// that needs normals we are going to "accumulate" the surface normal into all
-// vertices that the polygon touches, and increment a counter to track how many
-// polys contribute to vertex, then when the scan is done the counts will be used
-// to average the accumulated values, so instead of an O(n^2) algorithm, we get a O(c*n)
+    // algorithm: we are going to scan the polygon list and for every polygon
+    // that needs normals we are going to "accumulate" the surface normal into all
+    // vertices that the polygon touches, and increment a counter to track how many
+    // polys contribute to vertex, then when the scan is done the counts will be used
+    // to average the accumulated values, so instead of an O(n^2) algorithm, we get a O(c*n)
 
-// this tracks the polygon indices that touch a particular vertex
-// the array is used to count the number of contributors to the vertex
-// so at the end of the process we can divide each "accumulated" normal
-// and average
-int polys_touch_vertex[OBJECT4DV2_MAX_VERTICES];
-memset((void *)polys_touch_vertex, 0, sizeof(int)*OBJECT4DV2_MAX_VERTICES);
+    // this tracks the polygon indices that touch a particular vertex
+    // the array is used to count the number of contributors to the vertex
+    // so at the end of the process we can divide each "accumulated" normal
+    // and average
+    int polys_touch_vertex[OBJECT4DV2_MAX_VERTICES];
+    memset((void *)polys_touch_vertex, 0, sizeof(int) * OBJECT4DV2_MAX_VERTICES);
 
-// iterate thru the poly list of the object, compute its normal, then add
-// each vertice that composes it to the "touching" vertex array
-// while accumulating the normal in the vertex normal array
+    // iterate thru the poly list of the object, compute its normal, then add
+    // each vertice that composes it to the "touching" vertex array
+    // while accumulating the normal in the vertex normal array
 
-for (int poly=0; poly < obj->num_polys; poly++)
+    for (int poly = 0; poly < obj->num_polys; poly++)
     {
-    //Write_Error("\nprocessing poly %d", poly);
+        //Write_Error("\nprocessing poly %d", poly);
 
-    // test if this polygon needs vertex normals
-    if (obj->plist[poly].attr & POLY4DV2_ATTR_SHADE_MODE_GOURAUD)
-       {
-       // extract vertex indices into master list, rember the polygons are 
-       // NOT self contained, but based on the vertex list stored in the object
-       // itself
-       int vindex_0 = obj->plist[poly].vert[0];
-       int vindex_1 = obj->plist[poly].vert[1];
-       int vindex_2 = obj->plist[poly].vert[2];
-    
-       //Write_Error("\nTouches vertices: %d, %d, %d", vindex_0, vindex_1, vindex_2);
+        // test if this polygon needs vertex normals
+        if (obj->plist[poly].attr & POLY4DV2_ATTR_SHADE_MODE_GOURAUD)
+        {
+            // extract vertex indices into master list, rember the polygons are
+            // NOT self contained, but based on the vertex list stored in the object
+            // itself
+            int vindex_0 = obj->plist[poly].vert[0];
+            int vindex_1 = obj->plist[poly].vert[1];
+            int vindex_2 = obj->plist[poly].vert[2];
 
-       // we need to compute the normal of this polygon face, and recall
-       // that the vertices are in cw order, u=p0->p1, v=p0->p2, n=uxv
-       VECTOR4D u, v, n;
- 
-       // build u, v
-       VECTOR4D_Build(&obj->vlist_local[ vindex_0 ].v, &obj->vlist_local[ vindex_1 ].v, &u);
-       VECTOR4D_Build(&obj->vlist_local[ vindex_0 ].v, &obj->vlist_local[ vindex_2 ].v, &v);
+            //Write_Error("\nTouches vertices: %d, %d, %d", vindex_0, vindex_1, vindex_2);
 
-       // compute cross product
-       VECTOR4D_Cross(&u, &v, &n);
+            // we need to compute the normal of this polygon face, and recall
+            // that the vertices are in cw order, u=p0->p1, v=p0->p2, n=uxv
+            VECTOR4D u, v, n;
 
-       // update vertex array to flag this polygon as a contributor
-       polys_touch_vertex[vindex_0]++;
-       polys_touch_vertex[vindex_1]++;
-       polys_touch_vertex[vindex_2]++;
+            // build u, v
+            VECTOR4D_Build(&obj->vlist_local[vindex_0].v, &obj->vlist_local[vindex_1].v, &u);
+            VECTOR4D_Build(&obj->vlist_local[vindex_0].v, &obj->vlist_local[vindex_2].v, &v);
 
-       //Write_Error("\nPoly touch array v[%d] = %d,  v[%d] = %d,  v[%d] = %d", vindex_0, polys_touch_vertex[vindex_0],                                                                           vindex_1, polys_touch_vertex[vindex_1],                                                                           vindex_2, polys_touch_vertex[vindex_2]);
+            // compute cross product
+            VECTOR4D_Cross(&u, &v, &n);
 
-       // now accumulate the normal into the vertex normal itself
-       // note, we do NOT normalize at this point since we want the length of the normal
-       // to weight on the average, and since the length is in fact the area of the parallelogram
-       // constructed by uxv, so we are taking the "influence" of the area into consideration
-       VECTOR4D_Add(&obj->vlist_local[vindex_0].n, &n, &obj->vlist_local[vindex_0].n);
-       VECTOR4D_Add(&obj->vlist_local[vindex_1].n, &n, &obj->vlist_local[vindex_1].n);
-       VECTOR4D_Add(&obj->vlist_local[vindex_2].n, &n, &obj->vlist_local[vindex_2].n);
-       } // end for poly
-      
-     } // end if needs vertex normals
+            // update vertex array to flag this polygon as a contributor
+            polys_touch_vertex[vindex_0]++;
+            polys_touch_vertex[vindex_1]++;
+            polys_touch_vertex[vindex_2]++;
 
-// now we are almost done, we have accumulated all the vertex normals, but need to average them
-for (int vertex = 0; vertex < obj->num_vertices; vertex++)
+            //Write_Error("\nPoly touch array v[%d] = %d,  v[%d] = %d,  v[%d] = %d", vindex_0, polys_touch_vertex[vindex_0],                                                                           vindex_1, polys_touch_vertex[vindex_1],                                                                           vindex_2, polys_touch_vertex[vindex_2]);
+
+            // now accumulate the normal into the vertex normal itself
+            // note, we do NOT normalize at this point since we want the length of the normal
+            // to weight on the average, and since the length is in fact the area of the parallelogram
+            // constructed by uxv, so we are taking the "influence" of the area into consideration
+            VECTOR4D_Add(&obj->vlist_local[vindex_0].n, &n, &obj->vlist_local[vindex_0].n);
+            VECTOR4D_Add(&obj->vlist_local[vindex_1].n, &n, &obj->vlist_local[vindex_1].n);
+            VECTOR4D_Add(&obj->vlist_local[vindex_2].n, &n, &obj->vlist_local[vindex_2].n);
+        } // end for poly
+
+    } // end if needs vertex normals
+
+    // now we are almost done, we have accumulated all the vertex normals, but need to average them
+    for (int vertex = 0; vertex < obj->num_vertices; vertex++)
     {
-    // if this vertex has any contributors then it must need averaging, OR we could check
-    // the shading hints flags, they should be one to one
-    //Write_Error("\nProcessing vertex: %d, attr: %d, contributors: %d", vertex,                                                                        obj->vlist_local[vertex].attr,                                                                        polys_touch_vertex[vertex]);
+        // if this vertex has any contributors then it must need averaging, OR we could check
+        // the shading hints flags, they should be one to one
+        //Write_Error("\nProcessing vertex: %d, attr: %d, contributors: %d", vertex,                                                                        obj->vlist_local[vertex].attr,                                                                        polys_touch_vertex[vertex]);
 
-    // test if this vertex has a normal and needs averaging
-    if (polys_touch_vertex[vertex] >= 1)
-       {
-       obj->vlist_local[vertex].nx/=polys_touch_vertex[vertex];
-       obj->vlist_local[vertex].ny/=polys_touch_vertex[vertex];
-       obj->vlist_local[vertex].nz/=polys_touch_vertex[vertex];
+        // test if this vertex has a normal and needs averaging
+        if (polys_touch_vertex[vertex] >= 1)
+        {
+            obj->vlist_local[vertex].nx /= polys_touch_vertex[vertex];
+            obj->vlist_local[vertex].ny /= polys_touch_vertex[vertex];
+            obj->vlist_local[vertex].nz /= polys_touch_vertex[vertex];
 
-       // now normalize the normal
-       VECTOR4D_Normalize(&obj->vlist_local[vertex].n);
+            // now normalize the normal
+            VECTOR4D_Normalize(&obj->vlist_local[vertex].n);
 
-       //Write_Error("\nAvg Vertex normal: [%f, %f, %f]", obj->vlist_local[vertex].nx,                                                        obj->vlist_local[vertex].ny,                                                        obj->vlist_local[vertex].nz);
+            //Write_Error("\nAvg Vertex normal: [%f, %f, %f]", obj->vlist_local[vertex].nx,                                                        obj->vlist_local[vertex].ny,                                                        obj->vlist_local[vertex].nz);
 
-       } // end if
+        } // end if
 
     } // end for
 
-// return success
-return(1);
+    // return success
+    return (1);
 
 } // end Compute_OBJECT4DV2_Vertex_Normals
 
-
 char *StringLtrim(char *string)
 {
-   // trims whitespace from left side, note is destructive
-   int sindex = 0;
+    // trims whitespace from left side, note is destructive
+    int sindex = 0;
 
-   int slength = strlen(string);
+    int slength = strlen(string);
 
-   if (!string || slength == 0)
-      return (string);
+    if (!string || slength == 0)
+        return (string);
 
-   // trim whitespace by advancing pointer
-   while (isspace(string[sindex]) && sindex < slength)
-      string[sindex++] = 0; // not needed actually
+    // trim whitespace by advancing pointer
+    while (isspace(string[sindex]) && sindex < slength)
+        string[sindex++] = 0; // not needed actually
 
-   // copy string to left
-   memmove((void *)string, (void *)&string[sindex], (slength - sindex) + 1);
+    // copy string to left
+    memmove((void *)string, (void *)&string[sindex], (slength - sindex) + 1);
 
-   // now return pointer
-   return (string);
+    // now return pointer
+    return (string);
 
 } // end StringLtrim
 
 char *StringRtrim(char *string)
 {
-   // trims whitespace from right side, note is destructive
-   int sindex = 0;
+    // trims whitespace from right side, note is destructive
+    int sindex = 0;
 
-   int slength = strlen(string);
+    int slength = strlen(string);
 
-   if (!string || slength == 0)
-      return (string);
+    if (!string || slength == 0)
+        return (string);
 
-   // index to end of string
-   sindex = slength - 1;
+    // index to end of string
+    sindex = slength - 1;
 
-   // trim whitespace by overwriting nulls
-   while (isspace(string[sindex]) && sindex >= 0)
-      string[sindex--] = 0;
+    // trim whitespace by overwriting nulls
+    while (isspace(string[sindex]) && sindex >= 0)
+        string[sindex--] = 0;
 
-   // string doens't need to be moved, so simply return pointer
-   return (string);
+    // string doens't need to be moved, so simply return pointer
+    return (string);
 
 } // end StringRtrim
 
 float IsFloat(char *fstring)
 {
-   // validates the sent string as a float and converts it, if it's not valid
-   // the function sends back FLT_MIN, the chances of this being the number
-   // validated is slim
-   // [whitespace] [sign] [digits] [.digits] [ {d | D | e | E }[sign]digits]
+    // validates the sent string as a float and converts it, if it's not valid
+    // the function sends back FLT_MIN, the chances of this being the number
+    // validated is slim
+    // [whitespace] [sign] [digits] [.digits] [ {d | D | e | E }[sign]digits]
 
-   char *string = fstring;
+    char *string = fstring;
 
-   // must be of the form
-   // [whitespace]
-   while (isspace(*string))
-      string++;
+    // must be of the form
+    // [whitespace]
+    while (isspace(*string))
+        string++;
 
-   // [sign]
-   if (*string == '+' || *string == '-')
-      string++;
+    // [sign]
+    if (*string == '+' || *string == '-')
+        string++;
 
-   // [digits]
-   while (isdigit(*string))
-      string++;
+    // [digits]
+    while (isdigit(*string))
+        string++;
 
-   // [.digits]
-   if (*string == '.')
-   {
-      string++;
-      while (isdigit(*string))
-         string++;
-   }
+    // [.digits]
+    if (*string == '.')
+    {
+        string++;
+        while (isdigit(*string))
+            string++;
+    }
 
-   // [ {d | D | e | E }[sign]digits]
-   if (*string == 'e' || *string == 'E' || *string == 'd' || *string == 'D')
-   {
-      string++;
+    // [ {d | D | e | E }[sign]digits]
+    if (*string == 'e' || *string == 'E' || *string == 'd' || *string == 'D')
+    {
+        string++;
 
-      // [sign]
-      if (*string == '+' || *string == '-')
-         string++;
+        // [sign]
+        if (*string == '+' || *string == '-')
+            string++;
 
-      // [digits]
-      while (isdigit(*string))
-         string++;
-   }
+        // [digits]
+        while (isdigit(*string))
+            string++;
+    }
 
-   // the string better be the same size as the other one
-   if (strlen(fstring) == (int)(string - fstring))
-      return (atof(fstring));
-   else
-      return (FLT_MIN);
+    // the string better be the same size as the other one
+    if (strlen(fstring) == (int)(string - fstring))
+        return (atof(fstring));
+    else
+        return (FLT_MIN);
 
 } // end IsFloat
 
-
 int IsInt(char *istring)
 {
-   // validates the sent string as a int and converts it, if it's not valid
-   // the function sends back INT_MIN, the chances of this being the number
-   // validated is slim
-   // [whitespace] [sign]digits
+    // validates the sent string as a int and converts it, if it's not valid
+    // the function sends back INT_MIN, the chances of this being the number
+    // validated is slim
+    // [whitespace] [sign]digits
 
-   char *string = istring;
+    char *string = istring;
 
-   // must be of the form
-   // [whitespace]
-   while (isspace(*string))
-      string++;
+    // must be of the form
+    // [whitespace]
+    while (isspace(*string))
+        string++;
 
-   // [sign]
-   if (*string == '+' || *string == '-')
-      string++;
+    // [sign]
+    if (*string == '+' || *string == '-')
+        string++;
 
-   // [digits]
-   while (isdigit(*string))
-      string++;
+    // [digits]
+    while (isdigit(*string))
+        string++;
 
-   // the string better be the same size as the other one
-   if (strlen(istring) == (int)(string - istring))
-      return (atoi(istring));
-   else
-      return (INT_MIN);
+    // the string better be the same size as the other one
+    if (strlen(istring) == (int)(string - istring))
+        return (atoi(istring));
+    else
+        return (INT_MIN);
 
 } // end IsInt
 
-int Destroy_OBJECT4DV2(OBJECT4DV2_PTR obj)   // object to destroy
+int Destroy_OBJECT4DV2(OBJECT4DV2_PTR obj) // object to destroy
 {
-// this function destroys the sent object, basically frees the memory
-// if any that has been allocated
+    // this function destroys the sent object, basically frees the memory
+    // if any that has been allocated
 
-// local vertex list
-if (obj->head_vlist_local)
-   free(obj->head_vlist_local);
+    // local vertex list
+    if (obj->head_vlist_local)
+        free(obj->head_vlist_local);
 
-// transformed vertex list
-if (obj->head_vlist_trans)
-   free(obj->head_vlist_trans);
+    // transformed vertex list
+    if (obj->head_vlist_trans)
+        free(obj->head_vlist_trans);
 
-// texture coordinate list
-if (obj->tlist)
-   free(obj->tlist);
+    // texture coordinate list
+    if (obj->tlist)
+        free(obj->tlist);
 
-// polygon list
-if (obj->plist)
-   free(obj->plist);
+    // polygon list
+    if (obj->plist)
+        free(obj->plist);
 
-// object radii arrays
-if (obj->avg_radius)
-    free(obj->avg_radius);
+    // object radii arrays
+    if (obj->avg_radius)
+        free(obj->avg_radius);
 
-if (obj->max_radius)
-    free(obj->max_radius);
+    if (obj->max_radius)
+        free(obj->max_radius);
 
-// now clear out object completely
-memset((void *)obj, 0, sizeof(OBJECT4DV2));
+    // now clear out object completely
+    memset((void *)obj, 0, sizeof(OBJECT4DV2));
 
-// return success
-return(1);
+    // return success
+    return (1);
 
 } // end Destroy_OBJECT4DV2
 
-
 int Flip_Bitmap(UCHAR *image, int bytes_per_line, int height)
 {
-// this function is used to flip bottom-up .BMP images
+    // this function is used to flip bottom-up .BMP images
 
-UCHAR *buffer; // used to perform the image processing
-int index;     // looping index
+    UCHAR *buffer; // used to perform the image processing
+    int index;     // looping index
 
-// allocate the temporary buffer
-if (!(buffer = (UCHAR *)malloc(bytes_per_line*height)))
-   return(0);
+    // allocate the temporary buffer
+    if (!(buffer = (UCHAR *)malloc(bytes_per_line * height)))
+        return (0);
 
-// copy image to work area
-memcpy(buffer,image,bytes_per_line*height);
+    // copy image to work area
+    memcpy(buffer, image, bytes_per_line * height);
 
-// flip vertically
-for (index=0; index < height; index++)
-    memcpy(&image[((height-1) - index)*bytes_per_line],
-           &buffer[index*bytes_per_line], bytes_per_line);
+    // flip vertically
+    for (index = 0; index < height; index++)
+        memcpy(&image[((height - 1) - index) * bytes_per_line],
+               &buffer[index * bytes_per_line], bytes_per_line);
 
-// release the memory
-free(buffer);
+    // release the memory
+    free(buffer);
 
-// return success
-return(1);
+    // return success
+    return (1);
 
 } // end Flip_Bitmap
 
 float VECTOR4D_Length(VECTOR4D_PTR va)
 {
-// computes the magnitude of a vector, slow
+    // computes the magnitude of a vector, slow
 
-return(sqrtf(va->x*va->x + va->y*va->y + va->z*va->z) );
+    return (sqrtf(va->x * va->x + va->y * va->y + va->z * va->z));
 
 } // end VECTOR4D_Length
 
 void Reset_RENDERLIST4DV2(RENDERLIST4DV2_PTR rend_list)
 {
     rend_list->num_polys = 0; // that was hard!
-}  // end Reset_RENDERLIST4DV2
+} // end Reset_RENDERLIST4DV2
 
 void Reset_OBJECT4DV2(OBJECT4DV2_PTR obj)
 {
-// this function resets the sent object and redies it for 
-// transformations, basically just resets the culled, clipped and
-// backface flags, but here's where you would add stuff
-// to ready any object for the pipeline
-// the object is valid, let's rip it apart polygon by polygon
-// note: works on the entire object, all frames
+    // this function resets the sent object and redies it for
+    // transformations, basically just resets the culled, clipped and
+    // backface flags, but here's where you would add stuff
+    // to ready any object for the pipeline
+    // the object is valid, let's rip it apart polygon by polygon
+    // note: works on the entire object, all frames
 
-// reset object's culled flag
-RESET_BIT(obj->state, OBJECT4DV2_STATE_CULLED);
+    // reset object's culled flag
+    RESET_BIT(obj->state, OBJECT4DV2_STATE_CULLED);
 
-// now the clipped and backface flags for the polygons 
-for (int poly = 0; poly < obj->num_polys; poly++)
+    // now the clipped and backface flags for the polygons
+    for (int poly = 0; poly < obj->num_polys; poly++)
     {
-    // acquire polygon
-    POLY4DV2_PTR curr_poly = &obj->plist[poly];
-    
-    // first is this polygon even visible?
-    if (!(curr_poly->state & POLY4DV2_STATE_ACTIVE))
-       continue; // move onto next poly
+        // acquire polygon
+        POLY4DV2_PTR curr_poly = &obj->plist[poly];
 
-    // reset clipped and backface flags
-    RESET_BIT(curr_poly->state, POLY4DV2_STATE_CLIPPED);
-    RESET_BIT(curr_poly->state, POLY4DV2_STATE_BACKFACE);
-    RESET_BIT(curr_poly->state, POLY4DV2_STATE_LIT);
+        // first is this polygon even visible?
+        if (!(curr_poly->state & POLY4DV2_STATE_ACTIVE))
+            continue; // move onto next poly
+
+        // reset clipped and backface flags
+        RESET_BIT(curr_poly->state, POLY4DV2_STATE_CLIPPED);
+        RESET_BIT(curr_poly->state, POLY4DV2_STATE_BACKFACE);
+        RESET_BIT(curr_poly->state, POLY4DV2_STATE_LIT);
 
     } // end for poly
 
@@ -4562,465 +4554,469 @@ void Transform_OBJECT4DV2(OBJECT4DV2_PTR obj,  // object to transform
                           int all_frames)      // should all frames be transformed
 
 {
-// this function simply transforms all of the vertices in the local or trans
-// array by the sent matrix, since the object may have multiple frames, it
-// takes that into consideration
-// also vertex normals are rotated, however, if there is a translation factor
-// in the sent matrix that will corrupt the normals, later we might want to
-// null out the last row of the matrix before transforming the normals?
-// future optimization: set flag in object attributes, and objects without 
-// vertex normals can be rotated without the test in line
+    // this function simply transforms all of the vertices in the local or trans
+    // array by the sent matrix, since the object may have multiple frames, it
+    // takes that into consideration
+    // also vertex normals are rotated, however, if there is a translation factor
+    // in the sent matrix that will corrupt the normals, later we might want to
+    // null out the last row of the matrix before transforming the normals?
+    // future optimization: set flag in object attributes, and objects without
+    // vertex normals can be rotated without the test in line
 
+    // single frame or all frames?
+    if (!all_frames)
+    {
+        // what coordinates should be transformed?
+        switch (coord_select)
+        {
+        case TRANSFORM_LOCAL_ONLY:
+        {
+            // transform each local/model vertex of the object mesh in place
+            for (int vertex = 0; vertex < obj->num_vertices; vertex++)
+            {
+                POINT4D presult; // hold result of each transformation
 
-// single frame or all frames?
-if (!all_frames)
-{
-// what coordinates should be transformed?
-switch(coord_select)
-      {
-      case TRANSFORM_LOCAL_ONLY:
-      {
-      // transform each local/model vertex of the object mesh in place
-      for (int vertex=0; vertex < obj->num_vertices; vertex++)
-          {
-          POINT4D presult; // hold result of each transformation
+                // transform point
+                Mat_Mul_VECTOR4D_4X4(&obj->vlist_local[vertex].v, mt, &presult);
 
-          // transform point
-          Mat_Mul_VECTOR4D_4X4(&obj->vlist_local[vertex].v, mt, &presult);
+                // store result back
+                VECTOR4D_COPY(&obj->vlist_local[vertex].v, &presult);
 
-          // store result back
-          VECTOR4D_COPY(&obj->vlist_local[vertex].v, &presult); 
- 
-          // transform vertex normal if needed
-          if (obj->vlist_local[vertex].attr & VERTEX4DTV1_ATTR_NORMAL)
-             {
-             // transform normal
-             Mat_Mul_VECTOR4D_4X4(&obj->vlist_local[vertex].n, mt, &presult);
+                // transform vertex normal if needed
+                if (obj->vlist_local[vertex].attr & VERTEX4DTV1_ATTR_NORMAL)
+                {
+                    // transform normal
+                    Mat_Mul_VECTOR4D_4X4(&obj->vlist_local[vertex].n, mt, &presult);
 
-             // store result back
-             VECTOR4D_COPY(&obj->vlist_local[vertex].n, &presult); 
-             } // end if
+                    // store result back
+                    VECTOR4D_COPY(&obj->vlist_local[vertex].n, &presult);
+                } // end if
 
-          } // end for index
-      } break;
- 
-      case TRANSFORM_TRANS_ONLY:
-      {
-      // transform each "transformed" vertex of the object mesh in place
-      // remember, the idea of the vlist_trans[] array is to accumulate
-      // transformations
-      for (int vertex=0; vertex < obj->num_vertices; vertex++)
-          {
-          POINT4D presult; // hold result of each transformation
+            } // end for index
+        }
+        break;
 
-          // transform point
-          Mat_Mul_VECTOR4D_4X4(&obj->vlist_trans[vertex].v, mt, &presult);
+        case TRANSFORM_TRANS_ONLY:
+        {
+            // transform each "transformed" vertex of the object mesh in place
+            // remember, the idea of the vlist_trans[] array is to accumulate
+            // transformations
+            for (int vertex = 0; vertex < obj->num_vertices; vertex++)
+            {
+                POINT4D presult; // hold result of each transformation
 
-          // store result back
-          VECTOR4D_COPY(&obj->vlist_trans[vertex].v, &presult); 
+                // transform point
+                Mat_Mul_VECTOR4D_4X4(&obj->vlist_trans[vertex].v, mt, &presult);
 
-          // transform vertex normal if needed
-          if (obj->vlist_trans[vertex].attr & VERTEX4DTV1_ATTR_NORMAL)
-             {
-             // transform normal
-             Mat_Mul_VECTOR4D_4X4(&obj->vlist_trans[vertex].n, mt, &presult);
+                // store result back
+                VECTOR4D_COPY(&obj->vlist_trans[vertex].v, &presult);
 
-             // store result back
-             VECTOR4D_COPY(&obj->vlist_trans[vertex].n, &presult); 
-             } // end if
+                // transform vertex normal if needed
+                if (obj->vlist_trans[vertex].attr & VERTEX4DTV1_ATTR_NORMAL)
+                {
+                    // transform normal
+                    Mat_Mul_VECTOR4D_4X4(&obj->vlist_trans[vertex].n, mt, &presult);
 
-          } // end for index
+                    // store result back
+                    VECTOR4D_COPY(&obj->vlist_trans[vertex].n, &presult);
+                } // end if
 
-      } break;
+            } // end for index
+        }
+        break;
 
-      case TRANSFORM_LOCAL_TO_TRANS:
-      {
-      // transform each local/model vertex of the object mesh and store result
-      // in "transformed" vertex list
-      for (int vertex=0; vertex < obj->num_vertices; vertex++)
-          {
-          POINT4D presult; // hold result of each transformation
+        case TRANSFORM_LOCAL_TO_TRANS:
+        {
+            // transform each local/model vertex of the object mesh and store result
+            // in "transformed" vertex list
+            for (int vertex = 0; vertex < obj->num_vertices; vertex++)
+            {
+                POINT4D presult; // hold result of each transformation
 
-          // transform point
-          Mat_Mul_VECTOR4D_4X4(&obj->vlist_local[vertex].v, mt, &obj->vlist_trans[vertex].v);
+                // transform point
+                Mat_Mul_VECTOR4D_4X4(&obj->vlist_local[vertex].v, mt, &obj->vlist_trans[vertex].v);
 
-          // transform vertex normal if needed
-          if (obj->vlist_local[vertex].attr & VERTEX4DTV1_ATTR_NORMAL)
-             {
-             // transform point
-             Mat_Mul_VECTOR4D_4X4(&obj->vlist_local[vertex].n, mt, &obj->vlist_trans[vertex].n);
-             } // end if
+                // transform vertex normal if needed
+                if (obj->vlist_local[vertex].attr & VERTEX4DTV1_ATTR_NORMAL)
+                {
+                    // transform point
+                    Mat_Mul_VECTOR4D_4X4(&obj->vlist_local[vertex].n, mt, &obj->vlist_trans[vertex].n);
+                } // end if
 
-          } // end for index
-      } break;
+            } // end for index
+        }
+        break;
 
-      default: break;
+        default:
+            break;
 
-      } // end switch
+        } // end switch
 
-} // end if single frame
-else // transform all frames
-{
-// what coordinates should be transformed?
-switch(coord_select)
-      {
-      case TRANSFORM_LOCAL_ONLY:
-      {
-      // transform each local/model vertex of the object mesh in place
-      for (int vertex=0; vertex < obj->total_vertices; vertex++)
-          {
-          POINT4D presult; // hold result of each transformation
+    }    // end if single frame
+    else // transform all frames
+    {
+        // what coordinates should be transformed?
+        switch (coord_select)
+        {
+        case TRANSFORM_LOCAL_ONLY:
+        {
+            // transform each local/model vertex of the object mesh in place
+            for (int vertex = 0; vertex < obj->total_vertices; vertex++)
+            {
+                POINT4D presult; // hold result of each transformation
 
-          // transform point
-          Mat_Mul_VECTOR4D_4X4(&obj->head_vlist_local[vertex].v, mt, &presult);
+                // transform point
+                Mat_Mul_VECTOR4D_4X4(&obj->head_vlist_local[vertex].v, mt, &presult);
 
-          // store result back
-          VECTOR4D_COPY(&obj->head_vlist_local[vertex].v, &presult); 
+                // store result back
+                VECTOR4D_COPY(&obj->head_vlist_local[vertex].v, &presult);
 
-          // transform vertex normal if needed
-          if (obj->head_vlist_local[vertex].attr & VERTEX4DTV1_ATTR_NORMAL)
-             {
-             // transform normal
-             Mat_Mul_VECTOR4D_4X4(&obj->head_vlist_local[vertex].n, mt, &presult);
+                // transform vertex normal if needed
+                if (obj->head_vlist_local[vertex].attr & VERTEX4DTV1_ATTR_NORMAL)
+                {
+                    // transform normal
+                    Mat_Mul_VECTOR4D_4X4(&obj->head_vlist_local[vertex].n, mt, &presult);
 
-             // store result back
-             VECTOR4D_COPY(&obj->head_vlist_local[vertex].n, &presult); 
-             } // end if
+                    // store result back
+                    VECTOR4D_COPY(&obj->head_vlist_local[vertex].n, &presult);
+                } // end if
 
+            } // end for index
+        }
+        break;
 
-          } // end for index
-      } break;
- 
-      case TRANSFORM_TRANS_ONLY:
-      {
-      // transform each "transformed" vertex of the object mesh in place
-      // remember, the idea of the vlist_trans[] array is to accumulate
-      // transformations
-      for (int vertex=0; vertex < obj->total_vertices; vertex++)
-          {
-          POINT4D presult; // hold result of each transformation
+        case TRANSFORM_TRANS_ONLY:
+        {
+            // transform each "transformed" vertex of the object mesh in place
+            // remember, the idea of the vlist_trans[] array is to accumulate
+            // transformations
+            for (int vertex = 0; vertex < obj->total_vertices; vertex++)
+            {
+                POINT4D presult; // hold result of each transformation
 
-          // transform point
-          Mat_Mul_VECTOR4D_4X4(&obj->head_vlist_trans[vertex].v, mt, &presult);
+                // transform point
+                Mat_Mul_VECTOR4D_4X4(&obj->head_vlist_trans[vertex].v, mt, &presult);
 
-          // store result back
-          VECTOR4D_COPY(&obj->head_vlist_trans[vertex].v, &presult); 
+                // store result back
+                VECTOR4D_COPY(&obj->head_vlist_trans[vertex].v, &presult);
 
-          // transform vertex normal if needed
-          if (obj->head_vlist_trans[vertex].attr & VERTEX4DTV1_ATTR_NORMAL)
-             {
-             // transform normal
-             Mat_Mul_VECTOR4D_4X4(&obj->head_vlist_trans[vertex].n, mt, &presult);
+                // transform vertex normal if needed
+                if (obj->head_vlist_trans[vertex].attr & VERTEX4DTV1_ATTR_NORMAL)
+                {
+                    // transform normal
+                    Mat_Mul_VECTOR4D_4X4(&obj->head_vlist_trans[vertex].n, mt, &presult);
 
-             // store result back
-             VECTOR4D_COPY(&obj->head_vlist_trans[vertex].n, &presult); 
-             } // end if
+                    // store result back
+                    VECTOR4D_COPY(&obj->head_vlist_trans[vertex].n, &presult);
+                } // end if
 
-          } // end for index
+            } // end for index
+        }
+        break;
 
-      } break;
+        case TRANSFORM_LOCAL_TO_TRANS:
+        {
+            // transform each local/model vertex of the object mesh and store result
+            // in "transformed" vertex list
+            for (int vertex = 0; vertex < obj->total_vertices; vertex++)
+            {
+                POINT4D presult; // hold result of each transformation
 
-      case TRANSFORM_LOCAL_TO_TRANS:
-      {
-      // transform each local/model vertex of the object mesh and store result
-      // in "transformed" vertex list
-      for (int vertex=0; vertex < obj->total_vertices; vertex++)
-          {
-          POINT4D presult; // hold result of each transformation
+                // transform point
+                Mat_Mul_VECTOR4D_4X4(&obj->head_vlist_local[vertex].v, mt, &obj->head_vlist_trans[vertex].v);
 
-          // transform point
-          Mat_Mul_VECTOR4D_4X4(&obj->head_vlist_local[vertex].v, mt, &obj->head_vlist_trans[vertex].v);
+                // transform vertex normal if needed
+                if (obj->head_vlist_local[vertex].attr & VERTEX4DTV1_ATTR_NORMAL)
+                {
+                    // transform point
+                    Mat_Mul_VECTOR4D_4X4(&obj->head_vlist_local[vertex].n, mt, &obj->head_vlist_trans[vertex].n);
+                } // end if
 
-          // transform vertex normal if needed
-          if (obj->head_vlist_local[vertex].attr & VERTEX4DTV1_ATTR_NORMAL)
-             {
-             // transform point
-             Mat_Mul_VECTOR4D_4X4(&obj->head_vlist_local[vertex].n, mt, &obj->head_vlist_trans[vertex].n);
-             } // end if
+            } // end for index
+        }
+        break;
 
-          } // end for index
-      } break;
+        default:
+            break;
 
-      default: break;
+        } // end switch
 
-      } // end switch
+    } // end else multiple frames
 
-} // end else multiple frames
+    // finally, test if transform should be applied to orientation basis
+    // hopefully this is a rotation, otherwise the basis will get corrupted
+    if (transform_basis)
+    {
+        // now rotate orientation basis for object
+        VECTOR4D vresult; // use to rotate each orientation vector axis
 
-// finally, test if transform should be applied to orientation basis
-// hopefully this is a rotation, otherwise the basis will get corrupted
-if (transform_basis)
-   {
-   // now rotate orientation basis for object
-   VECTOR4D vresult; // use to rotate each orientation vector axis
+        // rotate ux of basis
+        Mat_Mul_VECTOR4D_4X4(&obj->ux, mt, &vresult);
+        VECTOR4D_COPY(&obj->ux, &vresult);
 
-   // rotate ux of basis
-   Mat_Mul_VECTOR4D_4X4(&obj->ux, mt, &vresult);
-   VECTOR4D_COPY(&obj->ux, &vresult); 
+        // rotate uy of basis
+        Mat_Mul_VECTOR4D_4X4(&obj->uy, mt, &vresult);
+        VECTOR4D_COPY(&obj->uy, &vresult);
 
-   // rotate uy of basis
-   Mat_Mul_VECTOR4D_4X4(&obj->uy, mt, &vresult);
-   VECTOR4D_COPY(&obj->uy, &vresult); 
-
-   // rotate uz of basis
-   Mat_Mul_VECTOR4D_4X4(&obj->uz, mt, &vresult);
-   VECTOR4D_COPY(&obj->uz, &vresult); 
-   } // end if
+        // rotate uz of basis
+        Mat_Mul_VECTOR4D_4X4(&obj->uz, mt, &vresult);
+        VECTOR4D_COPY(&obj->uz, &vresult);
+    } // end if
 
 } // end Transform_OBJECT4DV2
 
-void Model_To_World_OBJECT4DV2(OBJECT4DV2_PTR obj, 
-                               int coord_select, 
+void Model_To_World_OBJECT4DV2(OBJECT4DV2_PTR obj,
+                               int coord_select,
                                int all_frames)
 {
-// NOTE: Not matrix based
-// this function converts the local model coordinates of the
-// sent object into world coordinates, the results are stored
-// in the transformed vertex list (vlist_trans) within the object
+    // NOTE: Not matrix based
+    // this function converts the local model coordinates of the
+    // sent object into world coordinates, the results are stored
+    // in the transformed vertex list (vlist_trans) within the object
 
-// interate thru vertex list and transform all the model/local 
-// coords to world coords by translating the vertex list by
-// the amount world_pos and storing the results in vlist_trans[]
-// no need to transform vertex normals, they are invariant of position
+    // interate thru vertex list and transform all the model/local
+    // coords to world coords by translating the vertex list by
+    // the amount world_pos and storing the results in vlist_trans[]
+    // no need to transform vertex normals, they are invariant of position
 
-if (!all_frames)
-   {
-   if (coord_select == TRANSFORM_LOCAL_TO_TRANS)
-      {
-      for (int vertex=0; vertex < obj->num_vertices; vertex++)
-          {
-          // translate vertex
-          VECTOR4D_Add(&obj->vlist_local[vertex].v, &obj->world_pos, &obj->vlist_trans[vertex].v);
-          // copy normal
-          VECTOR4D_COPY(&obj->vlist_trans[vertex].n, &obj->vlist_local[vertex].n);
+    if (!all_frames)
+    {
+        if (coord_select == TRANSFORM_LOCAL_TO_TRANS)
+        {
+            for (int vertex = 0; vertex < obj->num_vertices; vertex++)
+            {
+                // translate vertex
+                VECTOR4D_Add(&obj->vlist_local[vertex].v, &obj->world_pos, &obj->vlist_trans[vertex].v);
+                // copy normal
+                VECTOR4D_COPY(&obj->vlist_trans[vertex].n, &obj->vlist_local[vertex].n);
 
-          } // end for vertex
-      } // end if local
-   else
-      { // TRANSFORM_TRANS_ONLY
-      for (int vertex=0; vertex < obj->num_vertices; vertex++)
-          {
-          // translate vertex
-          VECTOR4D_Add(&obj->vlist_trans[vertex].v, &obj->world_pos, &obj->vlist_trans[vertex].v);
-          } // end for vertex
-      } // end else trans
+            } // end for vertex
+        }     // end if local
+        else
+        { // TRANSFORM_TRANS_ONLY
+            for (int vertex = 0; vertex < obj->num_vertices; vertex++)
+            {
+                // translate vertex
+                VECTOR4D_Add(&obj->vlist_trans[vertex].v, &obj->world_pos, &obj->vlist_trans[vertex].v);
+            } // end for vertex
+        }     // end else trans
 
-    } // end if single frame
-else // all frames
-   {
-   if (coord_select == TRANSFORM_LOCAL_TO_TRANS)
-      {
-      for (int vertex=0; vertex < obj->total_vertices; vertex++)
-          {
-          // translate vertex
-          VECTOR4D_Add(&obj->head_vlist_local[vertex].v, &obj->world_pos, &obj->head_vlist_trans[vertex].v);
-          // copy normal
-          VECTOR4D_COPY(&obj->head_vlist_trans[vertex].n, &obj->head_vlist_local[vertex].n);
-          } // end for vertex
-      } // end if local
-   else
-      { // TRANSFORM_TRANS_ONLY
-      for (int vertex=0; vertex < obj->total_vertices; vertex++)
-          {
-          // translate vertex
-          VECTOR4D_Add(&obj->head_vlist_trans[vertex].v, &obj->world_pos, &obj->head_vlist_trans[vertex].v);
-          } // end for vertex
-      } // end else trans
+    }    // end if single frame
+    else // all frames
+    {
+        if (coord_select == TRANSFORM_LOCAL_TO_TRANS)
+        {
+            for (int vertex = 0; vertex < obj->total_vertices; vertex++)
+            {
+                // translate vertex
+                VECTOR4D_Add(&obj->head_vlist_local[vertex].v, &obj->world_pos, &obj->head_vlist_trans[vertex].v);
+                // copy normal
+                VECTOR4D_COPY(&obj->head_vlist_trans[vertex].n, &obj->head_vlist_local[vertex].n);
+            } // end for vertex
+        }     // end if local
+        else
+        { // TRANSFORM_TRANS_ONLY
+            for (int vertex = 0; vertex < obj->total_vertices; vertex++)
+            {
+                // translate vertex
+                VECTOR4D_Add(&obj->head_vlist_trans[vertex].v, &obj->world_pos, &obj->head_vlist_trans[vertex].v);
+            } // end for vertex
+        }     // end else trans
 
     } // end if all frames
 
 } // end Model_To_World_OBJECT4DV2
 
-int Insert_OBJECT4DV2_RENDERLIST4DV2(RENDERLIST4DV2_PTR rend_list, 
-                                      OBJECT4DV2_PTR obj,
-                                      int insert_local=0)
-                                      
+int Insert_OBJECT4DV2_RENDERLIST4DV2(RENDERLIST4DV2_PTR rend_list,
+                                     OBJECT4DV2_PTR obj,
+                                     int insert_local = 0)
+
 {
-// { andre work in progress, rewrite with materials...}
+    // { andre work in progress, rewrite with materials...}
 
-// converts the entire object into a face list and then inserts
-// the visible, active, non-clipped, non-culled polygons into
-// the render list, also note the flag insert_local control 
-// whether or not the vlist_local or vlist_trans vertex list
-// is used, thus you can insert an object "raw" totally untranformed
-// if you set insert_local to 1, default is 0, that is you would
-// only insert an object after at least the local to world transform
-// the last parameter is used to control if their has been
-// a lighting step that has generated a light value stored
-// in the upper 16-bits of color, if lighting_on = 1 then
-// this value is used to overwrite the base color of the 
-// polygon when its sent to the rendering list
+    // converts the entire object into a face list and then inserts
+    // the visible, active, non-clipped, non-culled polygons into
+    // the render list, also note the flag insert_local control
+    // whether or not the vlist_local or vlist_trans vertex list
+    // is used, thus you can insert an object "raw" totally untranformed
+    // if you set insert_local to 1, default is 0, that is you would
+    // only insert an object after at least the local to world transform
+    // the last parameter is used to control if their has been
+    // a lighting step that has generated a light value stored
+    // in the upper 16-bits of color, if lighting_on = 1 then
+    // this value is used to overwrite the base color of the
+    // polygon when its sent to the rendering list
 
-unsigned int base_color; // save base color of polygon
+    unsigned int base_color; // save base color of polygon
 
-// is this objective inactive or culled or invisible?
-if (!(obj->state & OBJECT4DV2_STATE_ACTIVE) ||
-     (obj->state & OBJECT4DV2_STATE_CULLED) ||
-     !(obj->state & OBJECT4DV2_STATE_VISIBLE))
-   return(0); 
+    // is this objective inactive or culled or invisible?
+    if (!(obj->state & OBJECT4DV2_STATE_ACTIVE) ||
+        (obj->state & OBJECT4DV2_STATE_CULLED) ||
+        !(obj->state & OBJECT4DV2_STATE_VISIBLE))
+        return (0);
 
-// the object is valid, let's rip it apart polygon by polygon
-for (int poly = 0; poly < obj->num_polys; poly++)
+    // the object is valid, let's rip it apart polygon by polygon
+    for (int poly = 0; poly < obj->num_polys; poly++)
     {
-    // acquire polygon
-    POLY4DV2_PTR curr_poly = &obj->plist[poly];
-    // std::cout << curr_poly->color << std::endl;
+        // acquire polygon
+        POLY4DV2_PTR curr_poly = &obj->plist[poly];
+        // std::cout << curr_poly->color << std::endl;
 
-    // first is this polygon even visible?
-    if (!(curr_poly->state & POLY4DV2_STATE_ACTIVE) ||
-         (curr_poly->state & POLY4DV2_STATE_CLIPPED ) ||
-         (curr_poly->state & POLY4DV2_STATE_BACKFACE) )
-    continue; // move onto next poly
+        // first is this polygon even visible?
+        if (!(curr_poly->state & POLY4DV2_STATE_ACTIVE) ||
+            (curr_poly->state & POLY4DV2_STATE_CLIPPED) ||
+            (curr_poly->state & POLY4DV2_STATE_BACKFACE))
+            continue; // move onto next poly
 
-    // override vertex list polygon refers to
-    // the case that you want the local coords used
-    // first save old pointer
-    VERTEX4DTV1_PTR vlist_old = curr_poly->vlist;
+        // override vertex list polygon refers to
+        // the case that you want the local coords used
+        // first save old pointer
+        VERTEX4DTV1_PTR vlist_old = curr_poly->vlist;
 
-    if (insert_local)
-       curr_poly->vlist = obj->vlist_local;
-    else
-       curr_poly->vlist = obj->vlist_trans;
+        if (insert_local)
+            curr_poly->vlist = obj->vlist_local;
+        else
+            curr_poly->vlist = obj->vlist_trans;
 
-    // now insert this polygon
-    if (!Insert_POLY4DV2_RENDERLIST4DV2(rend_list, curr_poly))
-       {
-       // fix vertex list pointer
-       curr_poly->vlist = vlist_old;
-              
-       // the whole object didn't fit!
-       return(0);
-       } // end if
+        // now insert this polygon
+        if (!Insert_POLY4DV2_RENDERLIST4DV2(rend_list, curr_poly))
+        {
+            // fix vertex list pointer
+            curr_poly->vlist = vlist_old;
 
-    // fix vertex list pointer
-    curr_poly->vlist = vlist_old;
+            // the whole object didn't fit!
+            return (0);
+        } // end if
+
+        // fix vertex list pointer
+        curr_poly->vlist = vlist_old;
 
     } // end for
 
-// return success
-return(1);
+    // return success
+    return (1);
 
 } // end Insert_OBJECT4DV2_RENDERLIST4DV2
 
-int Insert_POLY4DV2_RENDERLIST4DV2(RENDERLIST4DV2_PTR rend_list, 
+int Insert_POLY4DV2_RENDERLIST4DV2(RENDERLIST4DV2_PTR rend_list,
                                    POLY4DV2_PTR poly)
 {
-// converts the sent POLY4DV2 into a POLYF4DV2 and inserts it
-// into the render list, this function needs optmizing
+    // converts the sent POLY4DV2 into a POLYF4DV2 and inserts it
+    // into the render list, this function needs optmizing
 
-// step 0: are we full?
-if (rend_list->num_polys >= RENDERLIST4DV2_MAX_POLYS)
-   return(0);
+    // step 0: are we full?
+    if (rend_list->num_polys >= RENDERLIST4DV2_MAX_POLYS)
+        return (0);
 
-// step 1: copy polygon into next opening in polygon render list
+    // step 1: copy polygon into next opening in polygon render list
 
-// point pointer to polygon structure
-rend_list->poly_ptrs[rend_list->num_polys] = &rend_list->poly_data[rend_list->num_polys];
+    // point pointer to polygon structure
+    rend_list->poly_ptrs[rend_list->num_polys] = &rend_list->poly_data[rend_list->num_polys];
 
-// copy fields { ??????????? make sure ALL fields are copied, normals, textures, etc!!!  }
-rend_list->poly_data[rend_list->num_polys].state   = poly->state;
-rend_list->poly_data[rend_list->num_polys].attr    = poly->attr;
-rend_list->poly_data[rend_list->num_polys].color   = poly->color;
-rend_list->poly_data[rend_list->num_polys].nlength = poly->nlength;
-rend_list->poly_data[rend_list->num_polys].texture = poly->texture;
+    // copy fields { ??????????? make sure ALL fields are copied, normals, textures, etc!!!  }
+    rend_list->poly_data[rend_list->num_polys].state = poly->state;
+    rend_list->poly_data[rend_list->num_polys].attr = poly->attr;
+    rend_list->poly_data[rend_list->num_polys].color = poly->color;
+    rend_list->poly_data[rend_list->num_polys].nlength = poly->nlength;
+    rend_list->poly_data[rend_list->num_polys].texture = poly->texture;
 
-// poly could be lit, so copy these too...
-rend_list->poly_data[rend_list->num_polys].lit_color[0] = poly->lit_color[0];
-rend_list->poly_data[rend_list->num_polys].lit_color[1] = poly->lit_color[1];
-rend_list->poly_data[rend_list->num_polys].lit_color[2] = poly->lit_color[2];
+    // poly could be lit, so copy these too...
+    rend_list->poly_data[rend_list->num_polys].lit_color[0] = poly->lit_color[0];
+    rend_list->poly_data[rend_list->num_polys].lit_color[1] = poly->lit_color[1];
+    rend_list->poly_data[rend_list->num_polys].lit_color[2] = poly->lit_color[2];
 
-// now copy vertices, be careful! later put a loop, but for now
-// know there are 3 vertices always!
-VERTEX4DTV1_COPY(&rend_list->poly_data[rend_list->num_polys].tvlist[0],
-              &poly->vlist[poly->vert[0]]);
+    // now copy vertices, be careful! later put a loop, but for now
+    // know there are 3 vertices always!
+    VERTEX4DTV1_COPY(&rend_list->poly_data[rend_list->num_polys].tvlist[0],
+                     &poly->vlist[poly->vert[0]]);
 
-VERTEX4DTV1_COPY(&rend_list->poly_data[rend_list->num_polys].tvlist[1],
-              &poly->vlist[poly->vert[1]]);
+    VERTEX4DTV1_COPY(&rend_list->poly_data[rend_list->num_polys].tvlist[1],
+                     &poly->vlist[poly->vert[1]]);
 
-VERTEX4DTV1_COPY(&rend_list->poly_data[rend_list->num_polys].tvlist[2],
-              &poly->vlist[poly->vert[2]]);
+    VERTEX4DTV1_COPY(&rend_list->poly_data[rend_list->num_polys].tvlist[2],
+                     &poly->vlist[poly->vert[2]]);
 
-// and copy into local vertices too
-VERTEX4DTV1_COPY(&rend_list->poly_data[rend_list->num_polys].vlist[0],
-              &poly->vlist[poly->vert[0]]);
+    // and copy into local vertices too
+    VERTEX4DTV1_COPY(&rend_list->poly_data[rend_list->num_polys].vlist[0],
+                     &poly->vlist[poly->vert[0]]);
 
-VERTEX4DTV1_COPY(&rend_list->poly_data[rend_list->num_polys].vlist[1],
-              &poly->vlist[poly->vert[1]]);
+    VERTEX4DTV1_COPY(&rend_list->poly_data[rend_list->num_polys].vlist[1],
+                     &poly->vlist[poly->vert[1]]);
 
-VERTEX4DTV1_COPY(&rend_list->poly_data[rend_list->num_polys].vlist[2],
-              &poly->vlist[poly->vert[2]]);
+    VERTEX4DTV1_COPY(&rend_list->poly_data[rend_list->num_polys].vlist[2],
+                     &poly->vlist[poly->vert[2]]);
 
-// finally the texture coordinates, this has to be performed manually
-// since at this point in the pipeline the vertices do NOT have texture
-// coordinate, the polygons DO, however, now, there are 3 vertices for 
-// EVERY polygon, rather than vertex sharing, so we can copy the texture
-// coordinates out of the indexed arrays into the VERTEX4DTV1 structures
-rend_list->poly_data[rend_list->num_polys].tvlist[0].t = poly->tlist[ poly->text[0] ];
-rend_list->poly_data[rend_list->num_polys].tvlist[1].t = poly->tlist[ poly->text[1] ];
-rend_list->poly_data[rend_list->num_polys].tvlist[2].t = poly->tlist[ poly->text[2] ];
+    // finally the texture coordinates, this has to be performed manually
+    // since at this point in the pipeline the vertices do NOT have texture
+    // coordinate, the polygons DO, however, now, there are 3 vertices for
+    // EVERY polygon, rather than vertex sharing, so we can copy the texture
+    // coordinates out of the indexed arrays into the VERTEX4DTV1 structures
+    rend_list->poly_data[rend_list->num_polys].tvlist[0].t = poly->tlist[poly->text[0]];
+    rend_list->poly_data[rend_list->num_polys].tvlist[1].t = poly->tlist[poly->text[1]];
+    rend_list->poly_data[rend_list->num_polys].tvlist[2].t = poly->tlist[poly->text[2]];
 
-rend_list->poly_data[rend_list->num_polys].vlist[0].t = poly->tlist[ poly->text[0] ];
-rend_list->poly_data[rend_list->num_polys].vlist[1].t = poly->tlist[ poly->text[1] ];
-rend_list->poly_data[rend_list->num_polys].vlist[2].t = poly->tlist[ poly->text[2] ];
+    rend_list->poly_data[rend_list->num_polys].vlist[0].t = poly->tlist[poly->text[0]];
+    rend_list->poly_data[rend_list->num_polys].vlist[1].t = poly->tlist[poly->text[1]];
+    rend_list->poly_data[rend_list->num_polys].vlist[2].t = poly->tlist[poly->text[2]];
 
-// now the polygon is loaded into the next free array position, but
-// we need to fix up the links
+    // now the polygon is loaded into the next free array position, but
+    // we need to fix up the links
 
-// test if this is the first entry
-if (rend_list->num_polys == 0)
-   {
-   // set pointers to null, could loop them around though to self
-   rend_list->poly_data[0].next = NULL;
-   rend_list->poly_data[0].prev = NULL;
-   } // end if
-else
-   {
-   // first set this node to point to previous node and next node (null)
-   rend_list->poly_data[rend_list->num_polys].next = NULL;
-   rend_list->poly_data[rend_list->num_polys].prev = 
-         &rend_list->poly_data[rend_list->num_polys-1];
+    // test if this is the first entry
+    if (rend_list->num_polys == 0)
+    {
+        // set pointers to null, could loop them around though to self
+        rend_list->poly_data[0].next = NULL;
+        rend_list->poly_data[0].prev = NULL;
+    } // end if
+    else
+    {
+        // first set this node to point to previous node and next node (null)
+        rend_list->poly_data[rend_list->num_polys].next = NULL;
+        rend_list->poly_data[rend_list->num_polys].prev =
+            &rend_list->poly_data[rend_list->num_polys - 1];
 
-   // now set previous node to point to this node
-   rend_list->poly_data[rend_list->num_polys-1].next = 
-          &rend_list->poly_data[rend_list->num_polys];
-   } // end else
+        // now set previous node to point to this node
+        rend_list->poly_data[rend_list->num_polys - 1].next =
+            &rend_list->poly_data[rend_list->num_polys];
+    } // end else
 
-// increment number of polys in list
-rend_list->num_polys++;
+    // increment number of polys in list
+    rend_list->num_polys++;
 
-// return successful insertion
-return(1);
+    // return successful insertion
+    return (1);
 
 } // end Insert_POLY4DV2_RENDERLIST4DV2
 
 void Remove_Backfaces_RENDERLIST4DV2(RENDERLIST4DV2_PTR rend_list, CAM4DV1_PTR cam)
 {
-// NOTE: this is not a matrix based function
-// this function removes the backfaces from polygon list
-// the function does this based on the polygon list data
-// tvlist along with the camera position (only)
-// note that only the backface state is set in each polygon
+    // NOTE: this is not a matrix based function
+    // this function removes the backfaces from polygon list
+    // the function does this based on the polygon list data
+    // tvlist along with the camera position (only)
+    // note that only the backface state is set in each polygon
 
-for (int poly = 0; poly < rend_list->num_polys; poly++)
+    for (int poly = 0; poly < rend_list->num_polys; poly++)
     {
-    // acquire current polygon
-    POLYF4DV2_PTR curr_poly = rend_list->poly_ptrs[poly];
+        // acquire current polygon
+        POLYF4DV2_PTR curr_poly = rend_list->poly_ptrs[poly];
 
-    // is this polygon valid?
-    // test this polygon if and only if it's not clipped, not culled,
-    // active, and visible and not 2 sided. Note we test for backface in the event that
-    // a previous call might have already determined this, so why work
-    // harder!
-    if ((curr_poly==NULL) || !(curr_poly->state & POLY4DV2_STATE_ACTIVE) ||
-        (curr_poly->state & POLY4DV2_STATE_CLIPPED ) || 
-        (curr_poly->attr  & POLY4DV2_ATTR_2SIDED)    ||
-        (curr_poly->state & POLY4DV2_STATE_BACKFACE) )
-        continue; // move onto next poly
-    
+        // is this polygon valid?
+        // test this polygon if and only if it's not clipped, not culled,
+        // active, and visible and not 2 sided. Note we test for backface in the event that
+        // a previous call might have already determined this, so why work
+        // harder!
+        if ((curr_poly == NULL) || !(curr_poly->state & POLY4DV2_STATE_ACTIVE) ||
+            (curr_poly->state & POLY4DV2_STATE_CLIPPED) ||
+            (curr_poly->attr & POLY4DV2_ATTR_2SIDED) ||
+            (curr_poly->state & POLY4DV2_STATE_BACKFACE))
+            continue; // move onto next poly
+
         // we need to compute the normal of this polygon face, and recall
         // that the vertices are in cw order, u = p0->p1, v=p0->p2, n=uxv
         VECTOR4D u, v, n;
- 
+
         // build u, v
         VECTOR4D_Build(&curr_poly->tvlist[0].v, &curr_poly->tvlist[1].v, &u);
         VECTOR4D_Build(&curr_poly->tvlist[0].v, &curr_poly->tvlist[2].v, &v);
@@ -5030,1145 +5026,1147 @@ for (int poly = 0; poly < rend_list->num_polys; poly++)
 
         // now create eye vector to viewpoint
         VECTOR4D view;
-        VECTOR4D_Build(&curr_poly->tvlist[0].v, &cam->pos, &view); 
+        VECTOR4D_Build(&curr_poly->tvlist[0].v, &cam->pos, &view);
 
         // and finally, compute the dot product
         float dp = VECTOR4D_Dot(&n, &view);
 
         // if the sign is > 0 then visible, 0 = scathing, < 0 invisible
-        if (dp <= 0.0 )
+        if (dp <= 0.0)
             SET_BIT(curr_poly->state, POLY4DV2_STATE_BACKFACE);
-
-         } // end for poly
-
-} // end Remove_Backfaces_RENDERLIST4DV2
-
-int Light_RENDERLIST4DV2_World16(RENDERLIST4DV2_PTR rend_list,  // list to process
-                                   CAM4DV1_PTR cam,     // camera position
-                                   LIGHTV1_PTR lights,  // light list (might have more than one)
-                                   int max_lights)      // maximum lights in list
-{
-
-// 16-bit version of function
-// function lights the entire rendering list based on the sent lights and camera. the function supports
-// constant/pure shading (emmisive), flat shading with ambient, infinite, point lights, and spot lights
-// note that this lighting function is rather brute force and simply follows the math, however
-// there are some clever integer operations that are used in scale 256 rather than going to floating
-// point, but why? floating point and ints are the same speed, HOWEVER, the conversion to and from floating
-// point can be cycle intensive, so if you can keep your calcs in ints then you can gain some speed
-// also note, type 1 spot lights are simply point lights with direction, the "cone" is more of a function
-// of the falloff due to attenuation, but they still look like spot lights
-// type 2 spot lights are implemented with the intensity having a dot product relationship with the
-// angle from the surface point to the light direction just like in the optimized model, but the pf term
-// that is used for a concentration control must be 1,2,3,.... integral and non-fractional
-// this function now performs emissive, flat, and gouraud lighting, results are stored in the 
-// lit_color[] array of each polygon
-
-unsigned int r_base, g_base,   b_base,  // base color being lit
-             r_sum,  g_sum,    b_sum,   // sum of lighting process over all lights
-             r_sum0,  g_sum0,  b_sum0,
-             r_sum1,  g_sum1,  b_sum1,
-             r_sum2,  g_sum2,  b_sum2,
-             ri,gi,bi,
-             shaded_color;            // final color
-
-float dp,     // dot product 
-      dist,   // distance from light to surface
-      dists, 
-      i,      // general intensities
-      nl,     // length of normal
-      atten;  // attenuation computations
-
-VECTOR4D u, v, n, l, d, s; // used for cross product and light vector calculations
-
-//Write_Error("\nEntering lighting function");
-
-// for each valid poly, light it...
-for (int poly=0; poly < rend_list->num_polys; poly++)
-    {
-    // acquire polygon
-    POLYF4DV2_PTR curr_poly = rend_list->poly_ptrs[poly];
-
-    // light this polygon if and only if it's not clipped, not culled,
-    // active, and visible
-    if (!(curr_poly->state & POLY4DV2_STATE_ACTIVE) ||
-         (curr_poly->state & POLY4DV2_STATE_CLIPPED ) ||
-         (curr_poly->state & POLY4DV2_STATE_BACKFACE) ||
-         (curr_poly->state & POLY4DV2_STATE_LIT) )
-       continue; // move onto next poly
-
-    //Write_Error("\npoly %d",poly);
-
-#ifdef DEBUG_ON
-	// track rendering stats
-    debug_polys_lit_per_frame++;
-#endif
-
-
-   
-    // set state of polygon to lit
-    SET_BIT(curr_poly->state, POLY4DV2_STATE_LIT);
-
-    // we will use the transformed polygon vertex list since the backface removal
-    // only makes sense at the world coord stage further of the pipeline 
-
-    // test the lighting mode of the polygon (use flat for flat, gouraud))
-    if (curr_poly->attr & POLY4DV2_ATTR_SHADE_MODE_FLAT)
-       {
-       //Write_Error("\nEntering Flat Shader");
-
-       // step 1: extract the base color out in RGB mode
-       // assume 565 format
-        _RGB565FROM16BIT(curr_poly->color, &r_base, &g_base, &b_base);
-       // scale to 8 bit 
-       r_base <<= 3;
-       g_base <<= 2;
-       b_base <<= 3;
-
-        // std::cout<<"color = " << r_base<<" "<< g_base <<" "<< b_base<<std::endl;
-       //Write_Error("\nBase color=%d,%d,%d", r_base, g_base, b_base);
-
-       // initialize color sum
-       r_sum  = 0;
-       g_sum  = 0;
-       b_sum  = 0;
-
-       //Write_Error("\nsum color=%d,%d,%d", r_sum, g_sum, b_sum);
-
-       // new optimization:
-       // when there are multiple lights in the system we will end up performing numerous
-       // redundant calculations to minimize this my strategy is to set key variables to 
-       // to MAX values on each loop, then during the lighting calcs to test the vars for
-       // the max value, if they are the max value then the first light that needs the math
-       // will do it, and then save the information into the variable (causing it to change state
-       // from an invalid number) then any other lights that need the math can use the previously
-       // computed value
-       
-       // set surface normal.z to FLT_MAX to flag it as non-computed
-       n.z = FLT_MAX;
-
-       // loop thru lights
-       for (int curr_light = 0; curr_light < max_lights; curr_light++)
-           {
-           // is this light active
-           if (lights[curr_light].state==LIGHTV1_STATE_OFF)
-              continue;
-
-           //Write_Error("\nprocessing light %d",curr_light);
-
-           // what kind of light are we dealing with
-           if (lights[curr_light].attr & LIGHTV1_ATTR_AMBIENT)
-              {
-              //Write_Error("\nEntering ambient light...");
-
-              // simply multiply each channel against the color of the 
-              // polygon then divide by 256 to scale back to 0..255
-              // use a shift in real life!!! >> 8
-              r_sum+= ((lights[curr_light].c_ambient.r * r_base) / 256);
-              g_sum+= ((lights[curr_light].c_ambient.g * g_base) / 256);
-              b_sum+= ((lights[curr_light].c_ambient.b * b_base) / 256);
-
-              //Write_Error("\nambient sum=%d,%d,%d", r_sum, g_sum, b_sum);
-
-              // there better only be one ambient light!
-
-              } // end if
-           else
-           if (lights[curr_light].attr & LIGHTV1_ATTR_INFINITE) ///////////////////////////////////////////
-              {
-              //Write_Error("\nEntering infinite light...");
-
-              // infinite lighting, we need the surface normal, and the direction
-              // of the light source
-
-              // test if we already computed poly normal in previous calculation
-              if (n.z==FLT_MAX)       
-                 {
-                 // we need to compute the normal of this polygon face, and recall
-                 // that the vertices are in cw order, u=p0->p1, v=p0->p2, n=uxv
- 
-                 // build u, v
-                 VECTOR4D_Build(&curr_poly->tvlist[0].v, &curr_poly->tvlist[1].v, &u);
-                 VECTOR4D_Build(&curr_poly->tvlist[0].v, &curr_poly->tvlist[2].v, &v);
-
-                 // compute cross product
-                 VECTOR4D_Cross(&u, &v, &n);
-                 } // end if
-
-              // at this point, we are almost ready, but we have to normalize the normal vector!
-              // this is a key optimization we can make later, we can pre-compute the length of all polygon
-              // normals, so this step can be optimized
-              // compute length of normal
-              //nl = VECTOR4D_Length_Fast2(&n);
-              nl = curr_poly->nlength;  
-      
-              // ok, recalling the lighting model for infinite lights
-              // I(d)dir = I0dir * Cldir
-              // and for the diffuse model
-              // Itotald =   Rsdiffuse*Idiffuse * (n . l)
-              // so we basically need to multiple it all together
-              // notice the scaling by 128, I want to avoid floating point calculations, not because they 
-              // are slower, but the conversion to and from cost cycles
-
-              dp = VECTOR4D_Dot(&n, &lights[curr_light].dir);
-              
-              // only add light if dp > 0
-              if (dp > 0)
-                 { 
-                 i = 128*dp/nl; 
-                 r_sum+= (lights[curr_light].c_diffuse.r * r_base * i) / (256*128);
-                 g_sum+= (lights[curr_light].c_diffuse.g * g_base * i) / (256*128);
-                 b_sum+= (lights[curr_light].c_diffuse.b * b_base * i) / (256*128);
-                 } // end if
-
-              //Write_Error("\ninfinite sum=%d,%d,%d", r_sum, g_sum, b_sum);
-
-              } // end if infinite light
-           else
-           if (lights[curr_light].attr & LIGHTV1_ATTR_POINT) ///////////////////////////////////////
-              {
-              //Write_Error("\nEntering point light...");
-
-              // perform point light computations
-              // light model for point light is once again:
-              //              I0point * Clpoint
-              //  I(d)point = ___________________
-              //              kc +  kl*d + kq*d2              
-              //
-              //  Where d = |p - s|
-              // thus it's almost identical to the infinite light, but attenuates as a function
-              // of distance from the point source to the surface point being lit
-
-              // test if we already computed poly normal in previous calculation
-              if (n.z==FLT_MAX)       
-                 {
-                 // we need to compute the normal of this polygon face, and recall
-                 // that the vertices are in cw order, u=p0->p1, v=p0->p2, n=uxv
- 
-                 // build u, v
-                 VECTOR4D_Build(&curr_poly->tvlist[0].v, &curr_poly->tvlist[1].v, &u);
-                 VECTOR4D_Build(&curr_poly->tvlist[0].v, &curr_poly->tvlist[2].v, &v);
-
-                 // compute cross product
-                 VECTOR4D_Cross(&u, &v, &n);
-                 } // end if
-
-              // at this point, we are almost ready, but we have to normalize the normal vector!
-              // this is a key optimization we can make later, we can pre-compute the length of all polygon
-              // normals, so this step can be optimized
-              // compute length of normal
-              //nl = VECTOR4D_Length_Fast2(&n);
-              nl = curr_poly->nlength;  
-
-              // compute vector from surface to light
-              VECTOR4D_Build(&curr_poly->tvlist[0].v, &lights[curr_light].pos, &l);
-
-              // compute distance and attenuation
-              dist = VECTOR4D_Length_Fast2(&l);  
-
-              // and for the diffuse model
-              // Itotald =   Rsdiffuse*Idiffuse * (n . l)
-              // so we basically need to multiple it all together
-              // notice the scaling by 128, I want to avoid floating point calculations, not because they 
-              // are slower, but the conversion to and from cost cycles
-              dp = VECTOR4D_Dot(&n, &l);
-              
-              // only add light if dp > 0
-              if (dp > 0)
-                 { 
-                 atten =  (lights[curr_light].kc + lights[curr_light].kl*dist + lights[curr_light].kq*dist*dist);    
-
-                 i = 128*dp / (nl * dist * atten ); 
-
-                 r_sum += (lights[curr_light].c_diffuse.r * r_base * i) / (256*128);
-                 g_sum += (lights[curr_light].c_diffuse.g * g_base * i) / (256*128);
-                 b_sum += (lights[curr_light].c_diffuse.b * b_base * i) / (256*128);
-                 } // end if
-
-
-              //Write_Error("\npoint sum=%d,%d,%d",r_sum,g_sum,b_sum);
-
-              } // end if point
-           else
-           if (lights[curr_light].attr & LIGHTV1_ATTR_SPOTLIGHT1) ////////////////////////////////////
-              {
-              //Write_Error("\nentering spot light1...");
-
-              // perform spotlight/point computations simplified model that uses
-              // point light WITH a direction to simulate a spotlight
-              // light model for point light is once again:
-              //              I0point * Clpoint
-              //  I(d)point = ___________________
-              //              kc +  kl*d + kq*d2              
-              //
-              //  Where d = |p - s|
-              // thus it's almost identical to the infinite light, but attenuates as a function
-              // of distance from the point source to the surface point being lit
-
-              // test if we already computed poly normal in previous calculation
-              if (n.z==FLT_MAX)       
-                 {
-                 // we need to compute the normal of this polygon face, and recall
-                 // that the vertices are in cw order, u=p0->p1, v=p0->p2, n=uxv
- 
-                 // build u, v
-                 VECTOR4D_Build(&curr_poly->tvlist[0].v, &curr_poly->tvlist[1].v, &u);
-                 VECTOR4D_Build(&curr_poly->tvlist[0].v, &curr_poly->tvlist[2].v, &v);
-
-                 // compute cross product
-                 VECTOR4D_Cross(&u, &v, &n);
-                 } // end if
-
-              // at this point, we are almost ready, but we have to normalize the normal vector!
-              // this is a key optimization we can make later, we can pre-compute the length of all polygon
-              // normals, so this step can be optimized
-              // compute length of normal
-              //nl = VECTOR4D_Length_Fast2(&n);
-              nl = curr_poly->nlength;  
-       
-              // compute vector from surface to light
-              VECTOR4D_Build(&curr_poly->tvlist[0].v, &lights[curr_light].pos, &l);
-
-              // compute distance and attenuation
-              dist = VECTOR4D_Length_Fast2(&l);  
-
-              // and for the diffuse model
-              // Itotald =   Rsdiffuse*Idiffuse * (n . l)
-              // so we basically need to multiple it all together
-              // notice the scaling by 128, I want to avoid floating point calculations, not because they 
-              // are slower, but the conversion to and from cost cycles
-
-              // note that I use the direction of the light here rather than a the vector to the light
-              // thus we are taking orientation into account which is similar to the spotlight model
-              dp = VECTOR4D_Dot(&n, &lights[curr_light].dir);
-              
-              // only add light if dp > 0
-              if (dp > 0)
-                 { 
-                 atten =  (lights[curr_light].kc + lights[curr_light].kl*dist + lights[curr_light].kq*dist*dist);    
-
-                 i = 128*dp / (nl * atten ); 
-
-                 r_sum += (lights[curr_light].c_diffuse.r * r_base * i) / (256*128);
-                 g_sum += (lights[curr_light].c_diffuse.g * g_base * i) / (256*128);
-                 b_sum += (lights[curr_light].c_diffuse.b * b_base * i) / (256*128);
-                 } // end if
-
-              //Write_Error("\nspotlight sum=%d,%d,%d",r_sum, g_sum, b_sum);
-
-              } // end if spotlight1
-           else
-           if (lights[curr_light].attr & LIGHTV1_ATTR_SPOTLIGHT2) // simple version ////////////////////
-              {
-              //Write_Error("\nEntering spotlight2 ...");
- 
-              // perform spot light computations
-              // light model for spot light simple version is once again:
-              //         	     I0spotlight * Clspotlight * MAX( (l . s), 0)^pf                     
-              // I(d)spotlight = __________________________________________      
-              //               		 kc + kl*d + kq*d2        
-              // Where d = |p - s|, and pf = power factor
-
-              // thus it's almost identical to the point, but has the extra term in the numerator
-              // relating the angle between the light source and the point on the surface
-
-              // test if we already computed poly normal in previous calculation
-              if (n.z==FLT_MAX)       
-                 {
-                 // we need to compute the normal of this polygon face, and recall
-                 // that the vertices are in cw order, u=p0->p1, v=p0->p2, n=uxv
- 
-                 // build u, v
-                 VECTOR4D_Build(&curr_poly->tvlist[0].v, &curr_poly->tvlist[1].v, &u);
-                 VECTOR4D_Build(&curr_poly->tvlist[0].v, &curr_poly->tvlist[2].v, &v);
-
-                 // compute cross product
-                 VECTOR4D_Cross(&u, &v, &n);
-                 } // end if
-
-              // at this point, we are almost ready, but we have to normalize the normal vector!
-              // this is a key optimization we can make later, we can pre-compute the length of all polygon
-              // normals, so this step can be optimized
-              // compute length of normal
-              //nl = VECTOR4D_Length_Fast2(&n);
-              nl = curr_poly->nlength;  
-             
-              // and for the diffuse model
-              // Itotald =   Rsdiffuse*Idiffuse * (n . l)
-              // so we basically need to multiple it all together
-              // notice the scaling by 128, I want to avoid floating point calculations, not because they 
-              // are slower, but the conversion to and from cost cycles
-              dp = VECTOR4D_Dot(&n, &lights[curr_light].dir);
-              
-              // only add light if dp > 0
-              if (dp > 0)
-                 { 
-                 // compute vector from light to surface (different from l which IS the light dir)
-                 VECTOR4D_Build( &lights[curr_light].pos, &curr_poly->tvlist[0].v, &s);
-
-                 // compute length of s (distance to light source) to normalize s for lighting calc
-                 dists = VECTOR4D_Length_Fast2(&s);  
-
-                 // compute spot light term (s . l)
-                 float dpsl = VECTOR4D_Dot(&s, &lights[curr_light].dir)/dists;
-
-                 // proceed only if term is positive
-                 if (dpsl > 0) 
-                    {
-                    // compute attenuation
-                    atten = (lights[curr_light].kc + lights[curr_light].kl*dists + lights[curr_light].kq*dists*dists);    
-       
-                    // for speed reasons, pf exponents that are less that 1.0 are out of the question, and exponents
-                    // must be integral
-                    float dpsl_exp = dpsl;
- 
-                    // exponentiate for positive integral powers
-                    for (int e_index = 1; e_index < (int)lights[curr_light].pf; e_index++)
-                         dpsl_exp*=dpsl;
-
-                    // now dpsl_exp holds (dpsl)^pf power which is of course (s . l)^pf 
-                                                      
-                    i = 128*dp * dpsl_exp / (nl * atten ); 
-
-                    r_sum += (lights[curr_light].c_diffuse.r * r_base * i) / (256*128);
-                    g_sum += (lights[curr_light].c_diffuse.g * g_base * i) / (256*128);
-                    b_sum += (lights[curr_light].c_diffuse.b * b_base * i) / (256*128);
-  
-                    } // end if
-
-                 } // end if
-
-              //Write_Error("\nSpotlight sum=%d,%d,%d",r_sum, g_sum, b_sum);
-     
-              } // end if spot light
-
-           } // end for light
-  
-       // make sure colors aren't out of range
-       if (r_sum  > 255) r_sum = 255;
-       if (g_sum  > 255) g_sum = 255;
-       if (b_sum  > 255) b_sum = 255;
-
-       //Write_Error("\nWriting final values to polygon %d = %d,%d,%d", poly, r_sum, g_sum, b_sum);
-
-       // write the color over current color
-       curr_poly->lit_color[0] = RGB16Bit565(r_sum, g_sum, b_sum);
-
-       } // end if
-    else
-    if (curr_poly->attr & POLY4DV2_ATTR_SHADE_MODE_GOURAUD) /////////////////////////////////
-       {
-       // gouraud shade, unfortunetly at this point in the pipeline, we have lost the original
-       // mesh, and only have triangles, thus, many triangles will share the same vertices and
-       // they will get lit 2x since we don't have any way to tell this, alas, performing lighting
-       // at the object level is a better idea when gouraud shading is performed since the 
-       // commonality of vertices is still intact, in any case, lighting here is similar to polygon
-       // flat shaded, but we do it 3 times, once for each vertex, additionally there are lots
-       // of opportunities for optimization, but I am going to lay off them for now, so the code
-       // is intelligible, later we will optimize
-
-       //Write_Error("\nEntering gouraud shader...");
-
-       // step 1: extract the base color out in RGB mode
-       // assume 565 format
-       _RGB565FROM16BIT(curr_poly->color, &r_base, &g_base, &b_base);
-
-       // scale to 8 bit 
-       r_base <<= 3;
-       g_base <<= 2;
-       b_base <<= 3;
-
-       //Write_Error("\nBase color=%d, %d, %d", r_base, g_base, b_base);
-
-       // initialize color sum(s) for vertices
-       r_sum0  = 0;
-       g_sum0  = 0;
-       b_sum0  = 0;
-
-       r_sum1  = 0;
-       g_sum1  = 0;
-       b_sum1  = 0;
-
-       r_sum2  = 0;
-       g_sum2  = 0;
-       b_sum2  = 0;
-
-       //Write_Error("\nColor sums rgb0[%d, %d, %d], rgb1[%d,%d,%d], rgb2[%d,%d,%d]", r_sum0, g_sum0, b_sum0,   r_sum1, g_sum1, b_sum1, r_sum2, g_sum2, b_sum2);
-
-       // new optimization:
-       // when there are multiple lights in the system we will end up performing numerous
-       // redundant calculations to minimize this my strategy is to set key variables to 
-       // to MAX values on each loop, then during the lighting calcs to test the vars for
-       // the max value, if they are the max value then the first light that needs the math
-       // will do it, and then save the information into the variable (causing it to change state
-       // from an invalid number) then any other lights that need the math can use the previously
-       // computed value, however, since we already have the normals, not much here to cache on
-       // a large scale, but small scale stuff is there, however, we will optimize those later
-
-       // loop thru lights
-       for (int curr_light = 0; curr_light < max_lights; curr_light++)
-           {
-           // is this light active
-           if (lights[curr_light].state==LIGHTV1_STATE_OFF)
-              continue;
-
-           //Write_Error("\nprocessing light %d", curr_light);
-
-           // what kind of light are we dealing with
-           if (lights[curr_light].attr & LIGHTV1_ATTR_AMBIENT) ///////////////////////////////
-              {
-              //Write_Error("\nEntering ambient light....");
-
-              // simply multiply each channel against the color of the 
-              // polygon then divide by 256 to scale back to 0..255
-              // use a shift in real life!!! >> 8
-              ri = ((lights[curr_light].c_ambient.r * r_base) / 256);
-              gi = ((lights[curr_light].c_ambient.g * g_base) / 256);
-              bi = ((lights[curr_light].c_ambient.b * b_base) / 256);
-            
-              // ambient light has the same affect on each vertex
-              r_sum0+=ri;
-              g_sum0+=gi;
-              b_sum0+=bi;
-  
-              r_sum1+=ri;
-              g_sum1+=gi;
-              b_sum1+=bi;
-              
-              r_sum2+=ri;
-              g_sum2+=gi;
-              b_sum2+=bi;
-
-              // there better only be one ambient light!
-              //Write_Error("\nexiting ambient ,sums rgb0[%d, %d, %d], rgb1[%d,%d,%d], rgb2[%d,%d,%d]", r_sum0, g_sum0, b_sum0,  r_sum1, g_sum1, b_sum1,  r_sum2, g_sum2, b_sum2);
-
-              } // end if
-           else
-           if (lights[curr_light].attr & LIGHTV1_ATTR_INFINITE) /////////////////////////////////
-              {
-              //Write_Error("\nentering infinite light...");
-
-              // infinite lighting, we need the surface normal, and the direction
-              // of the light source
-
-              // no longer need to compute normal or length, we already have the vertex normal
-              // and it's length is 1.0  
-              // ....
-      
-              // ok, recalling the lighting model for infinite lights
-              // I(d)dir = I0dir * Cldir
-              // and for the diffuse model
-              // Itotald =   Rsdiffuse*Idiffuse * (n . l)
-              // so we basically need to multiple it all together
-              // notice the scaling by 128, I want to avoid floating point calculations, not because they 
-              // are slower, but the conversion to and from cost cycles
-
-              // need to perform lighting for each vertex (lots of redundant math, optimize later!)
-
-              //Write_Error("\nv0=[%f, %f, %f]=%f, v1=[%f, %f, %f]=%f, v2=[%f, %f, %f]=%f",
-                // curr_poly->tvlist[0].n.x, curr_poly->tvlist[0].n.y,curr_poly->tvlist[0].n.z, VECTOR4D_Length(&curr_poly->tvlist[0].n),
-                // curr_poly->tvlist[1].n.x, curr_poly->tvlist[1].n.y,curr_poly->tvlist[1].n.z, VECTOR4D_Length(&curr_poly->tvlist[1].n),
-                // curr_poly->tvlist[2].n.x, curr_poly->tvlist[2].n.y,curr_poly->tvlist[2].n.z, VECTOR4D_Length(&curr_poly->tvlist[2].n) );
-
-              // vertex 0
-              dp = VECTOR4D_Dot(&curr_poly->tvlist[0].n, &lights[curr_light].dir); 
-              
-              // only add light if dp > 0
-              if (dp > 0)
-                 { 
-                 i = 128*dp; 
-                 r_sum0+= (lights[curr_light].c_diffuse.r * r_base * i) / (256*128);
-                 g_sum0+= (lights[curr_light].c_diffuse.g * g_base * i) / (256*128);
-                 b_sum0+= (lights[curr_light].c_diffuse.b * b_base * i) / (256*128);
-                 } // end if
-
-              // vertex 1
-              dp = VECTOR4D_Dot(&curr_poly->tvlist[1].n, &lights[curr_light].dir);
-              
-              // only add light if dp > 0
-              if (dp > 0)
-                 { 
-                 i = 128*dp; 
-                 r_sum1+= (lights[curr_light].c_diffuse.r * r_base * i) / (256*128);
-                 g_sum1+= (lights[curr_light].c_diffuse.g * g_base * i) / (256*128);
-                 b_sum1+= (lights[curr_light].c_diffuse.b * b_base * i) / (256*128);
-                 } // end if
-
-              // vertex 2
-              dp = VECTOR4D_Dot(&curr_poly->tvlist[2].n, &lights[curr_light].dir);
-              
-              // only add light if dp > 0
-              if (dp > 0)
-                 { 
-                 i = 128*dp; 
-                 r_sum2+= (lights[curr_light].c_diffuse.r * r_base * i) / (256*128);
-                 g_sum2+= (lights[curr_light].c_diffuse.g * g_base * i) / (256*128);
-                 b_sum2+= (lights[curr_light].c_diffuse.b * b_base * i) / (256*128);
-                 } // end if
-
-              //Write_Error("\nexiting infinite, color sums rgb0[%d, %d, %d], rgb1[%d,%d,%d], rgb2[%d,%d,%d]", r_sum0, g_sum0, b_sum0,  r_sum1, g_sum1, b_sum1,  r_sum2, g_sum2, b_sum2);
-
-              } // end if infinite light
-           else
-           if (lights[curr_light].attr & LIGHTV1_ATTR_POINT) //////////////////////////////////////
-              {
-              // perform point light computations
-              // light model for point light is once again:
-              //              I0point * Clpoint
-              //  I(d)point = ___________________
-              //              kc +  kl*d + kq*d2              
-              //
-              //  Where d = |p - s|
-              // thus it's almost identical to the infinite light, but attenuates as a function
-              // of distance from the point source to the surface point being lit
-
-              // .. normal already in vertex
-
-              //Write_Error("\nEntering point light....");
-
-              // compute vector from surface to light
-              VECTOR4D_Build(&curr_poly->tvlist[0].v, &lights[curr_light].pos, &l);
-
-              // compute distance and attenuation
-              dist = VECTOR4D_Length_Fast2(&l);  
-
-              // and for the diffuse model
-              // Itotald =   Rsdiffuse*Idiffuse * (n . l)
-              // so we basically need to multiple it all together
-              // notice the scaling by 128, I want to avoid floating point calculations, not because they 
-              // are slower, but the conversion to and from cost cycles
-
-              // perform the calculation for all 3 vertices
-
-              // vertex 0
-              dp = VECTOR4D_Dot(&curr_poly->tvlist[0].n, &l);
-              
-              // only add light if dp > 0
-              if (dp > 0)
-                 { 
-                 atten =  (lights[curr_light].kc + lights[curr_light].kl*dist + lights[curr_light].kq*dist*dist);    
-
-                 i = 128*dp / (dist * atten ); 
-
-                 r_sum0 += (lights[curr_light].c_diffuse.r * r_base * i) / (256*128);
-                 g_sum0 += (lights[curr_light].c_diffuse.g * g_base * i) / (256*128);
-                 b_sum0 += (lights[curr_light].c_diffuse.b * b_base * i) / (256*128);
-                 } // end if
-
-
-              // vertex 1
-              dp = VECTOR4D_Dot(&curr_poly->tvlist[1].n, &l);
-              
-              // only add light if dp > 0
-              if (dp > 0)
-                 { 
-                 atten =  (lights[curr_light].kc + lights[curr_light].kl*dist + lights[curr_light].kq*dist*dist);    
-
-                 i = 128*dp / (dist * atten ); 
-
-                 r_sum1 += (lights[curr_light].c_diffuse.r * r_base * i) / (256*128);
-                 g_sum1 += (lights[curr_light].c_diffuse.g * g_base * i) / (256*128);
-                 b_sum1 += (lights[curr_light].c_diffuse.b * b_base * i) / (256*128);
-                 } // end if
-
-              // vertex 2
-              dp = VECTOR4D_Dot(&curr_poly->tvlist[2].n, &l);
-              
-              // only add light if dp > 0
-              if (dp > 0)
-                 { 
-                 atten =  (lights[curr_light].kc + lights[curr_light].kl*dist + lights[curr_light].kq*dist*dist);    
-
-                 i = 128*dp / (dist * atten ); 
-
-                 r_sum2 += (lights[curr_light].c_diffuse.r * r_base * i) / (256*128);
-                 g_sum2 += (lights[curr_light].c_diffuse.g * g_base * i) / (256*128);
-                 b_sum2 += (lights[curr_light].c_diffuse.b * b_base * i) / (256*128);
-                 } // end if
-
-              //Write_Error("\nexiting point light, rgb0[%d, %d, %d], rgb1[%d,%d,%d], rgb2[%d,%d,%d]", r_sum0, g_sum0, b_sum0,  r_sum1, g_sum1, b_sum1, r_sum2, g_sum2, b_sum2);
-
-              } // end if point
-           else
-           if (lights[curr_light].attr & LIGHTV1_ATTR_SPOTLIGHT1) ///////////////////////////////////////
-              {
-              // perform spotlight/point computations simplified model that uses
-              // point light WITH a direction to simulate a spotlight
-              // light model for point light is once again:
-              //              I0point * Clpoint
-              //  I(d)point = ___________________
-              //              kc +  kl*d + kq*d2              
-              //
-              //  Where d = |p - s|
-              // thus it's almost identical to the infinite light, but attenuates as a function
-              // of distance from the point source to the surface point being lit
-
-              //Write_Error("\nentering spotlight1....");
-
-              // .. normal is already computed
-       
-              // compute vector from surface to light
-              VECTOR4D_Build(&curr_poly->tvlist[0].v, &lights[curr_light].pos, &l);
-
-              // compute distance and attenuation
-              dist = VECTOR4D_Length_Fast2(&l);  
-
-              // and for the diffuse model
-              // Itotald =   Rsdiffuse*Idiffuse * (n . l)
-              // so we basically need to multiple it all together
-              // notice the scaling by 128, I want to avoid floating point calculations, not because they 
-              // are slower, but the conversion to and from cost cycles
-
-              // note that I use the direction of the light here rather than a the vector to the light
-              // thus we are taking orientation into account which is similar to the spotlight model
-
-              // vertex 0
-              dp = VECTOR4D_Dot(&curr_poly->tvlist[0].n, &lights[curr_light].dir);
-              
-              // only add light if dp > 0
-              if (dp > 0)
-                 { 
-                 atten =  (lights[curr_light].kc + lights[curr_light].kl*dist + lights[curr_light].kq*dist*dist);    
-
-                 i = 128*dp / ( atten ); 
-
-                 r_sum0 += (lights[curr_light].c_diffuse.r * r_base * i) / (256*128);
-                 g_sum0 += (lights[curr_light].c_diffuse.g * g_base * i) / (256*128);
-                 b_sum0 += (lights[curr_light].c_diffuse.b * b_base * i) / (256*128);
-                 } // end if
-
-              // vertex 1
-              dp = VECTOR4D_Dot(&curr_poly->tvlist[1].n, &lights[curr_light].dir);
-              
-              // only add light if dp > 0
-              if (dp > 0)
-                 { 
-                 atten =  (lights[curr_light].kc + lights[curr_light].kl*dist + lights[curr_light].kq*dist*dist);    
-
-                 i = 128*dp / ( atten ); 
-
-                 r_sum1 += (lights[curr_light].c_diffuse.r * r_base * i) / (256*128);
-                 g_sum1 += (lights[curr_light].c_diffuse.g * g_base * i) / (256*128);
-                 b_sum1 += (lights[curr_light].c_diffuse.b * b_base * i) / (256*128);
-                 } // end i
-
-              // vertex 2
-              dp = VECTOR4D_Dot(&curr_poly->tvlist[2].n, &lights[curr_light].dir);
-              
-              // only add light if dp > 0
-              if (dp > 0)
-                 { 
-                 atten =  (lights[curr_light].kc + lights[curr_light].kl*dist + lights[curr_light].kq*dist*dist);    
-
-                 i = 128*dp / ( atten ); 
-
-                 r_sum2 += (lights[curr_light].c_diffuse.r * r_base * i) / (256*128);
-                 g_sum2 += (lights[curr_light].c_diffuse.g * g_base * i) / (256*128);
-                 b_sum2 += (lights[curr_light].c_diffuse.b * b_base * i) / (256*128);
-                 } // end i
-
-              //Write_Error("\nexiting spotlight1, sums rgb0[%d, %d, %d], rgb1[%d,%d,%d], rgb2[%d,%d,%d]", r_sum0, g_sum0, b_sum0,  r_sum1, g_sum1, b_sum1,  r_sum2, g_sum2, b_sum2);
-
-              } // end if spotlight1
-           else
-           if (lights[curr_light].attr & LIGHTV1_ATTR_SPOTLIGHT2) // simple version //////////////////////////
-              {
-              // perform spot light computations
-              // light model for spot light simple version is once again:
-              //         	     I0spotlight * Clspotlight * MAX( (l . s), 0)^pf                     
-              // I(d)spotlight = __________________________________________      
-              //               		 kc + kl*d + kq*d2        
-              // Where d = |p - s|, and pf = power factor
-
-              // thus it's almost identical to the point, but has the extra term in the numerator
-              // relating the angle between the light source and the point on the surface
-
-              // .. already have normals and length are 1.0
-             
-              // and for the diffuse model
-              // Itotald =   Rsdiffuse*Idiffuse * (n . l)
-              // so we basically need to multiple it all together
-              // notice the scaling by 128, I want to avoid floating point calculations, not because they 
-              // are slower, but the conversion to and from cost cycles
-
-              //Write_Error("\nEntering spotlight2...");
-
-              // tons of redundant math here! lots to optimize later!
-              
-              // vertex 0
-              dp = VECTOR4D_Dot(&curr_poly->tvlist[0].n, &lights[curr_light].dir);
-              
-              // only add light if dp > 0
-              if (dp > 0)
-                 { 
-                 // compute vector from light to surface (different from l which IS the light dir)
-                 VECTOR4D_Build( &lights[curr_light].pos, &curr_poly->tvlist[0].v, &s);
-
-                 // compute length of s (distance to light source) to normalize s for lighting calc
-                 dists = VECTOR4D_Length_Fast2(&s);  
-
-                 // compute spot light term (s . l)
-                 float dpsl = VECTOR4D_Dot(&s, &lights[curr_light].dir)/dists;
-
-                 // proceed only if term is positive
-                 if (dpsl > 0) 
-                    {
-                    // compute attenuation
-                    atten = (lights[curr_light].kc + lights[curr_light].kl*dists + lights[curr_light].kq*dists*dists);    
-       
-                    // for speed reasons, pf exponents that are less that 1.0 are out of the question, and exponents
-                    // must be integral
-                    float dpsl_exp = dpsl;
- 
-                    // exponentiate for positive integral powers
-                    for (int e_index = 1; e_index < (int)lights[curr_light].pf; e_index++)
-                         dpsl_exp*=dpsl;
-
-                    // now dpsl_exp holds (dpsl)^pf power which is of course (s . l)^pf 
-                                                      
-                    i = 128*dp * dpsl_exp / ( atten ); 
-
-                    r_sum0 += (lights[curr_light].c_diffuse.r * r_base * i) / (256*128);
-                    g_sum0 += (lights[curr_light].c_diffuse.g * g_base * i) / (256*128);
-                    b_sum0 += (lights[curr_light].c_diffuse.b * b_base * i) / (256*128);
-  
-                    } // end if
-
-                 } // end if
-
-              // vertex 1
-              dp = VECTOR4D_Dot(&curr_poly->tvlist[1].n, &lights[curr_light].dir);
-              
-              // only add light if dp > 0
-              if (dp > 0)
-                 { 
-                 // compute vector from light to surface (different from l which IS the light dir)
-                 VECTOR4D_Build( &lights[curr_light].pos, &curr_poly->tvlist[1].v, &s);
-
-                 // compute length of s (distance to light source) to normalize s for lighting calc
-                 dists = VECTOR4D_Length_Fast2(&s);  
-
-                 // compute spot light term (s . l)
-                 float dpsl = VECTOR4D_Dot(&s, &lights[curr_light].dir)/dists;
-
-                 // proceed only if term is positive
-                 if (dpsl > 0) 
-                    {
-                    // compute attenuation
-                    atten = (lights[curr_light].kc + lights[curr_light].kl*dists + lights[curr_light].kq*dists*dists);    
-       
-                    // for speed reasons, pf exponents that are less that 1.0 are out of the question, and exponents
-                    // must be integral
-                    float dpsl_exp = dpsl;
- 
-                    // exponentiate for positive integral powers
-                    for (int e_index = 1; e_index < (int)lights[curr_light].pf; e_index++)
-                         dpsl_exp*=dpsl;
-
-                    // now dpsl_exp holds (dpsl)^pf power which is of course (s . l)^pf 
-                                                      
-                    i = 128*dp * dpsl_exp / ( atten ); 
-
-                    r_sum1 += (lights[curr_light].c_diffuse.r * r_base * i) / (256*128);
-                    g_sum1 += (lights[curr_light].c_diffuse.g * g_base * i) / (256*128);
-                    b_sum1 += (lights[curr_light].c_diffuse.b * b_base * i) / (256*128);
-  
-                    } // end if
-
-                 } // end if
-
-              // vertex 2
-              dp = VECTOR4D_Dot(&curr_poly->tvlist[2].n, &lights[curr_light].dir);
-              
-              // only add light if dp > 0
-              if (dp > 0)
-                 { 
-                 // compute vector from light to surface (different from l which IS the light dir)
-                 VECTOR4D_Build( &lights[curr_light].pos, &curr_poly->tvlist[2].v, &s);
-
-                 // compute length of s (distance to light source) to normalize s for lighting calc
-                 dists = VECTOR4D_Length_Fast2(&s);  
-
-                 // compute spot light term (s . l)
-                 float dpsl = VECTOR4D_Dot(&s, &lights[curr_light].dir)/dists;
-
-                 // proceed only if term is positive
-                 if (dpsl > 0) 
-                    {
-                    // compute attenuation
-                    atten = (lights[curr_light].kc + lights[curr_light].kl*dists + lights[curr_light].kq*dists*dists);    
-       
-                    // for speed reasons, pf exponents that are less that 1.0 are out of the question, and exponents
-                    // must be integral
-                    float dpsl_exp = dpsl;
- 
-                    // exponentiate for positive integral powers
-                    for (int e_index = 1; e_index < (int)lights[curr_light].pf; e_index++)
-                         dpsl_exp*=dpsl;
-
-                    // now dpsl_exp holds (dpsl)^pf power which is of course (s . l)^pf 
-                                                      
-                    i = 128*dp * dpsl_exp / ( atten ); 
-
-                    r_sum2 += (lights[curr_light].c_diffuse.r * r_base * i) / (256*128);
-                    g_sum2 += (lights[curr_light].c_diffuse.g * g_base * i) / (256*128);
-                    b_sum2 += (lights[curr_light].c_diffuse.b * b_base * i) / (256*128);
-                    } // end if
-
-                 } // end if
-
-              //Write_Error("\nexiting spotlight2, sums rgb0[%d, %d, %d], rgb1[%d,%d,%d], rgb2[%d,%d,%d]", r_sum0, g_sum0, b_sum0,   r_sum1, g_sum1, b_sum1,  r_sum2, g_sum2, b_sum2);
-
-              } // end if spot light
-
-           } // end for light
-  
-       // make sure colors aren't out of range
-       if (r_sum0  > 255) r_sum0 = 255;
-       if (g_sum0  > 255) g_sum0 = 255;
-       if (b_sum0  > 255) b_sum0 = 255;
-
-       if (r_sum1  > 255) r_sum1 = 255;
-       if (g_sum1  > 255) g_sum1 = 255;
-       if (b_sum1  > 255) b_sum1 = 255;
-
-       if (r_sum2  > 255) r_sum2 = 255;
-       if (g_sum2  > 255) g_sum2 = 255;
-       if (b_sum2  > 255) b_sum2 = 255;
-
-       //Write_Error("\nwriting color for poly %d", poly);
-
-       //Write_Error("\n******** final sums rgb0[%d, %d, %d], rgb1[%d,%d,%d], rgb2[%d,%d,%d]", r_sum0, g_sum0, b_sum0,  r_sum1, g_sum1, b_sum1, r_sum2, g_sum2, b_sum2);
-
-       // write the colors
-       curr_poly->lit_color[0] = RGB16Bit565(r_sum0, g_sum0, b_sum0);
-       curr_poly->lit_color[1] = RGB16Bit565(r_sum1, g_sum1, b_sum1);
-       curr_poly->lit_color[2] = RGB16Bit565(r_sum2, g_sum2, b_sum2);
-
-       } // end if
-    else // assume POLY4DV2_ATTR_SHADE_MODE_CONSTANT
-       {
-       // emmisive shading only, do nothing
-       // ...
-       curr_poly->lit_color[0] = curr_poly->color;
-
-       //Write_Error("\nentering constant shader, and exiting...");
-
-       } // end if
 
     } // end for poly
 
-// return success
-return(1);
+} // end Remove_Backfaces_RENDERLIST4DV2
+
+int Light_RENDERLIST4DV2_World16(RENDERLIST4DV2_PTR rend_list, // list to process
+                                 CAM4DV1_PTR cam,              // camera position
+                                 LIGHTV1_PTR lights,           // light list (might have more than one)
+                                 int max_lights)               // maximum lights in list
+{
+
+    // 16-bit version of function
+    // function lights the entire rendering list based on the sent lights and camera. the function supports
+    // constant/pure shading (emmisive), flat shading with ambient, infinite, point lights, and spot lights
+    // note that this lighting function is rather brute force and simply follows the math, however
+    // there are some clever integer operations that are used in scale 256 rather than going to floating
+    // point, but why? floating point and ints are the same speed, HOWEVER, the conversion to and from floating
+    // point can be cycle intensive, so if you can keep your calcs in ints then you can gain some speed
+    // also note, type 1 spot lights are simply point lights with direction, the "cone" is more of a function
+    // of the falloff due to attenuation, but they still look like spot lights
+    // type 2 spot lights are implemented with the intensity having a dot product relationship with the
+    // angle from the surface point to the light direction just like in the optimized model, but the pf term
+    // that is used for a concentration control must be 1,2,3,.... integral and non-fractional
+    // this function now performs emissive, flat, and gouraud lighting, results are stored in the
+    // lit_color[] array of each polygon
+
+    unsigned int r_base, g_base, b_base, // base color being lit
+        r_sum, g_sum, b_sum,             // sum of lighting process over all lights
+        r_sum0, g_sum0, b_sum0,
+        r_sum1, g_sum1, b_sum1,
+        r_sum2, g_sum2, b_sum2,
+        ri, gi, bi,
+        shaded_color; // final color
+
+    float dp, // dot product
+        dist, // distance from light to surface
+        dists,
+        i,     // general intensities
+        nl,    // length of normal
+        atten; // attenuation computations
+
+    VECTOR4D u, v, n, l, d, s; // used for cross product and light vector calculations
+
+    //Write_Error("\nEntering lighting function");
+
+    // for each valid poly, light it...
+    for (int poly = 0; poly < rend_list->num_polys; poly++)
+    {
+        // acquire polygon
+        POLYF4DV2_PTR curr_poly = rend_list->poly_ptrs[poly];
+
+        // light this polygon if and only if it's not clipped, not culled,
+        // active, and visible
+        if (!(curr_poly->state & POLY4DV2_STATE_ACTIVE) ||
+            (curr_poly->state & POLY4DV2_STATE_CLIPPED) ||
+            (curr_poly->state & POLY4DV2_STATE_BACKFACE) ||
+            (curr_poly->state & POLY4DV2_STATE_LIT))
+            continue; // move onto next poly
+
+            //Write_Error("\npoly %d",poly);
+
+#ifdef DEBUG_ON
+        // track rendering stats
+        debug_polys_lit_per_frame++;
+#endif
+
+        // set state of polygon to lit
+        SET_BIT(curr_poly->state, POLY4DV2_STATE_LIT);
+
+        // we will use the transformed polygon vertex list since the backface removal
+        // only makes sense at the world coord stage further of the pipeline
+
+        // test the lighting mode of the polygon (use flat for flat, gouraud))
+        if (curr_poly->attr & POLY4DV2_ATTR_SHADE_MODE_FLAT)
+        {
+            //Write_Error("\nEntering Flat Shader");
+
+            // step 1: extract the base color out in RGB mode
+            // assume 565 format
+            _RGB565FROM16BIT(curr_poly->color, &r_base, &g_base, &b_base);
+            // scale to 8 bit
+            r_base <<= 3;
+            g_base <<= 2;
+            b_base <<= 3;
+
+            // std::cout<<"color = " << r_base<<" "<< g_base <<" "<< b_base<<std::endl;
+            //Write_Error("\nBase color=%d,%d,%d", r_base, g_base, b_base);
+
+            // initialize color sum
+            r_sum = 0;
+            g_sum = 0;
+            b_sum = 0;
+
+            //Write_Error("\nsum color=%d,%d,%d", r_sum, g_sum, b_sum);
+
+            // new optimization:
+            // when there are multiple lights in the system we will end up performing numerous
+            // redundant calculations to minimize this my strategy is to set key variables to
+            // to MAX values on each loop, then during the lighting calcs to test the vars for
+            // the max value, if they are the max value then the first light that needs the math
+            // will do it, and then save the information into the variable (causing it to change state
+            // from an invalid number) then any other lights that need the math can use the previously
+            // computed value
+
+            // set surface normal.z to FLT_MAX to flag it as non-computed
+            n.z = FLT_MAX;
+
+            // loop thru lights
+            for (int curr_light = 0; curr_light < max_lights; curr_light++)
+            {
+                // is this light active
+                if (lights[curr_light].state == LIGHTV1_STATE_OFF)
+                    continue;
+
+                //Write_Error("\nprocessing light %d",curr_light);
+
+                // what kind of light are we dealing with
+                if (lights[curr_light].attr & LIGHTV1_ATTR_AMBIENT)
+                {
+                    //Write_Error("\nEntering ambient light...");
+
+                    // simply multiply each channel against the color of the
+                    // polygon then divide by 256 to scale back to 0..255
+                    // use a shift in real life!!! >> 8
+                    r_sum += ((lights[curr_light].c_ambient.r * r_base) / 256);
+                    g_sum += ((lights[curr_light].c_ambient.g * g_base) / 256);
+                    b_sum += ((lights[curr_light].c_ambient.b * b_base) / 256);
+
+                    //Write_Error("\nambient sum=%d,%d,%d", r_sum, g_sum, b_sum);
+
+                    // there better only be one ambient light!
+
+                }                                                         // end if
+                else if (lights[curr_light].attr & LIGHTV1_ATTR_INFINITE) ///////////////////////////////////////////
+                {
+                    //Write_Error("\nEntering infinite light...");
+
+                    // infinite lighting, we need the surface normal, and the direction
+                    // of the light source
+
+                    // test if we already computed poly normal in previous calculation
+                    if (n.z == FLT_MAX)
+                    {
+                        // we need to compute the normal of this polygon face, and recall
+                        // that the vertices are in cw order, u=p0->p1, v=p0->p2, n=uxv
+
+                        // build u, v
+                        VECTOR4D_Build(&curr_poly->tvlist[0].v, &curr_poly->tvlist[1].v, &u);
+                        VECTOR4D_Build(&curr_poly->tvlist[0].v, &curr_poly->tvlist[2].v, &v);
+
+                        // compute cross product
+                        VECTOR4D_Cross(&u, &v, &n);
+                    } // end if
+
+                    // at this point, we are almost ready, but we have to normalize the normal vector!
+                    // this is a key optimization we can make later, we can pre-compute the length of all polygon
+                    // normals, so this step can be optimized
+                    // compute length of normal
+                    //nl = VECTOR4D_Length_Fast2(&n);
+                    nl = curr_poly->nlength;
+
+                    // ok, recalling the lighting model for infinite lights
+                    // I(d)dir = I0dir * Cldir
+                    // and for the diffuse model
+                    // Itotald =   Rsdiffuse*Idiffuse * (n . l)
+                    // so we basically need to multiple it all together
+                    // notice the scaling by 128, I want to avoid floating point calculations, not because they
+                    // are slower, but the conversion to and from cost cycles
+
+                    dp = VECTOR4D_Dot(&n, &lights[curr_light].dir);
+
+                    // only add light if dp > 0
+                    if (dp > 0)
+                    {
+                        i = 128 * dp / nl;
+                        r_sum += (lights[curr_light].c_diffuse.r * r_base * i) / (256 * 128);
+                        g_sum += (lights[curr_light].c_diffuse.g * g_base * i) / (256 * 128);
+                        b_sum += (lights[curr_light].c_diffuse.b * b_base * i) / (256 * 128);
+                    } // end if
+
+                    //Write_Error("\ninfinite sum=%d,%d,%d", r_sum, g_sum, b_sum);
+
+                }                                                      // end if infinite light
+                else if (lights[curr_light].attr & LIGHTV1_ATTR_POINT) ///////////////////////////////////////
+                {
+                    //Write_Error("\nEntering point light...");
+
+                    // perform point light computations
+                    // light model for point light is once again:
+                    //              I0point * Clpoint
+                    //  I(d)point = ___________________
+                    //              kc +  kl*d + kq*d2
+                    //
+                    //  Where d = |p - s|
+                    // thus it's almost identical to the infinite light, but attenuates as a function
+                    // of distance from the point source to the surface point being lit
+
+                    // test if we already computed poly normal in previous calculation
+                    if (n.z == FLT_MAX)
+                    {
+                        // we need to compute the normal of this polygon face, and recall
+                        // that the vertices are in cw order, u=p0->p1, v=p0->p2, n=uxv
+
+                        // build u, v
+                        VECTOR4D_Build(&curr_poly->tvlist[0].v, &curr_poly->tvlist[1].v, &u);
+                        VECTOR4D_Build(&curr_poly->tvlist[0].v, &curr_poly->tvlist[2].v, &v);
+
+                        // compute cross product
+                        VECTOR4D_Cross(&u, &v, &n);
+                    } // end if
+
+                    // at this point, we are almost ready, but we have to normalize the normal vector!
+                    // this is a key optimization we can make later, we can pre-compute the length of all polygon
+                    // normals, so this step can be optimized
+                    // compute length of normal
+                    //nl = VECTOR4D_Length_Fast2(&n);
+                    nl = curr_poly->nlength;
+
+                    // compute vector from surface to light
+                    VECTOR4D_Build(&curr_poly->tvlist[0].v, &lights[curr_light].pos, &l);
+
+                    // compute distance and attenuation
+                    dist = VECTOR4D_Length_Fast2(&l);
+
+                    // and for the diffuse model
+                    // Itotald =   Rsdiffuse*Idiffuse * (n . l)
+                    // so we basically need to multiple it all together
+                    // notice the scaling by 128, I want to avoid floating point calculations, not because they
+                    // are slower, but the conversion to and from cost cycles
+                    dp = VECTOR4D_Dot(&n, &l);
+
+                    // only add light if dp > 0
+                    if (dp > 0)
+                    {
+                        atten = (lights[curr_light].kc + lights[curr_light].kl * dist + lights[curr_light].kq * dist * dist);
+
+                        i = 128 * dp / (nl * dist * atten);
+
+                        r_sum += (lights[curr_light].c_diffuse.r * r_base * i) / (256 * 128);
+                        g_sum += (lights[curr_light].c_diffuse.g * g_base * i) / (256 * 128);
+                        b_sum += (lights[curr_light].c_diffuse.b * b_base * i) / (256 * 128);
+                    } // end if
+
+                    //Write_Error("\npoint sum=%d,%d,%d",r_sum,g_sum,b_sum);
+
+                }                                                           // end if point
+                else if (lights[curr_light].attr & LIGHTV1_ATTR_SPOTLIGHT1) ////////////////////////////////////
+                {
+                    //Write_Error("\nentering spot light1...");
+
+                    // perform spotlight/point computations simplified model that uses
+                    // point light WITH a direction to simulate a spotlight
+                    // light model for point light is once again:
+                    //              I0point * Clpoint
+                    //  I(d)point = ___________________
+                    //              kc +  kl*d + kq*d2
+                    //
+                    //  Where d = |p - s|
+                    // thus it's almost identical to the infinite light, but attenuates as a function
+                    // of distance from the point source to the surface point being lit
+
+                    // test if we already computed poly normal in previous calculation
+                    if (n.z == FLT_MAX)
+                    {
+                        // we need to compute the normal of this polygon face, and recall
+                        // that the vertices are in cw order, u=p0->p1, v=p0->p2, n=uxv
+
+                        // build u, v
+                        VECTOR4D_Build(&curr_poly->tvlist[0].v, &curr_poly->tvlist[1].v, &u);
+                        VECTOR4D_Build(&curr_poly->tvlist[0].v, &curr_poly->tvlist[2].v, &v);
+
+                        // compute cross product
+                        VECTOR4D_Cross(&u, &v, &n);
+                    } // end if
+
+                    // at this point, we are almost ready, but we have to normalize the normal vector!
+                    // this is a key optimization we can make later, we can pre-compute the length of all polygon
+                    // normals, so this step can be optimized
+                    // compute length of normal
+                    //nl = VECTOR4D_Length_Fast2(&n);
+                    nl = curr_poly->nlength;
+
+                    // compute vector from surface to light
+                    VECTOR4D_Build(&curr_poly->tvlist[0].v, &lights[curr_light].pos, &l);
+
+                    // compute distance and attenuation
+                    dist = VECTOR4D_Length_Fast2(&l);
+
+                    // and for the diffuse model
+                    // Itotald =   Rsdiffuse*Idiffuse * (n . l)
+                    // so we basically need to multiple it all together
+                    // notice the scaling by 128, I want to avoid floating point calculations, not because they
+                    // are slower, but the conversion to and from cost cycles
+
+                    // note that I use the direction of the light here rather than a the vector to the light
+                    // thus we are taking orientation into account which is similar to the spotlight model
+                    dp = VECTOR4D_Dot(&n, &lights[curr_light].dir);
+
+                    // only add light if dp > 0
+                    if (dp > 0)
+                    {
+                        atten = (lights[curr_light].kc + lights[curr_light].kl * dist + lights[curr_light].kq * dist * dist);
+
+                        i = 128 * dp / (nl * atten);
+
+                        r_sum += (lights[curr_light].c_diffuse.r * r_base * i) / (256 * 128);
+                        g_sum += (lights[curr_light].c_diffuse.g * g_base * i) / (256 * 128);
+                        b_sum += (lights[curr_light].c_diffuse.b * b_base * i) / (256 * 128);
+                    } // end if
+
+                    //Write_Error("\nspotlight sum=%d,%d,%d",r_sum, g_sum, b_sum);
+
+                }                                                           // end if spotlight1
+                else if (lights[curr_light].attr & LIGHTV1_ATTR_SPOTLIGHT2) // simple version ////////////////////
+                {
+                    //Write_Error("\nEntering spotlight2 ...");
+
+                    // perform spot light computations
+                    // light model for spot light simple version is once again:
+                    //         	     I0spotlight * Clspotlight * MAX( (l . s), 0)^pf
+                    // I(d)spotlight = __________________________________________
+                    //               		 kc + kl*d + kq*d2
+                    // Where d = |p - s|, and pf = power factor
+
+                    // thus it's almost identical to the point, but has the extra term in the numerator
+                    // relating the angle between the light source and the point on the surface
+
+                    // test if we already computed poly normal in previous calculation
+                    if (n.z == FLT_MAX)
+                    {
+                        // we need to compute the normal of this polygon face, and recall
+                        // that the vertices are in cw order, u=p0->p1, v=p0->p2, n=uxv
+
+                        // build u, v
+                        VECTOR4D_Build(&curr_poly->tvlist[0].v, &curr_poly->tvlist[1].v, &u);
+                        VECTOR4D_Build(&curr_poly->tvlist[0].v, &curr_poly->tvlist[2].v, &v);
+
+                        // compute cross product
+                        VECTOR4D_Cross(&u, &v, &n);
+                    } // end if
+
+                    // at this point, we are almost ready, but we have to normalize the normal vector!
+                    // this is a key optimization we can make later, we can pre-compute the length of all polygon
+                    // normals, so this step can be optimized
+                    // compute length of normal
+                    //nl = VECTOR4D_Length_Fast2(&n);
+                    nl = curr_poly->nlength;
+
+                    // and for the diffuse model
+                    // Itotald =   Rsdiffuse*Idiffuse * (n . l)
+                    // so we basically need to multiple it all together
+                    // notice the scaling by 128, I want to avoid floating point calculations, not because they
+                    // are slower, but the conversion to and from cost cycles
+                    dp = VECTOR4D_Dot(&n, &lights[curr_light].dir);
+
+                    // only add light if dp > 0
+                    if (dp > 0)
+                    {
+                        // compute vector from light to surface (different from l which IS the light dir)
+                        VECTOR4D_Build(&lights[curr_light].pos, &curr_poly->tvlist[0].v, &s);
+
+                        // compute length of s (distance to light source) to normalize s for lighting calc
+                        dists = VECTOR4D_Length_Fast2(&s);
+
+                        // compute spot light term (s . l)
+                        float dpsl = VECTOR4D_Dot(&s, &lights[curr_light].dir) / dists;
+
+                        // proceed only if term is positive
+                        if (dpsl > 0)
+                        {
+                            // compute attenuation
+                            atten = (lights[curr_light].kc + lights[curr_light].kl * dists + lights[curr_light].kq * dists * dists);
+
+                            // for speed reasons, pf exponents that are less that 1.0 are out of the question, and exponents
+                            // must be integral
+                            float dpsl_exp = dpsl;
+
+                            // exponentiate for positive integral powers
+                            for (int e_index = 1; e_index < (int)lights[curr_light].pf; e_index++)
+                                dpsl_exp *= dpsl;
+
+                            // now dpsl_exp holds (dpsl)^pf power which is of course (s . l)^pf
+
+                            i = 128 * dp * dpsl_exp / (nl * atten);
+
+                            r_sum += (lights[curr_light].c_diffuse.r * r_base * i) / (256 * 128);
+                            g_sum += (lights[curr_light].c_diffuse.g * g_base * i) / (256 * 128);
+                            b_sum += (lights[curr_light].c_diffuse.b * b_base * i) / (256 * 128);
+
+                        } // end if
+
+                    } // end if
+
+                    //Write_Error("\nSpotlight sum=%d,%d,%d",r_sum, g_sum, b_sum);
+
+                } // end if spot light
+
+            } // end for light
+
+            // make sure colors aren't out of range
+            if (r_sum > 255)
+                r_sum = 255;
+            if (g_sum > 255)
+                g_sum = 255;
+            if (b_sum > 255)
+                b_sum = 255;
+
+            //Write_Error("\nWriting final values to polygon %d = %d,%d,%d", poly, r_sum, g_sum, b_sum);
+
+            // write the color over current color
+            curr_poly->lit_color[0] = RGB16Bit565(r_sum, g_sum, b_sum);
+
+        }                                                            // end if
+        else if (curr_poly->attr & POLY4DV2_ATTR_SHADE_MODE_GOURAUD) /////////////////////////////////
+        {
+            // gouraud shade, unfortunetly at this point in the pipeline, we have lost the original
+            // mesh, and only have triangles, thus, many triangles will share the same vertices and
+            // they will get lit 2x since we don't have any way to tell this, alas, performing lighting
+            // at the object level is a better idea when gouraud shading is performed since the
+            // commonality of vertices is still intact, in any case, lighting here is similar to polygon
+            // flat shaded, but we do it 3 times, once for each vertex, additionally there are lots
+            // of opportunities for optimization, but I am going to lay off them for now, so the code
+            // is intelligible, later we will optimize
+
+            //Write_Error("\nEntering gouraud shader...");
+
+            // step 1: extract the base color out in RGB mode
+            // assume 565 format
+            _RGB565FROM16BIT(curr_poly->color, &r_base, &g_base, &b_base);
+
+            // scale to 8 bit
+            r_base <<= 3;
+            g_base <<= 2;
+            b_base <<= 3;
+
+            //Write_Error("\nBase color=%d, %d, %d", r_base, g_base, b_base);
+
+            // initialize color sum(s) for vertices
+            r_sum0 = 0;
+            g_sum0 = 0;
+            b_sum0 = 0;
+
+            r_sum1 = 0;
+            g_sum1 = 0;
+            b_sum1 = 0;
+
+            r_sum2 = 0;
+            g_sum2 = 0;
+            b_sum2 = 0;
+
+            //Write_Error("\nColor sums rgb0[%d, %d, %d], rgb1[%d,%d,%d], rgb2[%d,%d,%d]", r_sum0, g_sum0, b_sum0,   r_sum1, g_sum1, b_sum1, r_sum2, g_sum2, b_sum2);
+
+            // new optimization:
+            // when there are multiple lights in the system we will end up performing numerous
+            // redundant calculations to minimize this my strategy is to set key variables to
+            // to MAX values on each loop, then during the lighting calcs to test the vars for
+            // the max value, if they are the max value then the first light that needs the math
+            // will do it, and then save the information into the variable (causing it to change state
+            // from an invalid number) then any other lights that need the math can use the previously
+            // computed value, however, since we already have the normals, not much here to cache on
+            // a large scale, but small scale stuff is there, however, we will optimize those later
+
+            // loop thru lights
+            for (int curr_light = 0; curr_light < max_lights; curr_light++)
+            {
+                // is this light active
+                if (lights[curr_light].state == LIGHTV1_STATE_OFF)
+                    continue;
+
+                //Write_Error("\nprocessing light %d", curr_light);
+
+                // what kind of light are we dealing with
+                if (lights[curr_light].attr & LIGHTV1_ATTR_AMBIENT) ///////////////////////////////
+                {
+                    //Write_Error("\nEntering ambient light....");
+
+                    // simply multiply each channel against the color of the
+                    // polygon then divide by 256 to scale back to 0..255
+                    // use a shift in real life!!! >> 8
+                    ri = ((lights[curr_light].c_ambient.r * r_base) / 256);
+                    gi = ((lights[curr_light].c_ambient.g * g_base) / 256);
+                    bi = ((lights[curr_light].c_ambient.b * b_base) / 256);
+
+                    // ambient light has the same affect on each vertex
+                    r_sum0 += ri;
+                    g_sum0 += gi;
+                    b_sum0 += bi;
+
+                    r_sum1 += ri;
+                    g_sum1 += gi;
+                    b_sum1 += bi;
+
+                    r_sum2 += ri;
+                    g_sum2 += gi;
+                    b_sum2 += bi;
+
+                    // there better only be one ambient light!
+                    //Write_Error("\nexiting ambient ,sums rgb0[%d, %d, %d], rgb1[%d,%d,%d], rgb2[%d,%d,%d]", r_sum0, g_sum0, b_sum0,  r_sum1, g_sum1, b_sum1,  r_sum2, g_sum2, b_sum2);
+
+                }                                                         // end if
+                else if (lights[curr_light].attr & LIGHTV1_ATTR_INFINITE) /////////////////////////////////
+                {
+                    //Write_Error("\nentering infinite light...");
+
+                    // infinite lighting, we need the surface normal, and the direction
+                    // of the light source
+
+                    // no longer need to compute normal or length, we already have the vertex normal
+                    // and it's length is 1.0
+                    // ....
+
+                    // ok, recalling the lighting model for infinite lights
+                    // I(d)dir = I0dir * Cldir
+                    // and for the diffuse model
+                    // Itotald =   Rsdiffuse*Idiffuse * (n . l)
+                    // so we basically need to multiple it all together
+                    // notice the scaling by 128, I want to avoid floating point calculations, not because they
+                    // are slower, but the conversion to and from cost cycles
+
+                    // need to perform lighting for each vertex (lots of redundant math, optimize later!)
+
+                    //Write_Error("\nv0=[%f, %f, %f]=%f, v1=[%f, %f, %f]=%f, v2=[%f, %f, %f]=%f",
+                    // curr_poly->tvlist[0].n.x, curr_poly->tvlist[0].n.y,curr_poly->tvlist[0].n.z, VECTOR4D_Length(&curr_poly->tvlist[0].n),
+                    // curr_poly->tvlist[1].n.x, curr_poly->tvlist[1].n.y,curr_poly->tvlist[1].n.z, VECTOR4D_Length(&curr_poly->tvlist[1].n),
+                    // curr_poly->tvlist[2].n.x, curr_poly->tvlist[2].n.y,curr_poly->tvlist[2].n.z, VECTOR4D_Length(&curr_poly->tvlist[2].n) );
+
+                    // vertex 0
+                    dp = VECTOR4D_Dot(&curr_poly->tvlist[0].n, &lights[curr_light].dir);
+
+                    // only add light if dp > 0
+                    if (dp > 0)
+                    {
+                        i = 128 * dp;
+                        r_sum0 += (lights[curr_light].c_diffuse.r * r_base * i) / (256 * 128);
+                        g_sum0 += (lights[curr_light].c_diffuse.g * g_base * i) / (256 * 128);
+                        b_sum0 += (lights[curr_light].c_diffuse.b * b_base * i) / (256 * 128);
+                    } // end if
+
+                    // vertex 1
+                    dp = VECTOR4D_Dot(&curr_poly->tvlist[1].n, &lights[curr_light].dir);
+
+                    // only add light if dp > 0
+                    if (dp > 0)
+                    {
+                        i = 128 * dp;
+                        r_sum1 += (lights[curr_light].c_diffuse.r * r_base * i) / (256 * 128);
+                        g_sum1 += (lights[curr_light].c_diffuse.g * g_base * i) / (256 * 128);
+                        b_sum1 += (lights[curr_light].c_diffuse.b * b_base * i) / (256 * 128);
+                    } // end if
+
+                    // vertex 2
+                    dp = VECTOR4D_Dot(&curr_poly->tvlist[2].n, &lights[curr_light].dir);
+
+                    // only add light if dp > 0
+                    if (dp > 0)
+                    {
+                        i = 128 * dp;
+                        r_sum2 += (lights[curr_light].c_diffuse.r * r_base * i) / (256 * 128);
+                        g_sum2 += (lights[curr_light].c_diffuse.g * g_base * i) / (256 * 128);
+                        b_sum2 += (lights[curr_light].c_diffuse.b * b_base * i) / (256 * 128);
+                    } // end if
+
+                    //Write_Error("\nexiting infinite, color sums rgb0[%d, %d, %d], rgb1[%d,%d,%d], rgb2[%d,%d,%d]", r_sum0, g_sum0, b_sum0,  r_sum1, g_sum1, b_sum1,  r_sum2, g_sum2, b_sum2);
+
+                }                                                      // end if infinite light
+                else if (lights[curr_light].attr & LIGHTV1_ATTR_POINT) //////////////////////////////////////
+                {
+                    // perform point light computations
+                    // light model for point light is once again:
+                    //              I0point * Clpoint
+                    //  I(d)point = ___________________
+                    //              kc +  kl*d + kq*d2
+                    //
+                    //  Where d = |p - s|
+                    // thus it's almost identical to the infinite light, but attenuates as a function
+                    // of distance from the point source to the surface point being lit
+
+                    // .. normal already in vertex
+
+                    //Write_Error("\nEntering point light....");
+
+                    // compute vector from surface to light
+                    VECTOR4D_Build(&curr_poly->tvlist[0].v, &lights[curr_light].pos, &l);
+
+                    // compute distance and attenuation
+                    dist = VECTOR4D_Length_Fast2(&l);
+
+                    // and for the diffuse model
+                    // Itotald =   Rsdiffuse*Idiffuse * (n . l)
+                    // so we basically need to multiple it all together
+                    // notice the scaling by 128, I want to avoid floating point calculations, not because they
+                    // are slower, but the conversion to and from cost cycles
+
+                    // perform the calculation for all 3 vertices
+
+                    // vertex 0
+                    dp = VECTOR4D_Dot(&curr_poly->tvlist[0].n, &l);
+
+                    // only add light if dp > 0
+                    if (dp > 0)
+                    {
+                        atten = (lights[curr_light].kc + lights[curr_light].kl * dist + lights[curr_light].kq * dist * dist);
+
+                        i = 128 * dp / (dist * atten);
+
+                        r_sum0 += (lights[curr_light].c_diffuse.r * r_base * i) / (256 * 128);
+                        g_sum0 += (lights[curr_light].c_diffuse.g * g_base * i) / (256 * 128);
+                        b_sum0 += (lights[curr_light].c_diffuse.b * b_base * i) / (256 * 128);
+                    } // end if
+
+                    // vertex 1
+                    dp = VECTOR4D_Dot(&curr_poly->tvlist[1].n, &l);
+
+                    // only add light if dp > 0
+                    if (dp > 0)
+                    {
+                        atten = (lights[curr_light].kc + lights[curr_light].kl * dist + lights[curr_light].kq * dist * dist);
+
+                        i = 128 * dp / (dist * atten);
+
+                        r_sum1 += (lights[curr_light].c_diffuse.r * r_base * i) / (256 * 128);
+                        g_sum1 += (lights[curr_light].c_diffuse.g * g_base * i) / (256 * 128);
+                        b_sum1 += (lights[curr_light].c_diffuse.b * b_base * i) / (256 * 128);
+                    } // end if
+
+                    // vertex 2
+                    dp = VECTOR4D_Dot(&curr_poly->tvlist[2].n, &l);
+
+                    // only add light if dp > 0
+                    if (dp > 0)
+                    {
+                        atten = (lights[curr_light].kc + lights[curr_light].kl * dist + lights[curr_light].kq * dist * dist);
+
+                        i = 128 * dp / (dist * atten);
+
+                        r_sum2 += (lights[curr_light].c_diffuse.r * r_base * i) / (256 * 128);
+                        g_sum2 += (lights[curr_light].c_diffuse.g * g_base * i) / (256 * 128);
+                        b_sum2 += (lights[curr_light].c_diffuse.b * b_base * i) / (256 * 128);
+                    } // end if
+
+                    //Write_Error("\nexiting point light, rgb0[%d, %d, %d], rgb1[%d,%d,%d], rgb2[%d,%d,%d]", r_sum0, g_sum0, b_sum0,  r_sum1, g_sum1, b_sum1, r_sum2, g_sum2, b_sum2);
+
+                }                                                           // end if point
+                else if (lights[curr_light].attr & LIGHTV1_ATTR_SPOTLIGHT1) ///////////////////////////////////////
+                {
+                    // perform spotlight/point computations simplified model that uses
+                    // point light WITH a direction to simulate a spotlight
+                    // light model for point light is once again:
+                    //              I0point * Clpoint
+                    //  I(d)point = ___________________
+                    //              kc +  kl*d + kq*d2
+                    //
+                    //  Where d = |p - s|
+                    // thus it's almost identical to the infinite light, but attenuates as a function
+                    // of distance from the point source to the surface point being lit
+
+                    //Write_Error("\nentering spotlight1....");
+
+                    // .. normal is already computed
+
+                    // compute vector from surface to light
+                    VECTOR4D_Build(&curr_poly->tvlist[0].v, &lights[curr_light].pos, &l);
+
+                    // compute distance and attenuation
+                    dist = VECTOR4D_Length_Fast2(&l);
+
+                    // and for the diffuse model
+                    // Itotald =   Rsdiffuse*Idiffuse * (n . l)
+                    // so we basically need to multiple it all together
+                    // notice the scaling by 128, I want to avoid floating point calculations, not because they
+                    // are slower, but the conversion to and from cost cycles
+
+                    // note that I use the direction of the light here rather than a the vector to the light
+                    // thus we are taking orientation into account which is similar to the spotlight model
+
+                    // vertex 0
+                    dp = VECTOR4D_Dot(&curr_poly->tvlist[0].n, &lights[curr_light].dir);
+
+                    // only add light if dp > 0
+                    if (dp > 0)
+                    {
+                        atten = (lights[curr_light].kc + lights[curr_light].kl * dist + lights[curr_light].kq * dist * dist);
+
+                        i = 128 * dp / (atten);
+
+                        r_sum0 += (lights[curr_light].c_diffuse.r * r_base * i) / (256 * 128);
+                        g_sum0 += (lights[curr_light].c_diffuse.g * g_base * i) / (256 * 128);
+                        b_sum0 += (lights[curr_light].c_diffuse.b * b_base * i) / (256 * 128);
+                    } // end if
+
+                    // vertex 1
+                    dp = VECTOR4D_Dot(&curr_poly->tvlist[1].n, &lights[curr_light].dir);
+
+                    // only add light if dp > 0
+                    if (dp > 0)
+                    {
+                        atten = (lights[curr_light].kc + lights[curr_light].kl * dist + lights[curr_light].kq * dist * dist);
+
+                        i = 128 * dp / (atten);
+
+                        r_sum1 += (lights[curr_light].c_diffuse.r * r_base * i) / (256 * 128);
+                        g_sum1 += (lights[curr_light].c_diffuse.g * g_base * i) / (256 * 128);
+                        b_sum1 += (lights[curr_light].c_diffuse.b * b_base * i) / (256 * 128);
+                    } // end i
+
+                    // vertex 2
+                    dp = VECTOR4D_Dot(&curr_poly->tvlist[2].n, &lights[curr_light].dir);
+
+                    // only add light if dp > 0
+                    if (dp > 0)
+                    {
+                        atten = (lights[curr_light].kc + lights[curr_light].kl * dist + lights[curr_light].kq * dist * dist);
+
+                        i = 128 * dp / (atten);
+
+                        r_sum2 += (lights[curr_light].c_diffuse.r * r_base * i) / (256 * 128);
+                        g_sum2 += (lights[curr_light].c_diffuse.g * g_base * i) / (256 * 128);
+                        b_sum2 += (lights[curr_light].c_diffuse.b * b_base * i) / (256 * 128);
+                    } // end i
+
+                    //Write_Error("\nexiting spotlight1, sums rgb0[%d, %d, %d], rgb1[%d,%d,%d], rgb2[%d,%d,%d]", r_sum0, g_sum0, b_sum0,  r_sum1, g_sum1, b_sum1,  r_sum2, g_sum2, b_sum2);
+
+                }                                                           // end if spotlight1
+                else if (lights[curr_light].attr & LIGHTV1_ATTR_SPOTLIGHT2) // simple version //////////////////////////
+                {
+                    // perform spot light computations
+                    // light model for spot light simple version is once again:
+                    //         	     I0spotlight * Clspotlight * MAX( (l . s), 0)^pf
+                    // I(d)spotlight = __________________________________________
+                    //               		 kc + kl*d + kq*d2
+                    // Where d = |p - s|, and pf = power factor
+
+                    // thus it's almost identical to the point, but has the extra term in the numerator
+                    // relating the angle between the light source and the point on the surface
+
+                    // .. already have normals and length are 1.0
+
+                    // and for the diffuse model
+                    // Itotald =   Rsdiffuse*Idiffuse * (n . l)
+                    // so we basically need to multiple it all together
+                    // notice the scaling by 128, I want to avoid floating point calculations, not because they
+                    // are slower, but the conversion to and from cost cycles
+
+                    //Write_Error("\nEntering spotlight2...");
+
+                    // tons of redundant math here! lots to optimize later!
+
+                    // vertex 0
+                    dp = VECTOR4D_Dot(&curr_poly->tvlist[0].n, &lights[curr_light].dir);
+
+                    // only add light if dp > 0
+                    if (dp > 0)
+                    {
+                        // compute vector from light to surface (different from l which IS the light dir)
+                        VECTOR4D_Build(&lights[curr_light].pos, &curr_poly->tvlist[0].v, &s);
+
+                        // compute length of s (distance to light source) to normalize s for lighting calc
+                        dists = VECTOR4D_Length_Fast2(&s);
+
+                        // compute spot light term (s . l)
+                        float dpsl = VECTOR4D_Dot(&s, &lights[curr_light].dir) / dists;
+
+                        // proceed only if term is positive
+                        if (dpsl > 0)
+                        {
+                            // compute attenuation
+                            atten = (lights[curr_light].kc + lights[curr_light].kl * dists + lights[curr_light].kq * dists * dists);
+
+                            // for speed reasons, pf exponents that are less that 1.0 are out of the question, and exponents
+                            // must be integral
+                            float dpsl_exp = dpsl;
+
+                            // exponentiate for positive integral powers
+                            for (int e_index = 1; e_index < (int)lights[curr_light].pf; e_index++)
+                                dpsl_exp *= dpsl;
+
+                            // now dpsl_exp holds (dpsl)^pf power which is of course (s . l)^pf
+
+                            i = 128 * dp * dpsl_exp / (atten);
+
+                            r_sum0 += (lights[curr_light].c_diffuse.r * r_base * i) / (256 * 128);
+                            g_sum0 += (lights[curr_light].c_diffuse.g * g_base * i) / (256 * 128);
+                            b_sum0 += (lights[curr_light].c_diffuse.b * b_base * i) / (256 * 128);
+
+                        } // end if
+
+                    } // end if
+
+                    // vertex 1
+                    dp = VECTOR4D_Dot(&curr_poly->tvlist[1].n, &lights[curr_light].dir);
+
+                    // only add light if dp > 0
+                    if (dp > 0)
+                    {
+                        // compute vector from light to surface (different from l which IS the light dir)
+                        VECTOR4D_Build(&lights[curr_light].pos, &curr_poly->tvlist[1].v, &s);
+
+                        // compute length of s (distance to light source) to normalize s for lighting calc
+                        dists = VECTOR4D_Length_Fast2(&s);
+
+                        // compute spot light term (s . l)
+                        float dpsl = VECTOR4D_Dot(&s, &lights[curr_light].dir) / dists;
+
+                        // proceed only if term is positive
+                        if (dpsl > 0)
+                        {
+                            // compute attenuation
+                            atten = (lights[curr_light].kc + lights[curr_light].kl * dists + lights[curr_light].kq * dists * dists);
+
+                            // for speed reasons, pf exponents that are less that 1.0 are out of the question, and exponents
+                            // must be integral
+                            float dpsl_exp = dpsl;
+
+                            // exponentiate for positive integral powers
+                            for (int e_index = 1; e_index < (int)lights[curr_light].pf; e_index++)
+                                dpsl_exp *= dpsl;
+
+                            // now dpsl_exp holds (dpsl)^pf power which is of course (s . l)^pf
+
+                            i = 128 * dp * dpsl_exp / (atten);
+
+                            r_sum1 += (lights[curr_light].c_diffuse.r * r_base * i) / (256 * 128);
+                            g_sum1 += (lights[curr_light].c_diffuse.g * g_base * i) / (256 * 128);
+                            b_sum1 += (lights[curr_light].c_diffuse.b * b_base * i) / (256 * 128);
+
+                        } // end if
+
+                    } // end if
+
+                    // vertex 2
+                    dp = VECTOR4D_Dot(&curr_poly->tvlist[2].n, &lights[curr_light].dir);
+
+                    // only add light if dp > 0
+                    if (dp > 0)
+                    {
+                        // compute vector from light to surface (different from l which IS the light dir)
+                        VECTOR4D_Build(&lights[curr_light].pos, &curr_poly->tvlist[2].v, &s);
+
+                        // compute length of s (distance to light source) to normalize s for lighting calc
+                        dists = VECTOR4D_Length_Fast2(&s);
+
+                        // compute spot light term (s . l)
+                        float dpsl = VECTOR4D_Dot(&s, &lights[curr_light].dir) / dists;
+
+                        // proceed only if term is positive
+                        if (dpsl > 0)
+                        {
+                            // compute attenuation
+                            atten = (lights[curr_light].kc + lights[curr_light].kl * dists + lights[curr_light].kq * dists * dists);
+
+                            // for speed reasons, pf exponents that are less that 1.0 are out of the question, and exponents
+                            // must be integral
+                            float dpsl_exp = dpsl;
+
+                            // exponentiate for positive integral powers
+                            for (int e_index = 1; e_index < (int)lights[curr_light].pf; e_index++)
+                                dpsl_exp *= dpsl;
+
+                            // now dpsl_exp holds (dpsl)^pf power which is of course (s . l)^pf
+
+                            i = 128 * dp * dpsl_exp / (atten);
+
+                            r_sum2 += (lights[curr_light].c_diffuse.r * r_base * i) / (256 * 128);
+                            g_sum2 += (lights[curr_light].c_diffuse.g * g_base * i) / (256 * 128);
+                            b_sum2 += (lights[curr_light].c_diffuse.b * b_base * i) / (256 * 128);
+                        } // end if
+
+                    } // end if
+
+                    //Write_Error("\nexiting spotlight2, sums rgb0[%d, %d, %d], rgb1[%d,%d,%d], rgb2[%d,%d,%d]", r_sum0, g_sum0, b_sum0,   r_sum1, g_sum1, b_sum1,  r_sum2, g_sum2, b_sum2);
+
+                } // end if spot light
+
+            } // end for light
+
+            // make sure colors aren't out of range
+            if (r_sum0 > 255)
+                r_sum0 = 255;
+            if (g_sum0 > 255)
+                g_sum0 = 255;
+            if (b_sum0 > 255)
+                b_sum0 = 255;
+
+            if (r_sum1 > 255)
+                r_sum1 = 255;
+            if (g_sum1 > 255)
+                g_sum1 = 255;
+            if (b_sum1 > 255)
+                b_sum1 = 255;
+
+            if (r_sum2 > 255)
+                r_sum2 = 255;
+            if (g_sum2 > 255)
+                g_sum2 = 255;
+            if (b_sum2 > 255)
+                b_sum2 = 255;
+
+            //Write_Error("\nwriting color for poly %d", poly);
+
+            //Write_Error("\n******** final sums rgb0[%d, %d, %d], rgb1[%d,%d,%d], rgb2[%d,%d,%d]", r_sum0, g_sum0, b_sum0,  r_sum1, g_sum1, b_sum1, r_sum2, g_sum2, b_sum2);
+
+            // write the colors
+            curr_poly->lit_color[0] = RGB16Bit565(r_sum0, g_sum0, b_sum0);
+            curr_poly->lit_color[1] = RGB16Bit565(r_sum1, g_sum1, b_sum1);
+            curr_poly->lit_color[2] = RGB16Bit565(r_sum2, g_sum2, b_sum2);
+
+        }    // end if
+        else // assume POLY4DV2_ATTR_SHADE_MODE_CONSTANT
+        {
+            // emmisive shading only, do nothing
+            // ...
+            curr_poly->lit_color[0] = curr_poly->color;
+
+            //Write_Error("\nentering constant shader, and exiting...");
+
+        } // end if
+
+    } // end for poly
+
+    // return success
+    return (1);
 
 } // end Light_RENDERLIST4DV2_World16
 
-void World_To_Camera_RENDERLIST4DV2(RENDERLIST4DV2_PTR rend_list, 
-                                   CAM4DV1_PTR cam)
+void World_To_Camera_RENDERLIST4DV2(RENDERLIST4DV2_PTR rend_list,
+                                    CAM4DV1_PTR cam)
 {
-// NOTE: this is a matrix based function
-// this function transforms each polygon in the global render list
-// to camera coordinates based on the sent camera transform matrix
-// you would use this function instead of the object based function
-// if you decided earlier in the pipeline to turn each object into 
-// a list of polygons and then add them to the global render list
-// the conversion of an object into polygons probably would have
-// happened after object culling, local transforms, local to world
-// and backface culling, so the minimum number of polygons from
-// each object are in the list, note that the function assumes
-// that at LEAST the local to world transform has been called
-// and the polygon data is in the transformed list tvlist of
-// the POLYF4DV1 object
+    // NOTE: this is a matrix based function
+    // this function transforms each polygon in the global render list
+    // to camera coordinates based on the sent camera transform matrix
+    // you would use this function instead of the object based function
+    // if you decided earlier in the pipeline to turn each object into
+    // a list of polygons and then add them to the global render list
+    // the conversion of an object into polygons probably would have
+    // happened after object culling, local transforms, local to world
+    // and backface culling, so the minimum number of polygons from
+    // each object are in the list, note that the function assumes
+    // that at LEAST the local to world transform has been called
+    // and the polygon data is in the transformed list tvlist of
+    // the POLYF4DV1 object
 
-// transform each polygon in the render list into camera coordinates
-// assumes the render list has already been transformed to world
-// coordinates and the result is in tvlist[] of each polygon object
+    // transform each polygon in the render list into camera coordinates
+    // assumes the render list has already been transformed to world
+    // coordinates and the result is in tvlist[] of each polygon object
 
-for (int poly = 0; poly < rend_list->num_polys; poly++)
-{
-// acquire current polygon
-POLYF4DV2_PTR curr_poly = rend_list->poly_ptrs[poly];
-
-// is this polygon valid?
-// transform this polygon if and only if it's not clipped, not culled,
-// active, and visible, note however the concept of "backface" is 
-// irrelevant in a wire frame engine though
-if ((curr_poly==NULL) || !(curr_poly->state & POLY4DV2_STATE_ACTIVE) ||
-     (curr_poly->state & POLY4DV2_STATE_CLIPPED ) ||
-     (curr_poly->state & POLY4DV2_STATE_BACKFACE) )
-       continue; // move onto next poly
-
-// all good, let's transform 
-for (int vertex = 0; vertex < 3; vertex++)
+    for (int poly = 0; poly < rend_list->num_polys; poly++)
     {
-    // transform the vertex by the mcam matrix within the camera
-    // it better be valid!
-    POINT4D presult; // hold result of each transformation
+        // acquire current polygon
+        POLYF4DV2_PTR curr_poly = rend_list->poly_ptrs[poly];
 
-    // transform point
-    Mat_Mul_VECTOR4D_4X4(&curr_poly->tvlist[vertex].v, &cam->mcam, &presult);
+        // is this polygon valid?
+        // transform this polygon if and only if it's not clipped, not culled,
+        // active, and visible, note however the concept of "backface" is
+        // irrelevant in a wire frame engine though
+        if ((curr_poly == NULL) || !(curr_poly->state & POLY4DV2_STATE_ACTIVE) ||
+            (curr_poly->state & POLY4DV2_STATE_CLIPPED) ||
+            (curr_poly->state & POLY4DV2_STATE_BACKFACE))
+            continue; // move onto next poly
 
-    // store result back
-    VECTOR4D_COPY(&curr_poly->tvlist[vertex].v, &presult); 
-    } // end for vertex
+        // all good, let's transform
+        for (int vertex = 0; vertex < 3; vertex++)
+        {
+            // transform the vertex by the mcam matrix within the camera
+            // it better be valid!
+            POINT4D presult; // hold result of each transformation
 
-} // end for poly
+            // transform point
+            Mat_Mul_VECTOR4D_4X4(&curr_poly->tvlist[vertex].v, &cam->mcam, &presult);
+
+            // store result back
+            VECTOR4D_COPY(&curr_poly->tvlist[vertex].v, &presult);
+        } // end for vertex
+
+    } // end for poly
 
 } // end World_To_Camera_RENDERLIST4DV2
 
 void Sort_RENDERLIST4DV2(RENDERLIST4DV2_PTR rend_list, int sort_method = SORT_POLYLIST_AVGZ)
 {
-// this function sorts the rendering list based on the polygon z-values 
-// the specific sorting method is controlled by sending in control flags
-// #define SORT_POLYLIST_AVGZ  0 - sorts on average of all vertices
-// #define SORT_POLYLIST_NEARZ 1 - sorts on closest z vertex of each poly
-// #define SORT_POLYLIST_FARZ  2 - sorts on farthest z vertex of each poly
+    // this function sorts the rendering list based on the polygon z-values
+    // the specific sorting method is controlled by sending in control flags
+    // #define SORT_POLYLIST_AVGZ  0 - sorts on average of all vertices
+    // #define SORT_POLYLIST_NEARZ 1 - sorts on closest z vertex of each poly
+    // #define SORT_POLYLIST_FARZ  2 - sorts on farthest z vertex of each poly
 
-switch(sort_method)
-      {
-      case SORT_POLYLIST_AVGZ:  //  - sorts on average of all vertices
-           {
-           qsort((void *)rend_list->poly_ptrs, rend_list->num_polys, sizeof(POLYF4DV2_PTR), Compare_AvgZ_POLYF4DV2);
-           } break;
+    switch (sort_method)
+    {
+    case SORT_POLYLIST_AVGZ: //  - sorts on average of all vertices
+    {
+        qsort((void *)rend_list->poly_ptrs, rend_list->num_polys, sizeof(POLYF4DV2_PTR), Compare_AvgZ_POLYF4DV2);
+    }
+    break;
 
-      case SORT_POLYLIST_NEARZ: // - sorts on closest z vertex of each poly
-           {
-           qsort((void *)rend_list->poly_ptrs, rend_list->num_polys, sizeof(POLYF4DV2_PTR), Compare_NearZ_POLYF4DV2);
-           } break;
+    case SORT_POLYLIST_NEARZ: // - sorts on closest z vertex of each poly
+    {
+        qsort((void *)rend_list->poly_ptrs, rend_list->num_polys, sizeof(POLYF4DV2_PTR), Compare_NearZ_POLYF4DV2);
+    }
+    break;
 
-      case SORT_POLYLIST_FARZ:  //  - sorts on farthest z vertex of each poly
-           {
-           qsort((void *)rend_list->poly_ptrs, rend_list->num_polys, sizeof(POLYF4DV2_PTR), Compare_FarZ_POLYF4DV2);
-           } break;
+    case SORT_POLYLIST_FARZ: //  - sorts on farthest z vertex of each poly
+    {
+        qsort((void *)rend_list->poly_ptrs, rend_list->num_polys, sizeof(POLYF4DV2_PTR), Compare_FarZ_POLYF4DV2);
+    }
+    break;
 
-       default: break;
-       } // end switch
+    default:
+        break;
+    } // end switch
 
 } // end Sort_RENDERLIST4DV2
 
-void Camera_To_Perspective_RENDERLIST4DV2(RENDERLIST4DV2_PTR rend_list, 
+void Camera_To_Perspective_RENDERLIST4DV2(RENDERLIST4DV2_PTR rend_list,
                                           CAM4DV1_PTR cam)
 {
-// NOTE: this is not a matrix based function
-// this function transforms each polygon in the global render list
-// into perspective coordinates, based on the 
-// sent camera object, 
-// you would use this function instead of the object based function
-// if you decided earlier in the pipeline to turn each object into 
-// a list of polygons and then add them to the global render list
+    // NOTE: this is not a matrix based function
+    // this function transforms each polygon in the global render list
+    // into perspective coordinates, based on the
+    // sent camera object,
+    // you would use this function instead of the object based function
+    // if you decided earlier in the pipeline to turn each object into
+    // a list of polygons and then add them to the global render list
 
-// transform each polygon in the render list into camera coordinates
-// assumes the render list has already been transformed to world
-// coordinates and the result is in tvlist[] of each polygon object
+    // transform each polygon in the render list into camera coordinates
+    // assumes the render list has already been transformed to world
+    // coordinates and the result is in tvlist[] of each polygon object
 
-for (int poly = 0; poly < rend_list->num_polys; poly++)
-{
-// acquire current polygon
-POLYF4DV2_PTR curr_poly = rend_list->poly_ptrs[poly];
-
-// is this polygon valid?
-// transform this polygon if and only if it's not clipped, not culled,
-// active, and visible, note however the concept of "backface" is 
-// irrelevant in a wire frame engine though
-if ((curr_poly==NULL) || !(curr_poly->state & POLY4DV2_STATE_ACTIVE) ||
-     (curr_poly->state & POLY4DV2_STATE_CLIPPED ) ||
-     (curr_poly->state & POLY4DV2_STATE_BACKFACE) )
-       continue; // move onto next poly
-
-// all good, let's transform 
-for (int vertex = 0; vertex < 3; vertex++)
+    for (int poly = 0; poly < rend_list->num_polys; poly++)
     {
-    float z = curr_poly->tvlist[vertex].z;
+        // acquire current polygon
+        POLYF4DV2_PTR curr_poly = rend_list->poly_ptrs[poly];
 
-    // transform the vertex by the view parameters in the camera
-    curr_poly->tvlist[vertex].x = cam->view_dist*curr_poly->tvlist[vertex].x/z;
-    curr_poly->tvlist[vertex].y = cam->view_dist*curr_poly->tvlist[vertex].y*cam->aspect_ratio/z;
-    // z = z, so no change
+        // is this polygon valid?
+        // transform this polygon if and only if it's not clipped, not culled,
+        // active, and visible, note however the concept of "backface" is
+        // irrelevant in a wire frame engine though
+        if ((curr_poly == NULL) || !(curr_poly->state & POLY4DV2_STATE_ACTIVE) ||
+            (curr_poly->state & POLY4DV2_STATE_CLIPPED) ||
+            (curr_poly->state & POLY4DV2_STATE_BACKFACE))
+            continue; // move onto next poly
 
-    // not that we are NOT dividing by the homogenous w coordinate since
-    // we are not using a matrix operation for this version of the function 
+        // all good, let's transform
+        for (int vertex = 0; vertex < 3; vertex++)
+        {
+            float z = curr_poly->tvlist[vertex].z;
 
-    } // end for vertex
+            // transform the vertex by the view parameters in the camera
+            curr_poly->tvlist[vertex].x = cam->view_dist * curr_poly->tvlist[vertex].x / z;
+            curr_poly->tvlist[vertex].y = cam->view_dist * curr_poly->tvlist[vertex].y * cam->aspect_ratio / z;
+            // z = z, so no change
 
-} // end for poly
+            // not that we are NOT dividing by the homogenous w coordinate since
+            // we are not using a matrix operation for this version of the function
+
+        } // end for vertex
+
+    } // end for poly
 
 } // end Camera_To_Perspective_RENDERLIST4DV2
 
-void Perspective_To_Screen_RENDERLIST4DV2(RENDERLIST4DV2_PTR rend_list, 
+void Perspective_To_Screen_RENDERLIST4DV2(RENDERLIST4DV2_PTR rend_list,
                                           CAM4DV1_PTR cam)
 {
-// NOTE: this is not a matrix based function
-// this function transforms the perspective coordinates of the render
-// list into screen coordinates, based on the sent viewport in the camera
-// assuming that the viewplane coordinates were normalized
-// you would use this function instead of the object based function
-// if you decided earlier in the pipeline to turn each object into 
-// a list of polygons and then add them to the global render list
-// you would only call this function if you previously performed
-// a normalized perspective transform
+    // NOTE: this is not a matrix based function
+    // this function transforms the perspective coordinates of the render
+    // list into screen coordinates, based on the sent viewport in the camera
+    // assuming that the viewplane coordinates were normalized
+    // you would use this function instead of the object based function
+    // if you decided earlier in the pipeline to turn each object into
+    // a list of polygons and then add them to the global render list
+    // you would only call this function if you previously performed
+    // a normalized perspective transform
 
-// transform each polygon in the render list from perspective to screen 
-// coordinates assumes the render list has already been transformed 
-// to normalized perspective coordinates and the result is in tvlist[]
-for (int poly = 0; poly < rend_list->num_polys; poly++)
-{
-// acquire current polygon
-POLYF4DV2_PTR curr_poly = rend_list->poly_ptrs[poly];
-
-// is this polygon valid?
-// transform this polygon if and only if it's not clipped, not culled,
-// active, and visible, note however the concept of "backface" is 
-// irrelevant in a wire frame engine though
-if ((curr_poly==NULL) || !(curr_poly->state & POLY4DV2_STATE_ACTIVE) ||
-     (curr_poly->state & POLY4DV2_STATE_CLIPPED ) ||
-     (curr_poly->state & POLY4DV2_STATE_BACKFACE) )
-       continue; // move onto next poly
-
-float alpha = (0.5*cam->viewport_width-0.5);
-float beta  = (0.5*cam->viewport_height-0.5);
-
-// all good, let's transform 
-for (int vertex = 0; vertex < 3; vertex++)
+    // transform each polygon in the render list from perspective to screen
+    // coordinates assumes the render list has already been transformed
+    // to normalized perspective coordinates and the result is in tvlist[]
+    for (int poly = 0; poly < rend_list->num_polys; poly++)
     {
-    // the vertex is in perspective normalized coords from -1 to 1
-    // on each axis, simple scale them and invert y axis and project
-    // to screen
+        // acquire current polygon
+        POLYF4DV2_PTR curr_poly = rend_list->poly_ptrs[poly];
 
-    // transform the vertex by the view parameters in the camera
-    curr_poly->tvlist[vertex].x = alpha + alpha*curr_poly->tvlist[vertex].x;
-    curr_poly->tvlist[vertex].y = beta  - beta *curr_poly->tvlist[vertex].y;
-    } // end for vertex
+        // is this polygon valid?
+        // transform this polygon if and only if it's not clipped, not culled,
+        // active, and visible, note however the concept of "backface" is
+        // irrelevant in a wire frame engine though
+        if ((curr_poly == NULL) || !(curr_poly->state & POLY4DV2_STATE_ACTIVE) ||
+            (curr_poly->state & POLY4DV2_STATE_CLIPPED) ||
+            (curr_poly->state & POLY4DV2_STATE_BACKFACE))
+            continue; // move onto next poly
 
-} // end for poly
+        float alpha = (0.5 * cam->viewport_width - 0.5);
+        float beta = (0.5 * cam->viewport_height - 0.5);
+
+        // all good, let's transform
+        for (int vertex = 0; vertex < 3; vertex++)
+        {
+            // the vertex is in perspective normalized coords from -1 to 1
+            // on each axis, simple scale them and invert y axis and project
+            // to screen
+
+            // transform the vertex by the view parameters in the camera
+            curr_poly->tvlist[vertex].x = alpha + alpha * curr_poly->tvlist[vertex].x;
+            curr_poly->tvlist[vertex].y = beta - beta * curr_poly->tvlist[vertex].y;
+        } // end for vertex
+
+    } // end for poly
 
 } // end Perspective_To_Screen_RENDERLIST4DV2
 int Compare_AvgZ_POLYF4DV2(const void *arg1, const void *arg2)
 {
-// this function comapares the average z's of two polygons and is used by the
-// depth sort surface ordering algorithm
+    // this function comapares the average z's of two polygons and is used by the
+    // depth sort surface ordering algorithm
 
-float z1, z2;
+    float z1, z2;
 
-POLYF4DV2_PTR poly_1, poly_2;
+    POLYF4DV2_PTR poly_1, poly_2;
 
-// dereference the poly pointers
-poly_1 = *((POLYF4DV2_PTR *)(arg1));
-poly_2 = *((POLYF4DV2_PTR *)(arg2));
+    // dereference the poly pointers
+    poly_1 = *((POLYF4DV2_PTR *)(arg1));
+    poly_2 = *((POLYF4DV2_PTR *)(arg2));
 
-// compute z average of each polygon
-z1 = (float)0.33333*(poly_1->tvlist[0].z + poly_1->tvlist[1].z + poly_1->tvlist[2].z);
+    // compute z average of each polygon
+    z1 = (float)0.33333 * (poly_1->tvlist[0].z + poly_1->tvlist[1].z + poly_1->tvlist[2].z);
 
-// now polygon 2
-z2 = (float)0.33333*(poly_2->tvlist[0].z + poly_2->tvlist[1].z + poly_2->tvlist[2].z);
+    // now polygon 2
+    z2 = (float)0.33333 * (poly_2->tvlist[0].z + poly_2->tvlist[1].z + poly_2->tvlist[2].z);
 
-// compare z1 and z2, such that polys' will be sorted in descending Z order
-if (z1 > z2)
-   return(-1);
-else
-if (z1 < z2)
-   return(1);
-else
-   return(0);
+    // compare z1 and z2, such that polys' will be sorted in descending Z order
+    if (z1 > z2)
+        return (-1);
+    else if (z1 < z2)
+        return (1);
+    else
+        return (0);
 
 } // end Compare_AvgZ_POLYF4DV2
 
@@ -6176,32 +6174,31 @@ else
 
 int Compare_NearZ_POLYF4DV2(const void *arg1, const void *arg2)
 {
-// this function comapares the closest z's of two polygons and is used by the
-// depth sort surface ordering algorithm
+    // this function comapares the closest z's of two polygons and is used by the
+    // depth sort surface ordering algorithm
 
-float z1, z2;
+    float z1, z2;
 
-POLYF4DV2_PTR poly_1, poly_2;
+    POLYF4DV2_PTR poly_1, poly_2;
 
-// dereference the poly pointers
-poly_1 = *((POLYF4DV2_PTR *)(arg1));
-poly_2 = *((POLYF4DV2_PTR *)(arg2));
+    // dereference the poly pointers
+    poly_1 = *((POLYF4DV2_PTR *)(arg1));
+    poly_2 = *((POLYF4DV2_PTR *)(arg2));
 
-// compute the near z of each polygon
-z1 = MIN(poly_1->tvlist[0].z, poly_1->tvlist[1].z);
-z1 = MIN(z1, poly_1->tvlist[2].z);
+    // compute the near z of each polygon
+    z1 = MIN(poly_1->tvlist[0].z, poly_1->tvlist[1].z);
+    z1 = MIN(z1, poly_1->tvlist[2].z);
 
-z2 = MIN(poly_2->tvlist[0].z, poly_2->tvlist[1].z);
-z2 = MIN(z2, poly_2->tvlist[2].z);
+    z2 = MIN(poly_2->tvlist[0].z, poly_2->tvlist[1].z);
+    z2 = MIN(z2, poly_2->tvlist[2].z);
 
-// compare z1 and z2, such that polys' will be sorted in descending Z order
-if (z1 > z2)
-   return(-1);
-else
-if (z1 < z2)
-   return(1);
-else
-   return(0);
+    // compare z1 and z2, such that polys' will be sorted in descending Z order
+    if (z1 > z2)
+        return (-1);
+    else if (z1 < z2)
+        return (1);
+    else
+        return (0);
 
 } // end Compare_NearZ_POLYF4DV2
 
@@ -6209,31 +6206,974 @@ else
 
 int Compare_FarZ_POLYF4DV2(const void *arg1, const void *arg2)
 {
-// this function comapares the farthest z's of two polygons and is used by the
-// depth sort surface ordering algorithm
+    // this function comapares the farthest z's of two polygons and is used by the
+    // depth sort surface ordering algorithm
 
-float z1, z2;
+    float z1, z2;
 
-POLYF4DV2_PTR poly_1, poly_2;
+    POLYF4DV2_PTR poly_1, poly_2;
 
-// dereference the poly pointers
-poly_1 = *((POLYF4DV2_PTR *)(arg1));
-poly_2 = *((POLYF4DV2_PTR *)(arg2));
+    // dereference the poly pointers
+    poly_1 = *((POLYF4DV2_PTR *)(arg1));
+    poly_2 = *((POLYF4DV2_PTR *)(arg2));
 
-// compute the near z of each polygon
-z1 = MAX(poly_1->tvlist[0].z, poly_1->tvlist[1].z);
-z1 = MAX(z1, poly_1->tvlist[2].z);
+    // compute the near z of each polygon
+    z1 = MAX(poly_1->tvlist[0].z, poly_1->tvlist[1].z);
+    z1 = MAX(z1, poly_1->tvlist[2].z);
 
-z2 = MAX(poly_2->tvlist[0].z, poly_2->tvlist[1].z);
-z2 = MAX(z2, poly_2->tvlist[2].z);
+    z2 = MAX(poly_2->tvlist[0].z, poly_2->tvlist[1].z);
+    z2 = MAX(z2, poly_2->tvlist[2].z);
 
-// compare z1 and z2, such that polys' will be sorted in descending Z order
-if (z1 > z2)
-   return(-1);
-else
-if (z1 < z2)
-   return(1);
-else
-   return(0);
+    // compare z1 and z2, such that polys' will be sorted in descending Z order
+    if (z1 > z2)
+        return (-1);
+    else if (z1 < z2)
+        return (1);
+    else
+        return (0);
 
 } // end Compare_FarZ_POLYF4DV2
+
+void Draw_Gouraud_Triangle16(device_t *device, POLYF4DV2_PTR face) 
+{
+    // this function draws a gouraud shaded polygon, based on the affine texture mapper, instead
+    // of interpolating the texture coordinates, we simply interpolate the (R,G,B) values across
+    // the polygons, I simply needed at another interpolant, I have mapped u->red, v->green, w->blue
+
+    int v0 = 0,
+        v1 = 1,
+        v2 = 2,
+        temp = 0,
+        tri_type = TRI_TYPE_NONE,
+        irestart = INTERP_LHS;
+
+    int dx, dy, dyl, dyr, // general deltas
+        u, v, w,
+        du, dv, dw,
+        xi, yi,           // the current interpolated x,y
+        ui, vi, wi,       // the current interpolated u,v
+        index_x, index_y, // looping vars
+        x, y,             // hold general x,y
+        xstart,
+        xend,
+        ystart,
+        yrestart,
+        yend,
+        xl,
+        dxdyl,
+        xr,
+        dxdyr,
+        dudyl,
+        ul,
+        dvdyl,
+        vl,
+        dwdyl,
+        wl,
+        dudyr,
+        ur,
+        dvdyr,
+        vr,
+        dwdyr,
+        wr;
+
+    int x0, y0, tu0, tv0, tw0, // cached vertices
+        x1, y1, tu1, tv1, tw1,
+        x2, y2, tu2, tv2, tw2;
+
+    int r_base0, g_base0, b_base0,
+        r_base1, g_base1, b_base1,
+        r_base2, g_base2, b_base2;
+
+    //USHORT *screen_ptr = NULL,
+    //       *screen_line = NULL,
+    //       *textmap = NULL,
+    //       *dest_buffer = (USHORT *)_dest_buffer;
+
+#ifdef DEBUG_ON
+    // track rendering stats
+    debug_polys_rendered_per_frame++;
+#endif
+
+    // adjust memory pitch to words, divide by 2
+
+    // first trivial clipping rejection tests
+    if (((face->tvlist[0].y < min_clip_y) &&
+         (face->tvlist[1].y < min_clip_y) &&
+         (face->tvlist[2].y < min_clip_y)) ||
+
+        ((face->tvlist[0].y > max_clip_y) &&
+         (face->tvlist[1].y > max_clip_y) &&
+         (face->tvlist[2].y > max_clip_y)) ||
+
+        ((face->tvlist[0].x < min_clip_x) &&
+         (face->tvlist[1].x < min_clip_x) &&
+         (face->tvlist[2].x < min_clip_x)) ||
+
+        ((face->tvlist[0].x > max_clip_x) &&
+         (face->tvlist[1].x > max_clip_x) &&
+         (face->tvlist[2].x > max_clip_x)))
+        return;
+
+    // degenerate triangle
+    if (((face->tvlist[0].x == face->tvlist[1].x) && (face->tvlist[1].x == face->tvlist[2].x)) ||
+        ((face->tvlist[0].y == face->tvlist[1].y) && (face->tvlist[1].y == face->tvlist[2].y)))
+        return;
+
+    // sort vertices
+    if (face->tvlist[v1].y < face->tvlist[v0].y)
+    {
+        SWAP(v0, v1, temp);
+    }
+
+    if (face->tvlist[v2].y < face->tvlist[v0].y)
+    {
+        SWAP(v0, v2, temp);
+    }
+
+    if (face->tvlist[v2].y < face->tvlist[v1].y)
+    {
+        SWAP(v1, v2, temp);
+    }
+
+    // now test for trivial flat sided cases
+    if (face->tvlist[v0].y == face->tvlist[v1].y)
+    {
+        // set triangle type
+        tri_type = TRI_TYPE_FLAT_TOP;
+
+        // sort vertices left to right
+        if (face->tvlist[v1].x < face->tvlist[v0].x)
+        {
+            SWAP(v0, v1, temp);
+        }
+
+    } // end if
+    else
+        // now test for trivial flat sided cases
+        if (face->tvlist[v1].y == face->tvlist[v2].y)
+    {
+        // set triangle type
+        tri_type = TRI_TYPE_FLAT_BOTTOM;
+
+        // sort vertices left to right
+        if (face->tvlist[v2].x < face->tvlist[v1].x)
+        {
+            SWAP(v1, v2, temp);
+        }
+
+    } // end if
+    else
+    {
+        // must be a general triangle
+        tri_type = TRI_TYPE_GENERAL;
+
+    } // end else
+
+    // assume 5.6.5 format -- sorry!
+    // we can't afford a function call in the inner loops, so we must write
+    // two hard coded versions, if we want support for both 5.6.5, and 5.5.5
+    _RGB565FROM16BIT(face->lit_color[v0], &r_base0, &g_base0, &b_base0);
+    _RGB565FROM16BIT(face->lit_color[v1], &r_base1, &g_base1, &b_base1);
+    _RGB565FROM16BIT(face->lit_color[v2], &r_base2, &g_base2, &b_base2);
+
+    // scale to 8 bit
+    r_base0 <<= 3;
+    g_base0 <<= 2;
+    b_base0 <<= 3;
+
+    // scale to 8 bit
+    r_base1 <<= 3;
+    g_base1 <<= 2;
+    b_base1 <<= 3;
+
+    // scale to 8 bit
+    r_base2 <<= 3;
+    g_base2 <<= 2;
+    b_base2 <<= 3;
+
+    // extract vertices for processing, now that we have order
+    x0 = (int)(face->tvlist[v0].x + 0.5);
+    y0 = (int)(face->tvlist[v0].y + 0.5);
+
+    tu0 = r_base0;
+    tv0 = g_base0;
+    tw0 = b_base0;
+
+    x1 = (int)(face->tvlist[v1].x + 0.5);
+    y1 = (int)(face->tvlist[v1].y + 0.5);
+
+    tu1 = r_base1;
+    tv1 = g_base1;
+    tw1 = b_base1;
+
+    x2 = (int)(face->tvlist[v2].x + 0.5);
+    y2 = (int)(face->tvlist[v2].y + 0.5);
+
+    tu2 = r_base2;
+    tv2 = g_base2;
+    tw2 = b_base2;
+
+    // set interpolation restart value
+    yrestart = y1;
+
+    // what kind of triangle
+    if (tri_type & TRI_TYPE_FLAT_MASK)
+    {
+
+        if (tri_type == TRI_TYPE_FLAT_TOP)
+        {
+            // compute all deltas
+            dy = (y2 - y0);
+
+            dxdyl = ((x2 - x0) << FIXP16_SHIFT) / dy;
+            dudyl = ((tu2 - tu0) << FIXP16_SHIFT) / dy;
+            dvdyl = ((tv2 - tv0) << FIXP16_SHIFT) / dy;
+            dwdyl = ((tw2 - tw0) << FIXP16_SHIFT) / dy;
+
+            dxdyr = ((x2 - x1) << FIXP16_SHIFT) / dy;
+            dudyr = ((tu2 - tu1) << FIXP16_SHIFT) / dy;
+            dvdyr = ((tv2 - tv1) << FIXP16_SHIFT) / dy;
+            dwdyr = ((tw2 - tw1) << FIXP16_SHIFT) / dy;
+
+            // test for y clipping
+            if (y0 < min_clip_y)
+            {
+                // compute overclip
+                dy = (min_clip_y - y0);
+
+                // computer new LHS starting values
+                xl = dxdyl * dy + (x0 << FIXP16_SHIFT);
+                ul = dudyl * dy + (tu0 << FIXP16_SHIFT);
+                vl = dvdyl * dy + (tv0 << FIXP16_SHIFT);
+                wl = dwdyl * dy + (tw0 << FIXP16_SHIFT);
+
+                // compute new RHS starting values
+                xr = dxdyr * dy + (x1 << FIXP16_SHIFT);
+                ur = dudyr * dy + (tu1 << FIXP16_SHIFT);
+                vr = dvdyr * dy + (tv1 << FIXP16_SHIFT);
+                wr = dwdyr * dy + (tw1 << FIXP16_SHIFT);
+
+                // compute new starting y
+                ystart = min_clip_y;
+
+            } // end if
+            else
+            {
+                // no clipping
+
+                // set starting values
+                xl = (x0 << FIXP16_SHIFT);
+                xr = (x1 << FIXP16_SHIFT);
+
+                ul = (tu0 << FIXP16_SHIFT);
+                vl = (tv0 << FIXP16_SHIFT);
+                wl = (tw0 << FIXP16_SHIFT);
+
+                ur = (tu1 << FIXP16_SHIFT);
+                vr = (tv1 << FIXP16_SHIFT);
+                wr = (tw1 << FIXP16_SHIFT);
+
+                // set starting y
+                ystart = y0;
+
+            } // end else
+
+        } // end if flat top
+        else
+        {
+            // must be flat bottom
+
+            // compute all deltas
+            dy = (y1 - y0);
+
+            dxdyl = ((x1 - x0) << FIXP16_SHIFT) / dy;
+            dudyl = ((tu1 - tu0) << FIXP16_SHIFT) / dy;
+            dvdyl = ((tv1 - tv0) << FIXP16_SHIFT) / dy;
+            dwdyl = ((tw1 - tw0) << FIXP16_SHIFT) / dy;
+
+            dxdyr = ((x2 - x0) << FIXP16_SHIFT) / dy;
+            dudyr = ((tu2 - tu0) << FIXP16_SHIFT) / dy;
+            dvdyr = ((tv2 - tv0) << FIXP16_SHIFT) / dy;
+            dwdyr = ((tw2 - tw0) << FIXP16_SHIFT) / dy;
+
+            // test for y clipping
+            if (y0 < min_clip_y)
+            {
+                // compute overclip
+                dy = (min_clip_y - y0);
+
+                // computer new LHS starting values
+                xl = dxdyl * dy + (x0 << FIXP16_SHIFT);
+                ul = dudyl * dy + (tu0 << FIXP16_SHIFT);
+                vl = dvdyl * dy + (tv0 << FIXP16_SHIFT);
+                wl = dwdyl * dy + (tw0 << FIXP16_SHIFT);
+
+                // compute new RHS starting values
+                xr = dxdyr * dy + (x0 << FIXP16_SHIFT);
+                ur = dudyr * dy + (tu0 << FIXP16_SHIFT);
+                vr = dvdyr * dy + (tv0 << FIXP16_SHIFT);
+                wr = dwdyr * dy + (tw0 << FIXP16_SHIFT);
+
+                // compute new starting y
+                ystart = min_clip_y;
+
+            } // end if
+            else
+            {
+                // no clipping
+
+                // set starting values
+                xl = (x0 << FIXP16_SHIFT);
+                xr = (x0 << FIXP16_SHIFT);
+
+                ul = (tu0 << FIXP16_SHIFT);
+                vl = (tv0 << FIXP16_SHIFT);
+                wl = (tw0 << FIXP16_SHIFT);
+
+                ur = (tu0 << FIXP16_SHIFT);
+                vr = (tv0 << FIXP16_SHIFT);
+                wr = (tw0 << FIXP16_SHIFT);
+
+                // set starting y
+                ystart = y0;
+
+            } // end else
+
+        } // end else flat bottom
+
+        // test for bottom clip, always
+        if ((yend = y2) > max_clip_y)
+            yend = max_clip_y;
+
+        // test for horizontal clipping
+        if ((x0 < min_clip_x) || (x0 > max_clip_x) ||
+            (x1 < min_clip_x) || (x1 > max_clip_x) ||
+            (x2 < min_clip_x) || (x2 > max_clip_x))
+        {
+            // clip version
+
+            // point screen ptr to starting line
+            // screen_ptr = dest_buffer + (ystart * mem_pitch);
+
+            for (yi = ystart; yi <= yend; yi++)
+            {
+                // compute span endpoints
+                xstart = ((xl + FIXP16_ROUND_UP) >> FIXP16_SHIFT);
+                xend = ((xr + FIXP16_ROUND_UP) >> FIXP16_SHIFT);
+
+                // compute starting points for u,v,w interpolants
+                ui = ul + FIXP16_ROUND_UP;
+                vi = vl + FIXP16_ROUND_UP;
+                wi = wl + FIXP16_ROUND_UP;
+
+                // compute u,v interpolants
+                if ((dx = (xend - xstart)) > 0)
+                {
+                    du = (ur - ul) / dx;
+                    dv = (vr - vl) / dx;
+                    dw = (wr - wl) / dx;
+                } // end if
+                else
+                {
+                    du = (ur - ul);
+                    dv = (vr - vl);
+                    dw = (wr - wl);
+                } // end else
+
+                ///////////////////////////////////////////////////////////////////////
+
+                // test for x clipping, LHS
+                if (xstart < min_clip_x)
+                {
+                    // compute x overlap
+                    dx = min_clip_x - xstart;
+
+                    // slide interpolants over
+                    ui += dx * du;
+                    vi += dx * dv;
+                    wi += dx * dw;
+
+                    // reset vars
+                    xstart = min_clip_x;
+
+                } // end if
+
+                // test for x clipping RHS
+                if (xend > max_clip_x)
+                    xend = max_clip_x;
+
+                ///////////////////////////////////////////////////////////////////////
+
+                // draw span
+                for (xi = xstart; xi <= xend; xi++)
+                {
+                    // write textel assume 5.6.5
+                    // screen_ptr[xi] = ((ui >> (FIXP16_SHIFT + 3)) << 11) + ((vi >> (FIXP16_SHIFT + 2)) << 5) + (wi >> (FIXP16_SHIFT + 3));
+
+                    int color = ((ui >> (FIXP16_SHIFT + 3)) << 11) + ((vi >> (FIXP16_SHIFT + 2)) << 5) + (wi >> (FIXP16_SHIFT + 3));
+                    IUINT32 c;
+                    RGBFrom565(color, c);
+                    device_pixel(device, xi,  yi,  c);
+                    // interpolate u,v
+                    // IUINT32 c = (ui<<16) | (vi<<8) | wi;
+                    // IUINT32 c = (red << 16) | (green << 8) | blue;
+                    // IUINT32 c = ((ui >> (FIXP16_SHIFT + 3))<<16) | ((vi >> (FIXP16_SHIFT + 2))<<8) | (wi >> (FIXP16_SHIFT + 3)); 
+                    ui += du;
+                    vi += dv;
+                    wi += dw;
+                } // end for xi
+
+                // interpolate u,v,w,x along right and left edge
+                xl += dxdyl;
+                ul += dudyl;
+                vl += dvdyl;
+                wl += dwdyl;
+
+                xr += dxdyr;
+                ur += dudyr;
+                vr += dvdyr;
+                wr += dwdyr;
+
+                // advance screen ptr
+
+            } // end for y
+
+        } // end if clip
+        else
+        {
+            // non-clip version
+
+            // point screen ptr to starting line
+            // screen_ptr = dest_buffer + (ystart * mem_pitch);
+
+            for (yi = ystart; yi <= yend; yi++)
+            {
+                // compute span endpoints
+                xstart = ((xl + FIXP16_ROUND_UP) >> FIXP16_SHIFT);
+                xend = ((xr + FIXP16_ROUND_UP) >> FIXP16_SHIFT);
+
+                // compute starting points for u,v,w interpolants
+                ui = ul + FIXP16_ROUND_UP;
+                vi = vl + FIXP16_ROUND_UP;
+                wi = wl + FIXP16_ROUND_UP;
+
+                // compute u,v interpolants
+                if ((dx = (xend - xstart)) > 0)
+                {
+                    du = (ur - ul) / dx;
+                    dv = (vr - vl) / dx;
+                    dw = (wr - wl) / dx;
+                } // end if
+                else
+                {
+                    du = (ur - ul);
+                    dv = (vr - vl);
+                    dw = (wr - wl);
+                } // end else
+
+                // draw span
+                for (xi = xstart; xi <= xend; xi++)
+                {
+                    // write textel 5.6.5
+                    // screen_ptr[xi] = ((ui >> (FIXP16_SHIFT + 3)) << 11) + ((vi >> (FIXP16_SHIFT + 2)) << 5) + (wi >> (FIXP16_SHIFT + 3));
+
+                    // IUINT32 c = (ui<<16) | (vi<<8) | wi; 
+                    // IUINT32 c = ((ui >> (FIXP16_SHIFT + 3))<<16) | ((vi >> (FIXP16_SHIFT + 2))<<8) | (wi >> (FIXP16_SHIFT + 3)); 
+                    // device_pixel(device, xi,  yi,  c);
+
+                    int color = ((ui >> (FIXP16_SHIFT + 3)) << 11) + ((vi >> (FIXP16_SHIFT + 2)) << 5) + (wi >> (FIXP16_SHIFT + 3));
+                    IUINT32 c;
+                    RGBFrom565(color, c);
+                    device_pixel(device, xi,  yi,  c);
+                    // interpolate u,v
+                    ui += du;
+                    vi += dv;
+                    wi += dw;
+                } // end for xi
+
+                // interpolate u,v,w,x along right and left edge
+                xl += dxdyl;
+                ul += dudyl;
+                vl += dvdyl;
+                wl += dwdyl;
+
+                xr += dxdyr;
+                ur += dudyr;
+                vr += dvdyr;
+                wr += dwdyr;
+
+                // advance screen ptr
+                // screen_ptr += mem_pitch;
+
+            } // end for y
+
+        } // end if non-clipped
+
+    } // end if
+    else if (tri_type == TRI_TYPE_GENERAL)
+    {
+
+        // first test for bottom clip, always
+        if ((yend = y2) > max_clip_y)
+            yend = max_clip_y;
+
+        // pre-test y clipping status
+        if (y1 < min_clip_y)
+        {
+            // compute all deltas
+            // LHS
+            dyl = (y2 - y1);
+
+            dxdyl = ((x2 - x1) << FIXP16_SHIFT) / dyl;
+            dudyl = ((tu2 - tu1) << FIXP16_SHIFT) / dyl;
+            dvdyl = ((tv2 - tv1) << FIXP16_SHIFT) / dyl;
+            dwdyl = ((tw2 - tw1) << FIXP16_SHIFT) / dyl;
+
+            // RHS
+            dyr = (y2 - y0);
+
+            dxdyr = ((x2 - x0) << FIXP16_SHIFT) / dyr;
+            dudyr = ((tu2 - tu0) << FIXP16_SHIFT) / dyr;
+            dvdyr = ((tv2 - tv0) << FIXP16_SHIFT) / dyr;
+            dwdyr = ((tw2 - tw0) << FIXP16_SHIFT) / dyr;
+
+            // compute overclip
+            dyr = (min_clip_y - y0);
+            dyl = (min_clip_y - y1);
+
+            // computer new LHS starting values
+            xl = dxdyl * dyl + (x1 << FIXP16_SHIFT);
+
+            ul = dudyl * dyl + (tu1 << FIXP16_SHIFT);
+            vl = dvdyl * dyl + (tv1 << FIXP16_SHIFT);
+            wl = dwdyl * dyl + (tw1 << FIXP16_SHIFT);
+
+            // compute new RHS starting values
+            xr = dxdyr * dyr + (x0 << FIXP16_SHIFT);
+
+            ur = dudyr * dyr + (tu0 << FIXP16_SHIFT);
+            vr = dvdyr * dyr + (tv0 << FIXP16_SHIFT);
+            wr = dwdyr * dyr + (tw0 << FIXP16_SHIFT);
+
+            // compute new starting y
+            ystart = min_clip_y;
+
+            // test if we need swap to keep rendering left to right
+            if (dxdyr > dxdyl)
+            {
+                SWAP(dxdyl, dxdyr, temp);
+                SWAP(dudyl, dudyr, temp);
+                SWAP(dvdyl, dvdyr, temp);
+                SWAP(dwdyl, dwdyr, temp);
+                SWAP(xl, xr, temp);
+                SWAP(ul, ur, temp);
+                SWAP(vl, vr, temp);
+                SWAP(wl, wr, temp);
+                SWAP(x1, x2, temp);
+                SWAP(y1, y2, temp);
+                SWAP(tu1, tu2, temp);
+                SWAP(tv1, tv2, temp);
+                SWAP(tw1, tw2, temp);
+
+                // set interpolation restart
+                irestart = INTERP_RHS;
+
+            } // end if
+
+        } // end if
+        else if (y0 < min_clip_y)
+        {
+            // compute all deltas
+            // LHS
+            dyl = (y1 - y0);
+
+            dxdyl = ((x1 - x0) << FIXP16_SHIFT) / dyl;
+            dudyl = ((tu1 - tu0) << FIXP16_SHIFT) / dyl;
+            dvdyl = ((tv1 - tv0) << FIXP16_SHIFT) / dyl;
+            dwdyl = ((tw1 - tw0) << FIXP16_SHIFT) / dyl;
+
+            // RHS
+            dyr = (y2 - y0);
+
+            dxdyr = ((x2 - x0) << FIXP16_SHIFT) / dyr;
+            dudyr = ((tu2 - tu0) << FIXP16_SHIFT) / dyr;
+            dvdyr = ((tv2 - tv0) << FIXP16_SHIFT) / dyr;
+            dwdyr = ((tw2 - tw0) << FIXP16_SHIFT) / dyr;
+
+            // compute overclip
+            dy = (min_clip_y - y0);
+
+            // computer new LHS starting values
+            xl = dxdyl * dy + (x0 << FIXP16_SHIFT);
+            ul = dudyl * dy + (tu0 << FIXP16_SHIFT);
+            vl = dvdyl * dy + (tv0 << FIXP16_SHIFT);
+            wl = dwdyl * dy + (tw0 << FIXP16_SHIFT);
+
+            // compute new RHS starting values
+            xr = dxdyr * dy + (x0 << FIXP16_SHIFT);
+            ur = dudyr * dy + (tu0 << FIXP16_SHIFT);
+            vr = dvdyr * dy + (tv0 << FIXP16_SHIFT);
+            wr = dwdyr * dy + (tw0 << FIXP16_SHIFT);
+
+            // compute new starting y
+            ystart = min_clip_y;
+
+            // test if we need swap to keep rendering left to right
+            if (dxdyr < dxdyl)
+            {
+                SWAP(dxdyl, dxdyr, temp);
+                SWAP(dudyl, dudyr, temp);
+                SWAP(dvdyl, dvdyr, temp);
+                SWAP(dwdyl, dwdyr, temp);
+                SWAP(xl, xr, temp);
+                SWAP(ul, ur, temp);
+                SWAP(vl, vr, temp);
+                SWAP(wl, wr, temp);
+                SWAP(x1, x2, temp);
+                SWAP(y1, y2, temp);
+                SWAP(tu1, tu2, temp);
+                SWAP(tv1, tv2, temp);
+                SWAP(tw1, tw2, temp);
+
+                // set interpolation restart
+                irestart = INTERP_RHS;
+
+            } // end if
+
+        } // end if
+        else
+        {
+            // no initial y clipping
+
+            // compute all deltas
+            // LHS
+            dyl = (y1 - y0);
+
+            dxdyl = ((x1 - x0) << FIXP16_SHIFT) / dyl;
+            dudyl = ((tu1 - tu0) << FIXP16_SHIFT) / dyl;
+            dvdyl = ((tv1 - tv0) << FIXP16_SHIFT) / dyl;
+            dwdyl = ((tw1 - tw0) << FIXP16_SHIFT) / dyl;
+
+            // RHS
+            dyr = (y2 - y0);
+
+            dxdyr = ((x2 - x0) << FIXP16_SHIFT) / dyr;
+            dudyr = ((tu2 - tu0) << FIXP16_SHIFT) / dyr;
+            dvdyr = ((tv2 - tv0) << FIXP16_SHIFT) / dyr;
+            dwdyr = ((tw2 - tw0) << FIXP16_SHIFT) / dyr;
+
+            // no clipping y
+
+            // set starting values
+            xl = (x0 << FIXP16_SHIFT);
+            xr = (x0 << FIXP16_SHIFT);
+
+            ul = (tu0 << FIXP16_SHIFT);
+            vl = (tv0 << FIXP16_SHIFT);
+            wl = (tw0 << FIXP16_SHIFT);
+
+            ur = (tu0 << FIXP16_SHIFT);
+            vr = (tv0 << FIXP16_SHIFT);
+            wr = (tw0 << FIXP16_SHIFT);
+
+            // set starting y
+            ystart = y0;
+
+            // test if we need swap to keep rendering left to right
+            if (dxdyr < dxdyl)
+            {
+                SWAP(dxdyl, dxdyr, temp);
+                SWAP(dudyl, dudyr, temp);
+                SWAP(dvdyl, dvdyr, temp);
+                SWAP(dwdyl, dwdyr, temp);
+                SWAP(xl, xr, temp);
+                SWAP(ul, ur, temp);
+                SWAP(vl, vr, temp);
+                SWAP(wl, wr, temp);
+                SWAP(x1, x2, temp);
+                SWAP(y1, y2, temp);
+                SWAP(tu1, tu2, temp);
+                SWAP(tv1, tv2, temp);
+                SWAP(tw1, tw2, temp);
+
+                // set interpolation restart
+                irestart = INTERP_RHS;
+
+            } // end if
+
+        } // end else
+
+        // test for horizontal clipping
+        if ((x0 < min_clip_x) || (x0 > max_clip_x) ||
+            (x1 < min_clip_x) || (x1 > max_clip_x) ||
+            (x2 < min_clip_x) || (x2 > max_clip_x))
+        {
+            // clip version
+            // x clipping
+
+            // point screen ptr to starting line
+            // screen_ptr = dest_buffer + (ystart * mem_pitch);
+
+            for (yi = ystart; yi <= yend; yi++)
+            {
+                // compute span endpoints
+                xstart = ((xl + FIXP16_ROUND_UP) >> FIXP16_SHIFT);
+                xend = ((xr + FIXP16_ROUND_UP) >> FIXP16_SHIFT);
+
+                // compute starting points for u,v,w interpolants
+                ui = ul + FIXP16_ROUND_UP;
+                vi = vl + FIXP16_ROUND_UP;
+                wi = wl + FIXP16_ROUND_UP;
+
+                // compute u,v interpolants
+                if ((dx = (xend - xstart)) > 0)
+                {
+                    du = (ur - ul) / dx;
+                    dv = (vr - vl) / dx;
+                    dw = (wr - wl) / dx;
+                } // end if
+                else
+                {
+                    du = (ur - ul);
+                    dv = (vr - vl);
+                    dw = (wr - wl);
+                } // end else
+
+                ///////////////////////////////////////////////////////////////////////
+
+                // test for x clipping, LHS
+                if (xstart < min_clip_x)
+                {
+                    // compute x overlap
+                    dx = min_clip_x - xstart;
+
+                    // slide interpolants over
+                    ui += dx * du;
+                    vi += dx * dv;
+                    wi += dx * dw;
+
+                    // set x to left clip edge
+                    xstart = min_clip_x;
+
+                } // end if
+
+                // test for x clipping RHS
+                if (xend > max_clip_x)
+                    xend = max_clip_x;
+
+                ///////////////////////////////////////////////////////////////////////
+
+                // draw span
+                for (xi = xstart; xi <= xend; xi++)
+                {
+                    // write textel assume 5.6.5
+                    // screen_ptr[xi] = ((ui >> (FIXP16_SHIFT + 3)) << 11) + ((vi >> (FIXP16_SHIFT + 2)) << 5) + (wi >> (FIXP16_SHIFT + 3));
+
+                    // IUINT32 c = (ui<<16) | (vi<<8) | wi; 
+                    // IUINT32 c = ((ui >> (FIXP16_SHIFT + 3))<<16) | ((vi >> (FIXP16_SHIFT + 2))<<8) | (wi >> (FIXP16_SHIFT + 3)); 
+                    // device_pixel(device, xi,  yi,  c);
+
+                    int color = ((ui >> (FIXP16_SHIFT + 3)) << 11) + ((vi >> (FIXP16_SHIFT + 2)) << 5) + (wi >> (FIXP16_SHIFT + 3));
+                    IUINT32 c;
+                    RGBFrom565(color, c);
+                    device_pixel(device, xi,  yi,  c);
+                    // interpolate u,v
+                    ui += du;
+                    vi += dv;
+                    wi += dw;
+                } // end for xi
+
+                // interpolate u,v,w,x along right and left edge
+                xl += dxdyl;
+                ul += dudyl;
+                vl += dvdyl;
+                wl += dwdyl;
+
+                xr += dxdyr;
+                ur += dudyr;
+                vr += dvdyr;
+                wr += dwdyr;
+
+                // advance screen ptr
+                // screen_ptr += mem_pitch;
+
+                // test for yi hitting second region, if so change interpolant
+                if (yi == yrestart)
+                {
+                    // test interpolation side change flag
+
+                    if (irestart == INTERP_LHS)
+                    {
+                        // LHS
+                        dyl = (y2 - y1);
+
+                        dxdyl = ((x2 - x1) << FIXP16_SHIFT) / dyl;
+                        dudyl = ((tu2 - tu1) << FIXP16_SHIFT) / dyl;
+                        dvdyl = ((tv2 - tv1) << FIXP16_SHIFT) / dyl;
+                        dwdyl = ((tw2 - tw1) << FIXP16_SHIFT) / dyl;
+
+                        // set starting values
+                        xl = (x1 << FIXP16_SHIFT);
+                        ul = (tu1 << FIXP16_SHIFT);
+                        vl = (tv1 << FIXP16_SHIFT);
+                        wl = (tw1 << FIXP16_SHIFT);
+
+                        // interpolate down on LHS to even up
+                        xl += dxdyl;
+                        ul += dudyl;
+                        vl += dvdyl;
+                        wl += dwdyl;
+                    } // end if
+                    else
+                    {
+                        // RHS
+                        dyr = (y1 - y2);
+
+                        dxdyr = ((x1 - x2) << FIXP16_SHIFT) / dyr;
+                        dudyr = ((tu1 - tu2) << FIXP16_SHIFT) / dyr;
+                        dvdyr = ((tv1 - tv2) << FIXP16_SHIFT) / dyr;
+                        dwdyr = ((tw1 - tw2) << FIXP16_SHIFT) / dyr;
+
+                        // set starting values
+                        xr = (x2 << FIXP16_SHIFT);
+                        ur = (tu2 << FIXP16_SHIFT);
+                        vr = (tv2 << FIXP16_SHIFT);
+                        wr = (tw2 << FIXP16_SHIFT);
+
+                        // interpolate down on RHS to even up
+                        xr += dxdyr;
+                        ur += dudyr;
+                        vr += dvdyr;
+                        wr += dwdyr;
+
+                    } // end else
+
+                } // end if
+
+            } // end for y
+
+        } // end if
+        else
+        {
+            // no x clipping
+            // point screen ptr to starting line
+            // screen_ptr = dest_buffer + (ystart * mem_pitch);
+
+            for (yi = ystart; yi <= yend; yi++)
+            {
+                // compute span endpoints
+                xstart = ((xl + FIXP16_ROUND_UP) >> FIXP16_SHIFT);
+                xend = ((xr + FIXP16_ROUND_UP) >> FIXP16_SHIFT);
+
+                // compute starting points for u,v,w interpolants
+                ui = ul + FIXP16_ROUND_UP;
+                vi = vl + FIXP16_ROUND_UP;
+                wi = wl + FIXP16_ROUND_UP;
+
+                // compute u,v interpolants
+                if ((dx = (xend - xstart)) > 0)
+                {
+                    du = (ur - ul) / dx;
+                    dv = (vr - vl) / dx;
+                    dw = (wr - wl) / dx;
+                } // end if
+                else
+                {
+                    du = (ur - ul);
+                    dv = (vr - vl);
+                    dw = (wr - wl);
+                } // end else
+
+                // draw span
+                for (xi = xstart; xi <= xend; xi++)
+                {
+                    // write textel assume 5.6.5
+                    // screen_ptr[xi] = ((ui >> (FIXP16_SHIFT + 3)) << 11) + ((vi >> (FIXP16_SHIFT + 2)) << 5) + (wi >> (FIXP16_SHIFT + 3));
+
+                    // IUINT32 c = (ui<<16) | (vi<<8) | wi; 
+                    // IUINT32 c = ((ui >> (FIXP16_SHIFT + 3))<<16) | ((vi >> (FIXP16_SHIFT + 2))<<8) | (wi >> (FIXP16_SHIFT + 3)); 
+                    // device_pixel(device, xi,  yi,  c);
+
+                    int color = ((ui >> (FIXP16_SHIFT + 3)) << 11) + ((vi >> (FIXP16_SHIFT + 2)) << 5) + (wi >> (FIXP16_SHIFT + 3));
+                    IUINT32 c;
+                    RGBFrom565(color, c);
+                    device_pixel(device, xi,  yi,  c);
+                    // interpolate u,v
+                    ui += du;
+                    vi += dv;
+                    wi += dw;
+                } // end for xi
+
+                // interpolate u,v,w,x along right and left edge
+                xl += dxdyl;
+                ul += dudyl;
+                vl += dvdyl;
+                wl += dwdyl;
+
+                xr += dxdyr;
+                ur += dudyr;
+                vr += dvdyr;
+                wr += dwdyr;
+
+                // advance screen ptr
+                // screen_ptr += mem_pitch;
+
+                // test for yi hitting second region, if so change interpolant
+                if (yi == yrestart)
+                {
+                    // test interpolation side change flag
+
+                    if (irestart == INTERP_LHS)
+                    {
+                        // LHS
+                        dyl = (y2 - y1);
+
+                        dxdyl = ((x2 - x1) << FIXP16_SHIFT) / dyl;
+                        dudyl = ((tu2 - tu1) << FIXP16_SHIFT) / dyl;
+                        dvdyl = ((tv2 - tv1) << FIXP16_SHIFT) / dyl;
+                        dwdyl = ((tw2 - tw1) << FIXP16_SHIFT) / dyl;
+
+                        // set starting values
+                        xl = (x1 << FIXP16_SHIFT);
+                        ul = (tu1 << FIXP16_SHIFT);
+                        vl = (tv1 << FIXP16_SHIFT);
+                        wl = (tw1 << FIXP16_SHIFT);
+
+                        // interpolate down on LHS to even up
+                        xl += dxdyl;
+                        ul += dudyl;
+                        vl += dvdyl;
+                        wl += dwdyl;
+                    } // end if
+                    else
+                    {
+                        // RHS
+                        dyr = (y1 - y2);
+
+                        dxdyr = ((x1 - x2) << FIXP16_SHIFT) / dyr;
+                        dudyr = ((tu1 - tu2) << FIXP16_SHIFT) / dyr;
+                        dvdyr = ((tv1 - tv2) << FIXP16_SHIFT) / dyr;
+                        dwdyr = ((tw1 - tw2) << FIXP16_SHIFT) / dyr;
+
+                        // set starting values
+                        xr = (x2 << FIXP16_SHIFT);
+                        ur = (tu2 << FIXP16_SHIFT);
+                        vr = (tv2 << FIXP16_SHIFT);
+                        wr = (tw2 << FIXP16_SHIFT);
+
+                        // interpolate down on RHS to even up
+                        xr += dxdyr;
+                        ur += dudyr;
+                        vr += dvdyr;
+                        wr += dwdyr;
+                    } // end else
+
+                } // end if
+
+            } // end for y
+
+        } // end else
+
+    } // end if
+
+} // end Draw_Gouraud_Triangle16

@@ -2,6 +2,7 @@
 
 #include "datastructure.h"
 
+
 void Reset_RENDERLIST4DV1(RENDERLIST4DV1_PTR renderList);
 void Reset_OBJECT4DV1(OBJECT4DV1_PTR obj);
 

@@ -6,7 +6,6 @@
 #include <math.h>
 #include <string.h>
 #include <stdio.h>
-
 #include <windows.h> // include important windows stuff
 #include <windowsx.h>
 #include <mmsystem.h>
@@ -448,6 +447,8 @@ void Build_Sin_Cos_Tables(void);
 #define INFINITE_LIGHT_INDEX 1 // infinite light index
 #define POINT_LIGHT_INDEX 2	// point light index
 #define SPOT_LIGHT_INDEX 3	 // spot light index
+#define SPOT_LIGHT1_INDEX 4    // point light index
+#define SPOT_LIGHT2_INDEX 3    // spot light index
 
 #define LIGHTV1_STATE_ON 1  // light on
 #define LIGHTV1_STATE_OFF 0 // light off
@@ -947,3 +948,109 @@ int Destroy_OBJECT4DV2(OBJECT4DV2_PTR obj);
 #define BITMAP_EXTRACT_MODE_ABS   1
 int Flip_Bitmap(UCHAR *image, int bytes_per_line, int height);
 float VECTOR4D_Length(VECTOR4D_PTR va);
+
+typedef struct POLYF4DV2_TYP
+{
+	int state;				  // state information
+	int attr;				  // physical attributes of polygon
+	int color;				  // color of polygon
+	int lit_color[3];		  // holds colors after lighting, 0 for flat shading
+							  // 0,1,2 for vertex colors after vertex lighting
+	BITMAP_IMAGE_PTR texture; // pointer to the texture information for simple texture mapping
+
+	int mati; // material index (-1) for no material  (new)
+
+	float nlength;   // length of the polygon normal if not normalized (new)
+	VECTOR4D normal; // the general polygon normal (new)
+
+	float avg_z; // average z of vertices, used for simple sorting (new)
+
+	VERTEX4DTV1 vlist[3];  // the vertices of this triangle
+	VERTEX4DTV1 tvlist[3]; // the vertices after transformation if needed
+
+	POLYF4DV2_TYP *next; // pointer to next polygon in list??
+	POLYF4DV2_TYP *prev; // pointer to previous polygon in list??
+
+} POLYF4DV2, *POLYF4DV2_PTR;
+
+typedef struct RENDERLIST4DV2_TYP
+{
+	int state; // state of renderlist ???
+	int attr;  // attributes of renderlist ???
+
+	// the render list is an array of pointers each pointing to
+	// a self contained "renderable" polygon face POLYF4DV2
+	POLYF4DV2_PTR poly_ptrs[RENDERLIST4DV2_MAX_POLYS];
+
+	// additionally to cut down on allocatation, de-allocation
+	// of polygons each frame, here's where the actual polygon
+	// faces will be stored
+	POLYF4DV2 poly_data[RENDERLIST4DV2_MAX_POLYS];
+
+	int num_polys; // number of polys in render list
+
+} RENDERLIST4DV2, *RENDERLIST4DV2_PTR;
+void Reset_RENDERLIST4DV2(RENDERLIST4DV2_PTR rend_list);
+void Reset_OBJECT4DV2(OBJECT4DV2_PTR obj);
+
+void Transform_OBJECT4DV2(OBJECT4DV2_PTR obj, MATRIX4X4_PTR mt,   
+                          int coord_select, int transform_basis, int all_frames=0);
+
+void Model_To_World_OBJECT4DV2(OBJECT4DV2_PTR obj, int coord_select = TRANSFORM_LOCAL_TO_TRANS, int all_frames=0);
+
+int Insert_POLY4DV2_RENDERLIST4DV2(RENDERLIST4DV2_PTR rend_list, 
+                                   POLY4DV2_PTR poly);
+int Insert_OBJECT4DV2_RENDERLIST4DV2(RENDERLIST4DV2_PTR rend_list, 
+                                      OBJECT4DV2_PTR obj,
+                                      int insert_local);
+
+inline void VERTEX4DTV1_COPY(VERTEX4DTV1_PTR vdst, VERTEX4DTV1_PTR vsrc)
+{ *vdst = *vsrc; }
+
+void Remove_Backfaces_RENDERLIST4DV2(RENDERLIST4DV2_PTR rend_list, CAM4DV1_PTR cam);
+
+int Light_RENDERLIST4DV2_World16(RENDERLIST4DV2_PTR rend_list,  // list to process
+                                 CAM4DV1_PTR cam,     // camera position
+                                 LIGHTV1_PTR lights,  // light list (might have more than one)
+                                 int max_lights);     // maximum lights in list
+void World_To_Camera_RENDERLIST4DV2(RENDERLIST4DV2_PTR rend_list, 
+                                   CAM4DV1_PTR cam);
+void Sort_RENDERLIST4DV2(RENDERLIST4DV2_PTR rend_list, int sort_method);
+
+void Camera_To_Perspective_RENDERLIST4DV2(RENDERLIST4DV2_PTR rend_list, 
+                                          CAM4DV1_PTR cam);
+
+void Perspective_To_Screen_RENDERLIST4DV2(RENDERLIST4DV2_PTR rend_list, 
+                                          CAM4DV1_PTR cam);
+// avg z-compare
+int Compare_AvgZ_POLYF4DV2(const void *arg1, const void *arg2);
+
+// near z-compare
+int Compare_NearZ_POLYF4DV2(const void *arg1, const void *arg2);
+
+// far z-compare
+int Compare_FarZ_POLYF4DV2(const void *arg1, const void *arg2);
+
+inline float VECTOR4D_Length_Fast2(VECTOR4D_PTR va)
+{
+// this function computes the distance from the origin to x,y,z
+
+int temp;  // used for swaping
+int x,y,z; // used for algorithm
+
+// make sure values are all positive
+x = fabs(va->x) * 1024;
+y = fabs(va->y) * 1024;
+z = fabs(va->z) * 1024;
+
+// sort values
+if (y < x) SWAP(x,y,temp)
+if (z < y) SWAP(y,z,temp)
+if (y < x) SWAP(x,y,temp)
+
+int dist = (z + 11 * (y >> 5) + (x >> 2) );
+
+// compute distance with 8% error
+return((float)(dist >> 10));
+
+} // end VECTOR4D_Length_Fast2

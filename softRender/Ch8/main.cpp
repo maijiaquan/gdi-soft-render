@@ -878,16 +878,16 @@ void DrawDemo8_6()
 	lights[POINT_LIGHT_INDEX].pos.y = 200;
 	lights[POINT_LIGHT_INDEX].pos.z = 4000 * Fast_Sin(plight_ang);
 
-	// if ((plight_ang += 3) > 360)
-	// 	plight_ang = 0;
+	if ((plight_ang += 3) > 360)
+		plight_ang = 0;
 
 	// move spot light source in ellipse around game world
 	lights[SPOT_LIGHT_INDEX].pos.x = 2000 * Fast_Cos(slight_ang);
 	lights[SPOT_LIGHT_INDEX].pos.y = 200;
 	lights[SPOT_LIGHT_INDEX].pos.z = 2000 * Fast_Sin(slight_ang);
 
-	// if ((slight_ang -= 5) < 0)
-	// 	slight_ang = 360;
+	if ((slight_ang -= 5) < 0)
+		slight_ang = 360;
 
 	// generate camera matrix
 	Build_CAM4DV1_Matrix_Euler(&cam, CAM_ROT_SEQ_ZYX);
@@ -1048,8 +1048,8 @@ void DrawDemo8_6()
 
 		// IUINT32 c = (255 << 16) | (255 << 8) | 255;
 
-		int c = rend_list_ptr->poly_ptrs[poly]->color;
-		DrawTrianglePureColor(&device, x1, y1, x2, y2, x3, y3, c);
+		int color = rend_list_ptr->poly_ptrs[poly]->color;
+		DrawTrianglePureColor(&device, x1, y1, x2, y2, x3, y3, color);
 		// device_draw_line(&device, x1, y1, x2, y2, c);
 		// device_draw_line(&device, x1, y1, x3, y3, c);
 		// device_draw_line(&device, x2, y2, x3, y3, c);
@@ -1091,6 +1091,7 @@ void GameMain()
 		DrawDemo8_4();
 		break;
 	case 86:
+		Sleep(20);
 		DrawDemo8_6();
 		break;
 	default:

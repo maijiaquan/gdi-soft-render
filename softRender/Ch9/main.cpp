@@ -1091,17 +1091,19 @@ void InitDemo9_2()
 
 	VECTOR4D_INITXYZ(&vscale, 10.00, 10.00, 10.00);
 
-	Load_OBJECT4DV2_COB(&obj_constant_water, "./cob/water_constant_01.cob",
+	// Load_OBJECT4DV2_COB(&obj_constant_water, "./cob/water_constant_01.cob",
+	Load_OBJECT4DV2_COB(&obj_constant_water, "./cob/cube_constant_01.cob",
 						&vscale, &vpos, &vrot, VERTEX_FLAGS_SWAP_YZ | VERTEX_FLAGS_TRANSFORM_LOCAL | VERTEX_FLAGS_TRANSFORM_LOCAL_WORLD);
    // load flat shaded water
    VECTOR4D_INITXYZ(&vscale, 10.00, 10.00, 10.00);
-   Load_OBJECT4DV2_COB(&obj_flat_water, "./cob/water_flat_01.cob",
+   Load_OBJECT4DV2_COB(&obj_flat_water, "./cob/cube_flat_01.cob",
+//    Load_OBJECT4DV2_COB(&obj_flat_water, "./cob/water_gouraud_01_flat.cob",
                        &vscale, &vpos, &vrot, VERTEX_FLAGS_SWAP_YZ | VERTEX_FLAGS_TRANSFORM_LOCAL | VERTEX_FLAGS_TRANSFORM_LOCAL_WORLD);
 
    // load gouraud shaded water
    VECTOR4D_INITXYZ(&vscale, 10.00, 10.00, 10.00);
-   Load_OBJECT4DV2_COB(&obj_gouraud_water, "./cob/water_gouraud_01.cob",
-                       &vscale, &vpos, &vrot, VERTEX_FLAGS_SWAP_YZ | VERTEX_FLAGS_TRANSFORM_LOCAL | VERTEX_FLAGS_TRANSFORM_LOCAL_WORLD);
+//    Load_OBJECT4DV2_COB(&obj_gouraud_water, "./cob/water_flat_01_gouraud.cob", &vscale, &vpos, &vrot, VERTEX_FLAGS_SWAP_YZ | VERTEX_FLAGS_TRANSFORM_LOCAL | VERTEX_FLAGS_TRANSFORM_LOCAL_WORLD); //修改颜色后的水分子
+   Load_OBJECT4DV2_COB(&obj_gouraud_water, "./cob/cube_gouraud_01.cob", &vscale, &vpos, &vrot, VERTEX_FLAGS_SWAP_YZ | VERTEX_FLAGS_TRANSFORM_LOCAL | VERTEX_FLAGS_TRANSFORM_LOCAL_WORLD); //修改颜色后的水分子
    Reset_Lights_LIGHTV1();
 
    // create some working colors
@@ -1138,7 +1140,8 @@ void InitDemo9_2()
    Init_Light_LIGHTV1(POINT_LIGHT_INDEX,
 					  LIGHTV1_STATE_ON,	// turn the light on
 					  LIGHTV1_ATTR_POINT,  // pointlight type
-					  black, green, black, // color for diffuse term only
+					//   black, green, black, // color for diffuse term only
+					  black, white, black, // color for diffuse term only
 					  &plight_pos, NULL,   // need pos only
 					  0, .001, 0,		   // linear attenuation only
 					  0, 0, 1);			   // spotlight info NA
@@ -1150,7 +1153,8 @@ void InitDemo9_2()
    Init_Light_LIGHTV1(SPOT_LIGHT2_INDEX,
 					  LIGHTV1_STATE_ON,			  // turn the light on
 					  LIGHTV1_ATTR_SPOTLIGHT2,	// spot light type 2
-					  black, red, black,		  // color for diffuse term only
+					//   black, red, black,		  // color for diffuse term only
+					  black, white, black,		  // color for diffuse term only
 					  &slight2_pos, &slight2_dir, // need pos only
 					  0, .001, 0,				  // linear attenuation only
 					  0, 0, 1);

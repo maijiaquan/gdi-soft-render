@@ -5039,6 +5039,7 @@ void Remove_Backfaces_RENDERLIST4DV2(RENDERLIST4DV2_PTR rend_list, CAM4DV1_PTR c
 
 } // end Remove_Backfaces_RENDERLIST4DV2
 
+//计算出当前poly的color
 int Light_RENDERLIST4DV2_World16(RENDERLIST4DV2_PTR rend_list, // list to process
                                  CAM4DV1_PTR cam,              // camera position
                                  LIGHTV1_PTR lights,           // light list (might have more than one)

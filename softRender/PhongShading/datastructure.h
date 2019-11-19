@@ -1065,6 +1065,8 @@ return((float)(dist >> 10));
 #define FIXP16_WP_MASK   0xffff0000
 #define FIXP16_ROUND_UP  0x00008000
 void Draw_Gouraud_Triangle16(device_t *device, POLYF4DV2_PTR face); 
-void DrawPhongTriangle(device_t *device, POLYF4DV2_PTR face);
+// void DrawPhongTriangle(device_t *device, POLYF4DV2_PTR face, LIGHTV1_PTR lights);
+void DrawPhongTriangle(device_t *device, POLYF4DV2_PTR face, POLYF4DV2_PTR faceInWorld, LIGHTV1_PTR lights) ;
 
-void ComputePhongShadingPixelColor(int r_base, int g_base, int b_base, LIGHTV1_PTR prtlights, CAM4DV1_PTR ptrCam, VECTOR4D_PTR prtFragPos, VECTOR4D_PTR ptrFragNormal, int &color);
+void ComputePhongShadingPixelColor(int r_base, int g_base, int b_base, LIGHTV1_PTR prtlights, CAM4DV1_PTR ptrCam, VECTOR4D_PTR prtFragPos, VECTOR4D_PTR ptrFragNormal, IUINT32 &color);
+

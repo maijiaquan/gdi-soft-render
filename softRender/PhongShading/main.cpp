@@ -605,7 +605,6 @@ void DrawDemo9_2()
 
 	// perform world transform
 	Model_To_World_OBJECT4DV2(&obj_flat_water, TRANSFORM_TRANS_ONLY);
-	// 丢到了 obj->vlist_trans[vertex].v
 
 	// insert the object into render list
 	Insert_OBJECT4DV2_RENDERLIST4DV2(&rend_list2, &obj_flat_water, 0);
@@ -629,6 +628,7 @@ void DrawDemo9_2()
 
 	// perform world transform
 	Model_To_World_OBJECT4DV2(&obj_gouraud_water, TRANSFORM_TRANS_ONLY);
+	// 丢到了 obj->vlist_trans[vertex].v
 
 	// insert the object into render list
 	Insert_OBJECT4DV2_RENDERLIST4DV2(&rend_list2, &obj_gouraud_water, 0);
@@ -713,9 +713,17 @@ void DrawDemo9_2()
 			// draw the gouraud shaded triangle
 			// Draw_Gouraud_Triangle16(&face, video_buffer, lpitch);
 
-			Draw_Gouraud_Triangle16(&device, &face);
+			// Draw_Gouraud_Triangle16(&device, &face);
 
-			// DrawPhongTriangle(&device, &face);
+			DrawPhongTriangle(&device, &face, rend_list_ptr->poly_ptrs[poly], lights);
+
+			//     std::cout<<"...tu0 = "<< tu0    <<"tv0 = "<< tv0     <<"tw0 = "<< tw0
+            //  <<"tu1 = "<< tu1     <<"tv1 = "<< tv1     <<"tw1 = "<< tw1
+            //  <<"tu2 = "<< tu2     <<"tv2 = "<< tv2     <<"tw2 = "<< tw2<< std::endl;
+
+			//          std::cout<<"...tpu0 = "<< tpu0    <<"tpv0 = "<< tpv0     <<"tpw0 = "<< tpw0
+            //  <<"tpu1 = "<< tpu1     <<"tpv1 = "<< tpv1     <<"tpw1 = "<< tpw1
+            //  <<"tpu2 = "<< tpu2     <<"tpv2 = "<< tpv2     <<"tpw2 = "<< tpw2<< std::endl;
 
 			// DrawTrianglePureColor2(&device, x1, y1, x2, y2, x3, y3, color);
 		} // end if gouraud

@@ -1042,6 +1042,7 @@ float Compute_OBJECT4DV1_Radius(OBJECT4DV1_PTR obj)
 
 } // end Compute_OBJECT4DV1_Radius
 
+//参数1指向参数2的向量，保存到参数3
 void VECTOR4D_Build(VECTOR4D_PTR init, VECTOR4D_PTR term, VECTOR4D_PTR result)
 {
     // build a 4d vector
@@ -5643,7 +5644,6 @@ int Light_RENDERLIST4DV2_World16(RENDERLIST4DV2_PTR rend_list, // list to proces
 
                         i = 128 * dp / (dist * atten);
 
-
                         r_sum0 += (lights[curr_light].c_diffuse.r * r_base * i) / (256 * 128);
                         g_sum0 += (lights[curr_light].c_diffuse.g * g_base * i) / (256 * 128);
                         b_sum0 += (lights[curr_light].c_diffuse.b * b_base * i) / (256 * 128);
@@ -5661,7 +5661,6 @@ int Light_RENDERLIST4DV2_World16(RENDERLIST4DV2_PTR rend_list, // list to proces
                         atten = (lights[curr_light].kc + lights[curr_light].kl * dist + lights[curr_light].kq * dist * dist);
 
                         i = 128 * dp / (dist * atten);
-
 
                         r_sum1 += (lights[curr_light].c_diffuse.r * r_base * i) / (256 * 128);
                         g_sum1 += (lights[curr_light].c_diffuse.g * g_base * i) / (256 * 128);
@@ -6248,19 +6247,19 @@ int Compare_FarZ_POLYF4DV2(const void *arg1, const void *arg2)
 
 } // end Compare_FarZ_POLYF4DV2
 
-void DrawPhongTriangle(device_t *device, POLYF4DV2_PTR face, POLYF4DV2_PTR faceInWorld, LIGHTV1_PTR lights) 
+void DrawPhongTriangle(device_t *device, CAM4DV1_PTR ptrCam, POLYF4DV2_PTR face, POLYF4DV2_PTR faceInWorld, LIGHTV1_PTR lights)
 {
     int v0 = 0,
         v1 = 1,
         v2 = 2,
         tri_type = TRI_TYPE_NONE,
         irestart = INTERP_LHS;
-        
-    float  temp = 0;
+
+    float temp = 0;
     int dx, dy, dyl, dyr, // general deltas
         // u, v, w,
         // du, dv, dw,
-        xi, yi,           // the current interpolated x,y
+        xi, yi, // the current interpolated x,y
         // ui, vi, wi,       // the current interpolated u,v
         index_x, index_y, // looping vars
         x, y,             // hold general x,y
@@ -6273,22 +6272,21 @@ void DrawPhongTriangle(device_t *device, POLYF4DV2_PTR face, POLYF4DV2_PTR faceI
         dxdyl,
         xr,
         dxdyr;
-        // dudyl,
-        // ul,
-        // dvdyl,
-        // vl,
-        // dwdyl,
-        // wl,
-        // dudyr,
-        // ur,
-        // dvdyr,
-        // vr,
-        // dwdyr,
-        // wr;
-    int x0, y0,  // cached vertices
-        x1, y1, 
-        x2, y2; 
-
+    // dudyl,
+    // ul,
+    // dvdyl,
+    // vl,
+    // dwdyl,
+    // wl,
+    // dudyr,
+    // ur,
+    // dvdyr,
+    // vr,
+    // dwdyr,
+    // wr;
+    int x0, y0, // cached vertices
+        x1, y1,
+        x2, y2;
 
     int r_base0, g_base0, b_base0,
         r_base1, g_base1, b_base1,
@@ -6296,13 +6294,13 @@ void DrawPhongTriangle(device_t *device, POLYF4DV2_PTR face, POLYF4DV2_PTR faceI
 
     //------------------------------------
     //三个法向量
-    float du, dv, dw;   //水平方向上的变化量
-    float ui, vi, wi;   //最终的结果
+    float du, dv, dw; //水平方向上的变化量
+    float ui, vi, wi; //最终的结果
     float
         dudyl, //竖直方向上的变化量
         dvdyl,
         dwdyl,
-        ul,  //左边起点
+        ul, //左边起点
         vl,
         wl,
 
@@ -6312,7 +6310,7 @@ void DrawPhongTriangle(device_t *device, POLYF4DV2_PTR face, POLYF4DV2_PTR faceI
         ur,
         vr,
         wr;
-    
+
     //三个顶点的法线的xyz
     float tu0, tv0, tw0,
         tu1, tv1, tw1,
@@ -6320,13 +6318,13 @@ void DrawPhongTriangle(device_t *device, POLYF4DV2_PTR face, POLYF4DV2_PTR faceI
 
     //------------------------------------
     //三个顶点
-    float dpu, dpv, dpw;   //水平方向上的变化量
-    float pui, pvi, pwi;   //最终的结果
+    float dpu, dpv, dpw; //水平方向上的变化量
+    float pui, pvi, pwi; //最终的结果
     float
         dpudyl, //竖直方向上的变化量
         dpvdyl,
         dpwdyl,
-        pul,  //左边起点
+        pul, //左边起点
         pvl,
         pwl,
 
@@ -6337,10 +6335,8 @@ void DrawPhongTriangle(device_t *device, POLYF4DV2_PTR face, POLYF4DV2_PTR faceI
         pvr,
         pwr;
     float tpu0, tpv0, tpw0,
-          tpu1, tpv1, tpw1,
-          tpu2, tpv2, tpw2;
-
-
+        tpu1, tpv1, tpw1,
+        tpu2, tpv2, tpw2;
 
     //USHORT *screen_ptr = NULL,
     //       *screen_line = NULL,
@@ -6486,17 +6482,12 @@ void DrawPhongTriangle(device_t *device, POLYF4DV2_PTR face, POLYF4DV2_PTR faceI
     // tv0 = g_base0;
     // tw0 = b_base0;
 
-
-
-
     x1 = (int)(face->tvlist[v1].x + 0.5);
     y1 = (int)(face->tvlist[v1].y + 0.5);
 
     // tu1 = r_base1;
     // tv1 = g_base1;
     // tw1 = b_base1;
-
-
 
     x2 = (int)(face->tvlist[v2].x + 0.5);
     y2 = (int)(face->tvlist[v2].y + 0.5);
@@ -6529,12 +6520,9 @@ void DrawPhongTriangle(device_t *device, POLYF4DV2_PTR face, POLYF4DV2_PTR faceI
     //          <<"tu1 = "<< tu1     <<"tv1 = "<< tv1     <<"tw1 = "<< tw1
     //          <<"tu2 = "<< tu2     <<"tv2 = "<< tv2     <<"tw2 = "<< tw2<< std::endl;
 
-
     //     std::cout<<"tpu0 = "<< tpu0    <<"tpv0 = "<< tpv0     <<"tpw0 = "<< tpw0
     //          <<"tpu1 = "<< tpu1     <<"tpv1 = "<< tpv1     <<"tpw1 = "<< tpw1
     //          <<"tpu2 = "<< tpu2     <<"tpv2 = "<< tpv2     <<"tpw2 = "<< tpw2<< std::endl;
-
-
 
     // set interpolation restart value
     yrestart = y1;
@@ -6549,21 +6537,20 @@ void DrawPhongTriangle(device_t *device, POLYF4DV2_PTR face, POLYF4DV2_PTR faceI
             dy = (y2 - y0);
 
             dxdyl = ((x2 - x0) << FIXP16_SHIFT) / dy;
-            dudyl = ((tu2 - tu0) ) / dy;
-            dvdyl = ((tv2 - tv0) ) / dy;
-            dwdyl = ((tw2 - tw0) ) / dy;
-            dpudyl = ((tpu2 - tpu0) ) / dy;
-            dpvdyl = ((tpv2 - tpv0) ) / dy;
-            dpwdyl = ((tpw2 - tpw0) ) / dy;
+            dudyl = ((tu2 - tu0)) / dy;
+            dvdyl = ((tv2 - tv0)) / dy;
+            dwdyl = ((tw2 - tw0)) / dy;
+            dpudyl = ((tpu2 - tpu0)) / dy;
+            dpvdyl = ((tpv2 - tpv0)) / dy;
+            dpwdyl = ((tpw2 - tpw0)) / dy;
 
             dxdyr = ((x2 - x1) << FIXP16_SHIFT) / dy;
-            dudyr = ((tu2 - tu1) ) / dy;
-            dvdyr = ((tv2 - tv1) ) / dy;
-            dwdyr = ((tw2 - tw1) ) / dy;
-            dpudyr = ((tpu2 - tpu1) ) / dy;
-            dpvdyr = ((tpv2 - tpv1) ) / dy;
-            dpwdyr = ((tpw2 - tpw1) ) / dy;
-
+            dudyr = ((tu2 - tu1)) / dy;
+            dvdyr = ((tv2 - tv1)) / dy;
+            dwdyr = ((tw2 - tw1)) / dy;
+            dpudyr = ((tpu2 - tpu1)) / dy;
+            dpvdyr = ((tpv2 - tpv1)) / dy;
+            dpwdyr = ((tpw2 - tpw1)) / dy;
 
             // test for y clipping
             if (y0 < min_clip_y)
@@ -6573,21 +6560,21 @@ void DrawPhongTriangle(device_t *device, POLYF4DV2_PTR face, POLYF4DV2_PTR faceI
 
                 // computer new LHS starting values
                 xl = dxdyl * dy + (x0 << FIXP16_SHIFT);
-                ul = dudyl * dy + (tu0 );
-                vl = dvdyl * dy + (tv0 );
-                wl = dwdyl * dy + (tw0 );
-                pul = dpudyl * dy + (tpu0 );
-                pvl = dpvdyl * dy + (tpv0 );
-                pwl = dpwdyl * dy + (tpw0 );
+                ul = dudyl * dy + (tu0);
+                vl = dvdyl * dy + (tv0);
+                wl = dwdyl * dy + (tw0);
+                pul = dpudyl * dy + (tpu0);
+                pvl = dpvdyl * dy + (tpv0);
+                pwl = dpwdyl * dy + (tpw0);
 
                 // compute new RHS starting values
                 xr = dxdyr * dy + (x1 << FIXP16_SHIFT);
-                ur = dudyr * dy + (tu1 );
-                vr = dvdyr * dy + (tv1 );
-                wr = dwdyr * dy + (tw1 );
-                pur = dpudyr * dy + (tpu1 );
-                pvr = dpvdyr * dy + (tpv1 );
-                pwr = dpwdyr * dy + (tpw1 );
+                ur = dudyr * dy + (tu1);
+                vr = dvdyr * dy + (tv1);
+                wr = dwdyr * dy + (tw1);
+                pur = dpudyr * dy + (tpu1);
+                pvr = dpvdyr * dy + (tpv1);
+                pwr = dpwdyr * dy + (tpw1);
 
                 // compute new starting y
                 ystart = min_clip_y;
@@ -6601,20 +6588,19 @@ void DrawPhongTriangle(device_t *device, POLYF4DV2_PTR face, POLYF4DV2_PTR faceI
                 xl = (x0 << FIXP16_SHIFT);
                 xr = (x1 << FIXP16_SHIFT);
 
-                ul = (tu0 );
-                vl = (tv0 );
-                wl = (tw0 );
-                pul = (tpu0 );
-                pvl = (tpv0 );
-                pwl = (tpw0 );
+                ul = (tu0);
+                vl = (tv0);
+                wl = (tw0);
+                pul = (tpu0);
+                pvl = (tpv0);
+                pwl = (tpw0);
 
-
-                ur = (tu1 );
-                vr = (tv1 );
-                wr = (tw1 );
-                pur = (tpu1 );
-                pvr = (tpv1 );
-                pwr = (tpw1 );
+                ur = (tu1);
+                vr = (tv1);
+                wr = (tw1);
+                pur = (tpu1);
+                pvr = (tpv1);
+                pwr = (tpw1);
 
                 // set starting y
                 ystart = y0;
@@ -6630,22 +6616,20 @@ void DrawPhongTriangle(device_t *device, POLYF4DV2_PTR face, POLYF4DV2_PTR faceI
             dy = (y1 - y0);
 
             dxdyl = ((x1 - x0) << FIXP16_SHIFT) / dy;
-            dudyl = ((tu1 - tu0) ) / dy;
-            dvdyl = ((tv1 - tv0) ) / dy;
-            dwdyl = ((tw1 - tw0) ) / dy;
-            dpudyl = ((tpu1 - tpu0) ) / dy;
-            dpvdyl = ((tpv1 - tpv0) ) / dy;
-            dpwdyl = ((tpw1 - tpw0) ) / dy;
-
+            dudyl = ((tu1 - tu0)) / dy;
+            dvdyl = ((tv1 - tv0)) / dy;
+            dwdyl = ((tw1 - tw0)) / dy;
+            dpudyl = ((tpu1 - tpu0)) / dy;
+            dpvdyl = ((tpv1 - tpv0)) / dy;
+            dpwdyl = ((tpw1 - tpw0)) / dy;
 
             dxdyr = ((x2 - x0) << FIXP16_SHIFT) / dy;
-            dudyr = ((tu2 - tu0) ) / dy;
-            dvdyr = ((tv2 - tv0) ) / dy;
-            dwdyr = ((tw2 - tw0) ) / dy;
+            dudyr = ((tu2 - tu0)) / dy;
+            dvdyr = ((tv2 - tv0)) / dy;
+            dwdyr = ((tw2 - tw0)) / dy;
             dpudyr = ((tpu2 - tpu0)) / dy;
-            dpvdyr = ((tpv2 - tpv0) ) / dy;
-            dpwdyr = ((tpw2 - tpw0) ) / dy;
-
+            dpvdyr = ((tpv2 - tpv0)) / dy;
+            dpwdyr = ((tpw2 - tpw0)) / dy;
 
             // test for y clipping
             if (y0 < min_clip_y)
@@ -6655,22 +6639,21 @@ void DrawPhongTriangle(device_t *device, POLYF4DV2_PTR face, POLYF4DV2_PTR faceI
 
                 // computer new LHS starting values
                 xl = dxdyl * dy + (x0 << FIXP16_SHIFT);
-                ul = dudyl * dy + (tu0 );
-                vl = dvdyl * dy + (tv0 );
-                wl = dwdyl * dy + (tw0 );
-                pul = dpudyl * dy + (tpu0 );
-                pvl = dpvdyl * dy + (tpv0 );
-                pwl = dpwdyl * dy + (tpw0 );
-
+                ul = dudyl * dy + (tu0);
+                vl = dvdyl * dy + (tv0);
+                wl = dwdyl * dy + (tw0);
+                pul = dpudyl * dy + (tpu0);
+                pvl = dpvdyl * dy + (tpv0);
+                pwl = dpwdyl * dy + (tpw0);
 
                 // compute new RHS starting values
                 xr = dxdyr * dy + (x0 << FIXP16_SHIFT);
-                ur = dudyr * dy + (tu0 );
-                vr = dvdyr * dy + (tv0 );
-                wr = dwdyr * dy + (tw0 );
-                pur = dpudyr * dy + (tpu0 );
-                pvr = dpvdyr * dy + (tpv0 );
-                pwr = dpwdyr * dy + (tpw0 );
+                ur = dudyr * dy + (tu0);
+                vr = dvdyr * dy + (tv0);
+                wr = dwdyr * dy + (tw0);
+                pur = dpudyr * dy + (tpu0);
+                pvr = dpvdyr * dy + (tpv0);
+                pwr = dpwdyr * dy + (tpw0);
 
                 // compute new starting y
                 ystart = min_clip_y;
@@ -6684,21 +6667,20 @@ void DrawPhongTriangle(device_t *device, POLYF4DV2_PTR face, POLYF4DV2_PTR faceI
                 xl = (x0 << FIXP16_SHIFT);
                 xr = (x0 << FIXP16_SHIFT);
 
-                ul = (tu0 );
-                vl = (tv0 );
-                wl = (tw0 );
+                ul = (tu0);
+                vl = (tv0);
+                wl = (tw0);
 
                 pul = (tpu0);
-                pvl = (tpv0 );
-                pwl = (tpw0 );
+                pvl = (tpv0);
+                pwl = (tpw0);
 
-                ur = (tu0 );
-                vr = (tv0 );
-                wr = (tw0 );
-                pur = (tpu0 );
-                pvr = (tpv0 );
-                pwr = (tpw0 );
-
+                ur = (tu0);
+                vr = (tv0);
+                wr = (tw0);
+                pur = (tpu0);
+                pvr = (tpv0);
+                pwr = (tpw0);
 
                 // set starting y
                 ystart = y0;
@@ -6786,19 +6768,19 @@ void DrawPhongTriangle(device_t *device, POLYF4DV2_PTR face, POLYF4DV2_PTR faceI
                 // draw span
                 for (xi = xstart; xi <= xend; xi++)
                 {
-                    std::cout<<"clip ???"<<std::endl;
+                    std::cout << "clip ???" << std::endl;
                     // write textel assume 5.6.5
                     // screen_ptr[xi] = ((ui >> (FIXP16_SHIFT + 3)) << 11) + ((vi >> (FIXP16_SHIFT + 2)) << 5) + (wi >> (FIXP16_SHIFT + 3));
 
                     //int color = ((ui >> (FIXP16_SHIFT + 3)) << 11) + ((vi >> (FIXP16_SHIFT + 2)) << 5) + (wi >> (FIXP16_SHIFT + 3));
-					int color = 0;
+                    int color = 0;
                     IUINT32 c;
                     RGBFrom565(color, c);
-                    device_pixel(device, xi,  yi,  c);
+                    device_pixel(device, xi, yi, c);
                     // interpolate u,v
                     // IUINT32 c = (ui<<16) | (vi<<8) | wi;
                     // IUINT32 c = (red << 16) | (green << 8) | blue;
-                    // IUINT32 c = ((ui >> (FIXP16_SHIFT + 3))<<16) | ((vi >> (FIXP16_SHIFT + 2))<<8) | (wi >> (FIXP16_SHIFT + 3)); 
+                    // IUINT32 c = ((ui >> (FIXP16_SHIFT + 3))<<16) | ((vi >> (FIXP16_SHIFT + 2))<<8) | (wi >> (FIXP16_SHIFT + 3));
                     ui += du;
                     vi += dv;
                     wi += dw;
@@ -6869,8 +6851,8 @@ void DrawPhongTriangle(device_t *device, POLYF4DV2_PTR face, POLYF4DV2_PTR faceI
                     // write textel 5.6.5
                     // screen_ptr[xi] = ((ui >> (FIXP16_SHIFT + 3)) << 11) + ((vi >> (FIXP16_SHIFT + 2)) << 5) + (wi >> (FIXP16_SHIFT + 3));
 
-                    // IUINT32 c = (ui<<16) | (vi<<8) | wi; 
-                    // IUINT32 c = ((ui >> (FIXP16_SHIFT + 3))<<16) | ((vi >> (FIXP16_SHIFT + 2))<<8) | (wi >> (FIXP16_SHIFT + 3)); 
+                    // IUINT32 c = (ui<<16) | (vi<<8) | wi;
+                    // IUINT32 c = ((ui >> (FIXP16_SHIFT + 3))<<16) | ((vi >> (FIXP16_SHIFT + 2))<<8) | (wi >> (FIXP16_SHIFT + 3));
                     // device_pixel(device, xi,  yi,  c);
 
                     //int color = ((ui >> (FIXP16_SHIFT + 3)) << 11) + ((vi >> (FIXP16_SHIFT + 2)) << 5) + (wi >> (FIXP16_SHIFT + 3));
@@ -6885,8 +6867,8 @@ void DrawPhongTriangle(device_t *device, POLYF4DV2_PTR face, POLYF4DV2_PTR faceI
                     fragPos.x = pui;
                     fragPos.y = pvi;
                     fragPos.z = pwi;
-					fragPos.w = 1;
-                    
+                    fragPos.w = 1;
+
                     //得到poly原本的颜色
                     int r_base, g_base, b_base;
                     _RGB565FROM16BIT(faceInWorld->color, &r_base, &g_base, &b_base);
@@ -6898,7 +6880,7 @@ void DrawPhongTriangle(device_t *device, POLYF4DV2_PTR face, POLYF4DV2_PTR faceI
                     CAM4DV1 cam;
 
                     //计算出该像素的最终光照颜色
-                    ComputePhongShadingPixelColor(r_base, g_base, b_base, lights, &cam, &fragPos, &fragNormal, color);
+                    ComputePhongShadingPixelColor(r_base, g_base, b_base, lights, ptrCam, &fragPos, &fragNormal, color);
 
                     // IUINT32 c;
                     // RGBFrom565(color, c);
@@ -6906,9 +6888,9 @@ void DrawPhongTriangle(device_t *device, POLYF4DV2_PTR face, POLYF4DV2_PTR faceI
                     // std::cout<<"color = "<<color<<std::endl;
                     // std::cout<<"c = "<<c<<std::endl;
 
-                    device_pixel(device, xi,  yi,  color);
+                    device_pixel(device, xi, yi, color);
 
-					// int color = 0;
+                    // int color = 0;
                     // IUINT32 c;
                     // RGBFrom565(color, c);
                     // device_pixel(device, xi,  yi,  c);
@@ -6922,8 +6904,6 @@ void DrawPhongTriangle(device_t *device, POLYF4DV2_PTR face, POLYF4DV2_PTR faceI
                     pvi += dpv;
                     pwi += dpw;
 
-
-
                 } // end for xi
 
                 // interpolate u,v,w,x along right and left edge
@@ -6934,7 +6914,6 @@ void DrawPhongTriangle(device_t *device, POLYF4DV2_PTR face, POLYF4DV2_PTR faceI
                 pul += dpudyl;
                 pvl += dpvdyl;
                 pwl += dpwdyl;
-
 
                 xr += dxdyr;
                 ur += dudyr;
@@ -6967,23 +6946,23 @@ void DrawPhongTriangle(device_t *device, POLYF4DV2_PTR face, POLYF4DV2_PTR faceI
             dyl = (y2 - y1);
 
             dxdyl = ((x2 - x1) << FIXP16_SHIFT) / dyl;
-            dudyl = ((tu2 - tu1) ) / dyl;
-            dvdyl = ((tv2 - tv1) ) / dyl;
-            dwdyl = ((tw2 - tw1) ) / dyl;
-            dpudyl = ((tpu2 - tpu1) ) / dyl;
-            dpvdyl = ((tpv2 - tpv1) ) / dyl;
-            dpwdyl = ((tpw2 - tpw1) ) / dyl;
+            dudyl = ((tu2 - tu1)) / dyl;
+            dvdyl = ((tv2 - tv1)) / dyl;
+            dwdyl = ((tw2 - tw1)) / dyl;
+            dpudyl = ((tpu2 - tpu1)) / dyl;
+            dpvdyl = ((tpv2 - tpv1)) / dyl;
+            dpwdyl = ((tpw2 - tpw1)) / dyl;
 
             // RHS
             dyr = (y2 - y0);
 
             dxdyr = ((x2 - x0) << FIXP16_SHIFT) / dyr;
-            dudyr = ((tu2 - tu0) ) / dyr;
-            dvdyr = ((tv2 - tv0) ) / dyr;
-            dwdyr = ((tw2 - tw0) ) / dyr;
-            dpudyr = ((tpu2 - tpu0) ) / dyr;
-            dpvdyr = ((tpv2 - tpv0) ) / dyr;
-            dpwdyr = ((tpw2 - tpw0) ) / dyr;
+            dudyr = ((tu2 - tu0)) / dyr;
+            dvdyr = ((tv2 - tv0)) / dyr;
+            dwdyr = ((tw2 - tw0)) / dyr;
+            dpudyr = ((tpu2 - tpu0)) / dyr;
+            dpvdyr = ((tpv2 - tpv0)) / dyr;
+            dpwdyr = ((tpw2 - tpw0)) / dyr;
 
             // compute overclip
             dyr = (min_clip_y - y0);
@@ -6992,22 +6971,22 @@ void DrawPhongTriangle(device_t *device, POLYF4DV2_PTR face, POLYF4DV2_PTR faceI
             // computer new LHS starting values
             xl = dxdyl * dyl + (x1 << FIXP16_SHIFT);
 
-            ul = dudyl * dyl + (tu1 );
-            vl = dvdyl * dyl + (tv1 );
-            wl = dwdyl * dyl + (tw1 );
-            pul = dpudyl * dyl + (tpu1 );
-            pvl = dpvdyl * dyl + (tpv1 );
-            pwl = dpwdyl * dyl + (tpw1 );
+            ul = dudyl * dyl + (tu1);
+            vl = dvdyl * dyl + (tv1);
+            wl = dwdyl * dyl + (tw1);
+            pul = dpudyl * dyl + (tpu1);
+            pvl = dpvdyl * dyl + (tpv1);
+            pwl = dpwdyl * dyl + (tpw1);
 
             // compute new RHS starting values
             xr = dxdyr * dyr + (x0 << FIXP16_SHIFT);
 
-            ur = dudyr * dyr + (tu0 );
-            vr = dvdyr * dyr + (tv0 );
-            wr = dwdyr * dyr + (tw0 );
-            pur = dpudyr * dyr + (tpu0 );
-            pvr = dpvdyr * dyr + (tpv0 );
-            pwr = dpwdyr * dyr + (tpw0 );
+            ur = dudyr * dyr + (tu0);
+            vr = dvdyr * dyr + (tv0);
+            wr = dwdyr * dyr + (tw0);
+            pur = dpudyr * dyr + (tpu0);
+            pvr = dpvdyr * dyr + (tpv0);
+            pwr = dpwdyr * dyr + (tpw0);
             // compute new starting y
             ystart = min_clip_y;
 
@@ -7050,45 +7029,44 @@ void DrawPhongTriangle(device_t *device, POLYF4DV2_PTR face, POLYF4DV2_PTR faceI
             dyl = (y1 - y0);
 
             dxdyl = ((x1 - x0) << FIXP16_SHIFT) / dyl;
-            dudyl = ((tu1 - tu0) ) / dyl;
-            dvdyl = ((tv1 - tv0) ) / dyl;
-            dwdyl = ((tw1 - tw0) ) / dyl;
-            dpudyl = ((tpu1 - tpu0) ) / dyl;
-            dpvdyl = ((tpv1 - tpv0) ) / dyl;
-            dpwdyl = ((tpw1 - tpw0) ) / dyl;
+            dudyl = ((tu1 - tu0)) / dyl;
+            dvdyl = ((tv1 - tv0)) / dyl;
+            dwdyl = ((tw1 - tw0)) / dyl;
+            dpudyl = ((tpu1 - tpu0)) / dyl;
+            dpvdyl = ((tpv1 - tpv0)) / dyl;
+            dpwdyl = ((tpw1 - tpw0)) / dyl;
 
             // RHS
             dyr = (y2 - y0);
 
             dxdyr = ((x2 - x0) << FIXP16_SHIFT) / dyr;
-            dudyr = ((tu2 - tu0) ) / dyr;
-            dvdyr = ((tv2 - tv0) ) / dyr;
-            dwdyr = ((tw2 - tw0) ) / dyr;
-            dpudyr = ((tpu2 - tpu0) ) / dyr;
-            dpvdyr = ((tpv2 - tpv0) ) / dyr;
-            dpwdyr = ((tpw2 - tpw0) ) / dyr;
+            dudyr = ((tu2 - tu0)) / dyr;
+            dvdyr = ((tv2 - tv0)) / dyr;
+            dwdyr = ((tw2 - tw0)) / dyr;
+            dpudyr = ((tpu2 - tpu0)) / dyr;
+            dpvdyr = ((tpv2 - tpv0)) / dyr;
+            dpwdyr = ((tpw2 - tpw0)) / dyr;
 
             // compute overclip
             dy = (min_clip_y - y0);
 
             // computer new LHS starting values
             xl = dxdyl * dy + (x0 << FIXP16_SHIFT);
-            ul = dudyl * dy + (tu0 );
-            vl = dvdyl * dy + (tv0 );
-            wl = dwdyl * dy + (tw0 );
-            pul = dpudyl * dy + (tpu0 );
-            pvl = dpvdyl * dy + (tpv0 );
-            pwl = dpwdyl * dy + (tpw0 );
+            ul = dudyl * dy + (tu0);
+            vl = dvdyl * dy + (tv0);
+            wl = dwdyl * dy + (tw0);
+            pul = dpudyl * dy + (tpu0);
+            pvl = dpvdyl * dy + (tpv0);
+            pwl = dpwdyl * dy + (tpw0);
 
             // compute new RHS starting values
             xr = dxdyr * dy + (x0 << FIXP16_SHIFT);
-            ur = dudyr * dy + (tu0 );
-            vr = dvdyr * dy + (tv0 );
-            wr = dwdyr * dy + (tw0 );
-            pur = dpudyr * dy + (tpu0 );
-            pvr = dpvdyr * dy + (tpv0 );
-            pwr = dpwdyr * dy + (tpw0 );
-
+            ur = dudyr * dy + (tu0);
+            vr = dvdyr * dy + (tv0);
+            wr = dwdyr * dy + (tw0);
+            pur = dpudyr * dy + (tpu0);
+            pvr = dpvdyr * dy + (tpv0);
+            pwr = dpwdyr * dy + (tpw0);
 
             // compute new starting y
             ystart = min_clip_y;
@@ -7103,7 +7081,7 @@ void DrawPhongTriangle(device_t *device, POLYF4DV2_PTR face, POLYF4DV2_PTR faceI
                 SWAP(dpudyl, dpudyr, temp);
                 SWAP(dpvdyl, dpvdyr, temp);
                 SWAP(dpwdyl, dpwdyr, temp);
-                
+
                 SWAP(xl, xr, temp);
                 SWAP(ul, ur, temp);
                 SWAP(vl, vr, temp);
@@ -7111,7 +7089,7 @@ void DrawPhongTriangle(device_t *device, POLYF4DV2_PTR face, POLYF4DV2_PTR faceI
                 SWAP(pul, pur, temp);
                 SWAP(pvl, pvr, temp);
                 SWAP(pwl, pwr, temp);
-                
+
                 SWAP(x1, x2, temp);
                 SWAP(y1, y2, temp);
                 SWAP(tu1, tu2, temp);
@@ -7135,23 +7113,23 @@ void DrawPhongTriangle(device_t *device, POLYF4DV2_PTR face, POLYF4DV2_PTR faceI
             dyl = (y1 - y0);
 
             dxdyl = ((x1 - x0) << FIXP16_SHIFT) / dyl;
-            dudyl = ((tu1 - tu0) ) / dyl;
-            dvdyl = ((tv1 - tv0) ) / dyl;
-            dwdyl = ((tw1 - tw0) ) / dyl;
-            dpudyl = ((tpu1 - tpu0) ) / dyl;
-            dpvdyl = ((tpv1 - tpv0) ) / dyl;
-            dpwdyl = ((tpw1 - tpw0) ) / dyl;
+            dudyl = ((tu1 - tu0)) / dyl;
+            dvdyl = ((tv1 - tv0)) / dyl;
+            dwdyl = ((tw1 - tw0)) / dyl;
+            dpudyl = ((tpu1 - tpu0)) / dyl;
+            dpvdyl = ((tpv1 - tpv0)) / dyl;
+            dpwdyl = ((tpw1 - tpw0)) / dyl;
 
             // RHS
             dyr = (y2 - y0);
 
             dxdyr = ((x2 - x0) << FIXP16_SHIFT) / dyr;
-            dudyr = ((tu2 - tu0) ) / dyr;
-            dvdyr = ((tv2 - tv0) ) / dyr;
-            dwdyr = ((tw2 - tw0) ) / dyr;
-            dpudyr = ((tpu2 - tpu0) ) / dyr;
-            dpvdyr = ((tpv2 - tpv0) ) / dyr;
-            dpwdyr = ((tpw2 - tpw0) ) / dyr;
+            dudyr = ((tu2 - tu0)) / dyr;
+            dvdyr = ((tv2 - tv0)) / dyr;
+            dwdyr = ((tw2 - tw0)) / dyr;
+            dpudyr = ((tpu2 - tpu0)) / dyr;
+            dpvdyr = ((tpv2 - tpv0)) / dyr;
+            dpwdyr = ((tpw2 - tpw0)) / dyr;
 
             // no clipping y
 
@@ -7159,19 +7137,19 @@ void DrawPhongTriangle(device_t *device, POLYF4DV2_PTR face, POLYF4DV2_PTR faceI
             xl = (x0 << FIXP16_SHIFT);
             xr = (x0 << FIXP16_SHIFT);
 
-            ul = (tu0 );
-            vl = (tv0 );
-            wl = (tw0 );
-            ur = (tu0 );
-            vr = (tv0 );
-            wr = (tw0 );
+            ul = (tu0);
+            vl = (tv0);
+            wl = (tw0);
+            ur = (tu0);
+            vr = (tv0);
+            wr = (tw0);
 
-            pul = (tpu0 );
-            pvl = (tpv0 );
-            pwl = (tpw0 );
-            pur = (tpu0 );
-            pvr = (tpv0 );
-            pwr = (tpw0 );
+            pul = (tpu0);
+            pvl = (tpv0);
+            pwl = (tpw0);
+            pur = (tpu0);
+            pvr = (tpv0);
+            pwr = (tpw0);
             // set starting y
             ystart = y0;
 
@@ -7210,7 +7188,7 @@ void DrawPhongTriangle(device_t *device, POLYF4DV2_PTR face, POLYF4DV2_PTR faceI
         } // end else
 
         // test for horizontal clipping
-            //没有调用这个
+        //没有调用这个
 
         if ((x0 < min_clip_x) || (x0 > max_clip_x) ||
             (x1 < min_clip_x) || (x1 > max_clip_x) ||
@@ -7229,12 +7207,12 @@ void DrawPhongTriangle(device_t *device, POLYF4DV2_PTR face, POLYF4DV2_PTR faceI
                 xend = ((xr + FIXP16_ROUND_UP) >> FIXP16_SHIFT);
 
                 // compute starting points for u,v,w interpolants
-                ui = ul ;
-                vi = vl ;
-                wi = wl ;
-                pui = pul ;
-                pvi = pvl ;
-                pwi = pwl ;
+                ui = ul;
+                vi = vl;
+                wi = wl;
+                pui = pul;
+                pvi = pvl;
+                pwi = pwl;
 
                 // compute u,v interpolants
                 if ((dx = (xend - xstart)) > 0)
@@ -7289,14 +7267,14 @@ void DrawPhongTriangle(device_t *device, POLYF4DV2_PTR face, POLYF4DV2_PTR faceI
                     // write textel assume 5.6.5
                     // screen_ptr[xi] = ((ui >> (FIXP16_SHIFT + 3)) << 11) + ((vi >> (FIXP16_SHIFT + 2)) << 5) + (wi >> (FIXP16_SHIFT + 3));
 
-                    // IUINT32 c = (ui<<16) | (vi<<8) | wi; 
-                    // IUINT32 c = ((ui >> (FIXP16_SHIFT + 3))<<16) | ((vi >> (FIXP16_SHIFT + 2))<<8) | (wi >> (FIXP16_SHIFT + 3)); 
+                    // IUINT32 c = (ui<<16) | (vi<<8) | wi;
+                    // IUINT32 c = ((ui >> (FIXP16_SHIFT + 3))<<16) | ((vi >> (FIXP16_SHIFT + 2))<<8) | (wi >> (FIXP16_SHIFT + 3));
                     // device_pixel(device, xi,  yi,  c);
-					int color = 0;
-					//int color = ((ui >> (FIXP16_SHIFT + 3)) << 11) + ((vi >> (FIXP16_SHIFT + 2)) << 5) + (wi >> (FIXP16_SHIFT + 3));
+                    int color = 0;
+                    //int color = ((ui >> (FIXP16_SHIFT + 3)) << 11) + ((vi >> (FIXP16_SHIFT + 2)) << 5) + (wi >> (FIXP16_SHIFT + 3));
                     IUINT32 c;
                     RGBFrom565(color, c);
-                    device_pixel(device, xi,  yi,  c);
+                    device_pixel(device, xi, yi, c);
                     // interpolate u,v
                     ui += du;
                     vi += dv;
@@ -7328,15 +7306,15 @@ void DrawPhongTriangle(device_t *device, POLYF4DV2_PTR face, POLYF4DV2_PTR faceI
                         dyl = (y2 - y1);
 
                         dxdyl = ((x2 - x1) << FIXP16_SHIFT) / dyl;
-                        dudyl = ((tu2 - tu1) ) / dyl;
-                        dvdyl = ((tv2 - tv1) ) / dyl;
-                        dwdyl = ((tw2 - tw1) ) / dyl;
+                        dudyl = ((tu2 - tu1)) / dyl;
+                        dvdyl = ((tv2 - tv1)) / dyl;
+                        dwdyl = ((tw2 - tw1)) / dyl;
 
                         // set starting values
                         xl = (x1 << FIXP16_SHIFT);
-                        ul = (tu1 );
-                        vl = (tv1 );
-                        wl = (tw1 );
+                        ul = (tu1);
+                        vl = (tv1);
+                        wl = (tw1);
 
                         // interpolate down on LHS to even up
                         xl += dxdyl;
@@ -7350,15 +7328,15 @@ void DrawPhongTriangle(device_t *device, POLYF4DV2_PTR face, POLYF4DV2_PTR faceI
                         dyr = (y1 - y2);
 
                         dxdyr = ((x1 - x2) << FIXP16_SHIFT) / dyr;
-                        dudyr = ((tu1 - tu2) ) / dyr;
-                        dvdyr = ((tv1 - tv2) ) / dyr;
-                        dwdyr = ((tw1 - tw2) ) / dyr;
+                        dudyr = ((tu1 - tu2)) / dyr;
+                        dvdyr = ((tv1 - tv2)) / dyr;
+                        dwdyr = ((tw1 - tw2)) / dyr;
 
                         // set starting values
                         xr = (x2 << FIXP16_SHIFT);
-                        ur = (tu2 );
-                        vr = (tv2 );
-                        wr = (tw2 );
+                        ur = (tu2);
+                        vr = (tv2);
+                        wr = (tw2);
 
                         // interpolate down on RHS to even up
                         xr += dxdyr;
@@ -7387,12 +7365,12 @@ void DrawPhongTriangle(device_t *device, POLYF4DV2_PTR face, POLYF4DV2_PTR faceI
                 xend = ((xr + FIXP16_ROUND_UP) >> FIXP16_SHIFT);
 
                 // compute starting points for u,v,w interpolants
-                ui = ul ;
-                vi = vl ;
-                wi = wl ;
-                pui = pul ;
-                pvi = pvl ;
-                pwi = pwl ;
+                ui = ul;
+                vi = vl;
+                wi = wl;
+                pui = pul;
+                pvi = pvl;
+                pwi = pwl;
                 // compute u,v interpolants
                 if ((dx = (xend - xstart)) > 0)
                 {
@@ -7419,8 +7397,8 @@ void DrawPhongTriangle(device_t *device, POLYF4DV2_PTR face, POLYF4DV2_PTR faceI
                     // write textel assume 5.6.5
                     // screen_ptr[xi] = ((ui >> (FIXP16_SHIFT + 3)) << 11) + ((vi >> (FIXP16_SHIFT + 2)) << 5) + (wi >> (FIXP16_SHIFT + 3));
 
-                    // IUINT32 c = (ui<<16) | (vi<<8) | wi; 
-                    // IUINT32 c = ((ui >> (FIXP16_SHIFT + 3))<<16) | ((vi >> (FIXP16_SHIFT + 2))<<8) | (wi >> (FIXP16_SHIFT + 3)); 
+                    // IUINT32 c = (ui<<16) | (vi<<8) | wi;
+                    // IUINT32 c = ((ui >> (FIXP16_SHIFT + 3))<<16) | ((vi >> (FIXP16_SHIFT + 2))<<8) | (wi >> (FIXP16_SHIFT + 3));
                     // device_pixel(device, xi,  yi,  c);
 
                     //【插值】
@@ -7436,7 +7414,7 @@ void DrawPhongTriangle(device_t *device, POLYF4DV2_PTR face, POLYF4DV2_PTR faceI
                     fragPos.x = pui;
                     fragPos.y = pvi;
                     fragPos.z = pwi;
-					fragPos.w = 1;
+                    fragPos.w = 1;
 
                     //得到poly原本的颜色
                     int r_base, g_base, b_base;
@@ -7449,10 +7427,10 @@ void DrawPhongTriangle(device_t *device, POLYF4DV2_PTR face, POLYF4DV2_PTR faceI
                     CAM4DV1 cam;
 
                     //计算出该像素的最终光照颜色
-                    ComputePhongShadingPixelColor(r_base, g_base, b_base, lights, &cam, &fragPos, &fragNormal, color);
+                    ComputePhongShadingPixelColor(r_base, g_base, b_base, lights, ptrCam, &fragPos, &fragNormal, color);
 
-                    device_pixel(device, xi,  yi,  color);
-                    
+                    device_pixel(device, xi, yi, color);
+
                     ui += du;
                     vi += dv;
                     wi += dw;
@@ -7495,21 +7473,21 @@ void DrawPhongTriangle(device_t *device, POLYF4DV2_PTR face, POLYF4DV2_PTR faceI
                         dyl = (y2 - y1);
 
                         dxdyl = ((x2 - x1) << FIXP16_SHIFT) / dyl;
-                        dudyl = ((tu2 - tu1) ) / dyl;
-                        dvdyl = ((tv2 - tv1) ) / dyl;
-                        dwdyl = ((tw2 - tw1) ) / dyl;
-                        dpudyl = ((tpu2 - tpu1) ) / dyl;
-                        dpvdyl = ((tpv2 - tpv1) ) / dyl;
-                        dpwdyl = ((tpw2 - tpw1) ) / dyl;
+                        dudyl = ((tu2 - tu1)) / dyl;
+                        dvdyl = ((tv2 - tv1)) / dyl;
+                        dwdyl = ((tw2 - tw1)) / dyl;
+                        dpudyl = ((tpu2 - tpu1)) / dyl;
+                        dpvdyl = ((tpv2 - tpv1)) / dyl;
+                        dpwdyl = ((tpw2 - tpw1)) / dyl;
 
                         // set starting values
                         xl = (x1 << FIXP16_SHIFT);
-                        ul = (tu1 );
-                        vl = (tv1 );
-                        wl = (tw1 );
-                        pul = (tpu1 );
-                        pvl = (tpv1 );
-                        pwl = (tpw1 );
+                        ul = (tu1);
+                        vl = (tv1);
+                        wl = (tw1);
+                        pul = (tpu1);
+                        pvl = (tpv1);
+                        pwl = (tpw1);
 
                         // interpolate down on LHS to even up
                         xl += dxdyl;
@@ -7527,21 +7505,21 @@ void DrawPhongTriangle(device_t *device, POLYF4DV2_PTR face, POLYF4DV2_PTR faceI
                         dyr = (y1 - y2);
 
                         dxdyr = ((x1 - x2) << FIXP16_SHIFT) / dyr;
-                        dudyr = ((tu1 - tu2) ) / dyr;
-                        dvdyr = ((tv1 - tv2) ) / dyr;
-                        dwdyr = ((tw1 - tw2) ) / dyr;
-                        dpudyr = ((tpu1 - tpu2) ) / dyr;
-                        dpvdyr = ((tpv1 - tpv2) ) / dyr;
-                        dpwdyr = ((tpw1 - tpw2) ) / dyr;
+                        dudyr = ((tu1 - tu2)) / dyr;
+                        dvdyr = ((tv1 - tv2)) / dyr;
+                        dwdyr = ((tw1 - tw2)) / dyr;
+                        dpudyr = ((tpu1 - tpu2)) / dyr;
+                        dpvdyr = ((tpv1 - tpv2)) / dyr;
+                        dpwdyr = ((tpw1 - tpw2)) / dyr;
 
                         // set starting values
                         xr = (x2 << FIXP16_SHIFT);
-                        ur = (tu2 );
-                        vr = (tv2 );
-                        wr = (tw2 );
-                        pur = (tpu2 );
-                        pvr = (tpv2 );
-                        pwr = (tpw2 );
+                        ur = (tu2);
+                        vr = (tv2);
+                        wr = (tw2);
+                        pur = (tpu2);
+                        pvr = (tpv2);
+                        pwr = (tpw2);
 
                         // interpolate down on RHS to even up
                         xr += dxdyr;
@@ -7560,11 +7538,9 @@ void DrawPhongTriangle(device_t *device, POLYF4DV2_PTR face, POLYF4DV2_PTR faceI
         } // end else
 
     } // end if
-
-
 }
 
-void Draw_Gouraud_Triangle16(device_t *device, POLYF4DV2_PTR face) 
+void Draw_Gouraud_Triangle16(device_t *device, POLYF4DV2_PTR face)
 {
     // this function draws a gouraud shaded polygon, based on the affine texture mapper, instead
     // of interpolating the texture coordinates, we simply interpolate the (R,G,B) values across
@@ -7749,7 +7725,7 @@ void Draw_Gouraud_Triangle16(device_t *device, POLYF4DV2_PTR face)
     // what kind of triangle
     if (tri_type & TRI_TYPE_FLAT_MASK)
     {
-        std::cout<<"special "<<std::endl;
+        // std::cout<<"special "<<std::endl;
 
         if (tri_type == TRI_TYPE_FLAT_TOP)
         {
@@ -7944,11 +7920,11 @@ void Draw_Gouraud_Triangle16(device_t *device, POLYF4DV2_PTR face)
                     int color = ((ui >> (FIXP16_SHIFT + 3)) << 11) + ((vi >> (FIXP16_SHIFT + 2)) << 5) + (wi >> (FIXP16_SHIFT + 3));
                     IUINT32 c;
                     RGBFrom565(color, c);
-                    device_pixel(device, xi,  yi,  c);
+                    device_pixel(device, xi, yi, c);
                     // interpolate u,v
                     // IUINT32 c = (ui<<16) | (vi<<8) | wi;
                     // IUINT32 c = (red << 16) | (green << 8) | blue;
-                    // IUINT32 c = ((ui >> (FIXP16_SHIFT + 3))<<16) | ((vi >> (FIXP16_SHIFT + 2))<<8) | (wi >> (FIXP16_SHIFT + 3)); 
+                    // IUINT32 c = ((ui >> (FIXP16_SHIFT + 3))<<16) | ((vi >> (FIXP16_SHIFT + 2))<<8) | (wi >> (FIXP16_SHIFT + 3));
                     ui += du;
                     vi += dv;
                     wi += dw;
@@ -8008,14 +7984,14 @@ void Draw_Gouraud_Triangle16(device_t *device, POLYF4DV2_PTR face)
                     // write textel 5.6.5
                     // screen_ptr[xi] = ((ui >> (FIXP16_SHIFT + 3)) << 11) + ((vi >> (FIXP16_SHIFT + 2)) << 5) + (wi >> (FIXP16_SHIFT + 3));
 
-                    // IUINT32 c = (ui<<16) | (vi<<8) | wi; 
-                    // IUINT32 c = ((ui >> (FIXP16_SHIFT + 3))<<16) | ((vi >> (FIXP16_SHIFT + 2))<<8) | (wi >> (FIXP16_SHIFT + 3)); 
+                    // IUINT32 c = (ui<<16) | (vi<<8) | wi;
+                    // IUINT32 c = ((ui >> (FIXP16_SHIFT + 3))<<16) | ((vi >> (FIXP16_SHIFT + 2))<<8) | (wi >> (FIXP16_SHIFT + 3));
                     // device_pixel(device, xi,  yi,  c);
 
                     int color = ((ui >> (FIXP16_SHIFT + 3)) << 11) + ((vi >> (FIXP16_SHIFT + 2)) << 5) + (wi >> (FIXP16_SHIFT + 3));
                     IUINT32 c;
                     RGBFrom565(color, c);
-                    device_pixel(device, xi,  yi,  c);
+                    device_pixel(device, xi, yi, c);
                     // interpolate u,v
                     ui += du;
                     vi += dv;
@@ -8051,7 +8027,7 @@ void Draw_Gouraud_Triangle16(device_t *device, POLYF4DV2_PTR face)
         // pre-test y clipping status
         if (y1 < min_clip_y)
         {
-            std::cout<<"y1 < min_clip_y"<<std::endl;
+            std::cout << "y1 < min_clip_y" << std::endl;
             // compute all deltas
             // LHS
             dyl = (y2 - y1);
@@ -8115,7 +8091,7 @@ void Draw_Gouraud_Triangle16(device_t *device, POLYF4DV2_PTR face)
         } // end if
         else if (y0 < min_clip_y)
         {
-            std::cout<<"y0 < min_clip_y"<<std::endl;
+            std::cout << "y0 < min_clip_y" << std::endl;
             // compute all deltas
             // LHS
             dyl = (y1 - y0);
@@ -8303,14 +8279,14 @@ void Draw_Gouraud_Triangle16(device_t *device, POLYF4DV2_PTR face)
                     // write textel assume 5.6.5
                     // screen_ptr[xi] = ((ui >> (FIXP16_SHIFT + 3)) << 11) + ((vi >> (FIXP16_SHIFT + 2)) << 5) + (wi >> (FIXP16_SHIFT + 3));
 
-                    // IUINT32 c = (ui<<16) | (vi<<8) | wi; 
-                    // IUINT32 c = ((ui >> (FIXP16_SHIFT + 3))<<16) | ((vi >> (FIXP16_SHIFT + 2))<<8) | (wi >> (FIXP16_SHIFT + 3)); 
+                    // IUINT32 c = (ui<<16) | (vi<<8) | wi;
+                    // IUINT32 c = ((ui >> (FIXP16_SHIFT + 3))<<16) | ((vi >> (FIXP16_SHIFT + 2))<<8) | (wi >> (FIXP16_SHIFT + 3));
                     // device_pixel(device, xi,  yi,  c);
 
                     int color = ((ui >> (FIXP16_SHIFT + 3)) << 11) + ((vi >> (FIXP16_SHIFT + 2)) << 5) + (wi >> (FIXP16_SHIFT + 3));
                     IUINT32 c;
                     RGBFrom565(color, c);
-                    device_pixel(device, xi,  yi,  c);
+                    device_pixel(device, xi, yi, c);
                     // interpolate u,v
                     ui += du;
                     vi += dv;
@@ -8424,14 +8400,14 @@ void Draw_Gouraud_Triangle16(device_t *device, POLYF4DV2_PTR face)
                     // write textel assume 5.6.5
                     // screen_ptr[xi] = ((ui >> (FIXP16_SHIFT + 3)) << 11) + ((vi >> (FIXP16_SHIFT + 2)) << 5) + (wi >> (FIXP16_SHIFT + 3));
 
-                    // IUINT32 c = (ui<<16) | (vi<<8) | wi; 
-                    // IUINT32 c = ((ui >> (FIXP16_SHIFT + 3))<<16) | ((vi >> (FIXP16_SHIFT + 2))<<8) | (wi >> (FIXP16_SHIFT + 3)); 
+                    // IUINT32 c = (ui<<16) | (vi<<8) | wi;
+                    // IUINT32 c = ((ui >> (FIXP16_SHIFT + 3))<<16) | ((vi >> (FIXP16_SHIFT + 2))<<8) | (wi >> (FIXP16_SHIFT + 3));
                     // device_pixel(device, xi,  yi,  c);
 
                     int color = ((ui >> (FIXP16_SHIFT + 3)) << 11) + ((vi >> (FIXP16_SHIFT + 2)) << 5) + (wi >> (FIXP16_SHIFT + 3));
                     IUINT32 c;
                     RGBFrom565(color, c);
-                    device_pixel(device, xi,  yi,  c);
+                    device_pixel(device, xi, yi, c);
                     // interpolate u,v
                     ui += du;
                     vi += dv;
@@ -8508,16 +8484,14 @@ void Draw_Gouraud_Triangle16(device_t *device, POLYF4DV2_PTR face)
 
         } // end else
 
-
     } // end if
-
 }
 // end Draw_Gouraud_Triangle16
 
-void ComputePhongShadingPixelColor(int r_base, int g_base, int b_base, LIGHTV1_PTR lights, CAM4DV1_PTR ptrCam, VECTOR4D_PTR prtFragPos, VECTOR4D_PTR ptrFragNormal, IUINT32 &color)
+void ComputePhongShadingPixelColor(int r_base, int g_base, int b_base, LIGHTV1_PTR lights, CAM4DV1_PTR ptrCam, VECTOR4D_PTR ptrFragPos, VECTOR4D_PTR ptrFragNormal, IUINT32 &color)
 {
     // std::cout<<"r_base = "<<r_base<<"g_base"<<g_base<<"b_base"<<b_base<<std::endl;
-    
+
     int sumR, sumG, sumB;
     sumR = sumG = sumB = 0;
     int max_lights = 4;
@@ -8531,7 +8505,7 @@ void ComputePhongShadingPixelColor(int r_base, int g_base, int b_base, LIGHTV1_P
         if (lights[curr_light].attr & LIGHTV1_ATTR_AMBIENT) //环境光
         {
             // std::cout<<"黄景光"<<std::endl;
-            int ri,gi,bi;
+            int ri, gi, bi;
             ri = ((lights[curr_light].c_ambient.r * r_base) / 256);
             gi = ((lights[curr_light].c_ambient.g * g_base) / 256);
             bi = ((lights[curr_light].c_ambient.b * b_base) / 256);
@@ -8539,7 +8513,7 @@ void ComputePhongShadingPixelColor(int r_base, int g_base, int b_base, LIGHTV1_P
             sumR += ri;
             sumG += gi;
             sumB += bi;
-        } // end if
+        }                                                         // end if
         else if (lights[curr_light].attr & LIGHTV1_ATTR_INFINITE) //平行光
         {
             // std::cout<<"平行光"<<std::endl;
@@ -8556,12 +8530,12 @@ void ComputePhongShadingPixelColor(int r_base, int g_base, int b_base, LIGHTV1_P
         else if (lights[curr_light].attr & LIGHTV1_ATTR_POINT) //点光源
         {
             // std::cout<<"点光源"<<std::endl;
-            VECTOR4D l; //光线方向
-            VECTOR4D_Build(prtFragPos, &lights[curr_light].pos, &l);
-            float dp = VECTOR4D_Dot(ptrFragNormal, &l);
+            VECTOR4D lightDir; //光线方向
+            VECTOR4D_Build(ptrFragPos, &lights[curr_light].pos, &lightDir);
+            float dp = VECTOR4D_Dot(ptrFragNormal, &lightDir);
             if (dp > 0)
             {
-                float dist = VECTOR4D_Length_Fast2(&l);
+                float dist = VECTOR4D_Length_Fast2(&lightDir);
                 float atten = (lights[curr_light].kc + lights[curr_light].kl * dist + lights[curr_light].kq * dist * dist);
 
                 float i = 128 * dp / (dist * atten);
@@ -8574,19 +8548,71 @@ void ComputePhongShadingPixelColor(int r_base, int g_base, int b_base, LIGHTV1_P
                 // sumG += (lights[curr_light].c_diffuse.g * dp * g_base)/256;
                 // sumB += (lights[curr_light].c_diffuse.b * dp * b_base)/256;
             } // end if
+
+            //镜面反射
+            // VECTOR4D viewDir; //视线方向向量
+            // VECTOR4D_Build(ptrFragPos, &ptrCam->pos, &viewDir);
+
+            // VECTOR4D dirLight2Frag; //光源到片段的方向
+            // VECTOR4D_Build(&lights[curr_light].pos, ptrFragPos, &dirLight2Frag);
+
+            // float dpIN = VECTOR4D_Dot(&dirLight2Frag, ptrFragNormal);
+            // float factor = 2*dpIN;
+
+            // VECTOR4D tmp;
+            // tmp.x = factor * ptrFragNormal->x;
+            // tmp.y = factor * ptrFragNormal->y;
+            // tmp.z = factor * ptrFragNormal->z;
+            // tmp.w = 1;
+            
+
+            // VECTOR4D reflectDir;    //反射向量
+            // reflectDir.x = dirLight2Frag.x - tmp.x;
+            // reflectDir.y = dirLight2Frag.y - tmp.y;
+            // reflectDir.z = dirLight2Frag.z - tmp.z;
+            // reflectDir.w = 1;
+
+            // VECTOR4D_Normalize(&reflectDir);
+            // VECTOR4D_Normalize(&viewDir);
+
+            // float shininess = 125;
+            // float spec = pow(max(VECTOR4D_Dot(&viewDir, &reflectDir), 0.0), shininess);
+            // // std::cout<<"spec = "<<spec<<std::endl;
+
+            // float dist = VECTOR4D_Length_Fast2(&lightDir);
+            // float atten = (lights[curr_light].kc + lights[curr_light].kl * dist + lights[curr_light].kq * dist * dist);
+            // float i = 128 * spec / (dist * atten);
+
+            // // std::cout<<"dp > 0"<<std::endl;
+            // // sumR += (lights[curr_light].c_specular.r * r_base * i) / (256 * 128);
+            // // sumG += (lights[curr_light].c_specular.g * g_base * i) / (256 * 128);
+            // // sumB += (lights[curr_light].c_specular.b * b_base * i) / (256 * 128);
+
+            // float deltaR = (lights[curr_light].c_specular.r * r_base * spec) / (256 * 128);
+            // float deltaG = (lights[curr_light].c_specular.g * g_base * spec) / (256 * 128);
+            // float deltaB = (lights[curr_light].c_specular.b * b_base * spec) / (256 * 128);
+
+            // // std::cout<< "delta R G B = "<< deltaR << ", " <<deltaG<< ", " <<deltaB<<std::endl;
+
+            // sumR += deltaR;
+            // sumG += deltaG;
+            // sumB += deltaB;
+
+            //https://blog.csdn.net/yinhun2012/article/details/79466517
+            //https://www.cnblogs.com/graphics/archive/2013/02/21/2920627.html
         }
     }
 
-            // std::cout<<sumR<<std::endl;
-            // std::cout<<sumG<<std::endl;
-            // std::cout<<sumB<<std::endl;
+    // std::cout<<sumR<<std::endl;
+    // std::cout<<sumG<<std::endl;
+    // std::cout<<sumB<<std::endl;
     sumR = min(255, sumR);
     sumG = min(255, sumG);
     sumB = min(255, sumB);
-    
-            // std::cout<<sumR<<std::endl;
-            // std::cout<<sumG<<std::endl;
-            // std::cout<<sumB<<std::endl;
+
+    // std::cout<<sumR<<std::endl;
+    // std::cout<<sumG<<std::endl;
+    // std::cout<<sumB<<std::endl;
 
     int c = RGB16Bit565(sumR, sumG, sumB);
 

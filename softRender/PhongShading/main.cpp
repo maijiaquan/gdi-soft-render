@@ -316,7 +316,8 @@ void DrawDemo9_2();
 
 OBJECT4DV2 obj_constant_water,
     obj_flat_water,
-    obj_gouraud_water;
+    obj_gouraud_water,
+	obj_constant_light;
 
 RGBAV1 white, gray, black, red, green, blue;
 void InitDemo9_2()
@@ -348,16 +349,21 @@ void InitDemo9_2()
 	// Load_OBJECT4DV2_COB(&obj_constant_water, "./cob/cube_constant_01.cob",						&vscale, &vpos, &vrot, VERTEX_FLAGS_SWAP_YZ | VERTEX_FLAGS_TRANSFORM_LOCAL | VERTEX_FLAGS_TRANSFORM_LOCAL_WORLD);
    Load_OBJECT4DV2_COB(&obj_constant_water, "./cob/cube_flat_01.cob", &vscale, &vpos, &vrot, VERTEX_FLAGS_SWAP_YZ | VERTEX_FLAGS_TRANSFORM_LOCAL | VERTEX_FLAGS_TRANSFORM_LOCAL_WORLD);
 
+
 //    Load_OBJECT4DV2_COB(&obj_flat_water, "./cob/cube_flat_01.cob", &vscale, &vpos, &vrot, VERTEX_FLAGS_SWAP_YZ | VERTEX_FLAGS_TRANSFORM_LOCAL | VERTEX_FLAGS_TRANSFORM_LOCAL_WORLD);
    // load flat shaded water
    VECTOR4D_INITXYZ(&vscale, 10.00, 10.00, 10.00);
-   Load_OBJECT4DV2_COB(&obj_flat_water, "./cob/water_flat_01.cob", &vscale, &vpos, &vrot, VERTEX_FLAGS_SWAP_YZ | VERTEX_FLAGS_TRANSFORM_LOCAL | VERTEX_FLAGS_TRANSFORM_LOCAL_WORLD);
-//    Load_OBJECT4DV2_COB(&obj_flat_water, "./cob/cube_gouraud_01.cob", &vscale, &vpos, &vrot, VERTEX_FLAGS_SWAP_YZ | VERTEX_FLAGS_TRANSFORM_LOCAL | VERTEX_FLAGS_TRANSFORM_LOCAL_WORLD); //修改颜色后的水分子
+//    Load_OBJECT4DV2_COB(&obj_flat_water, "./cob/water_flat_01.cob", &vscale, &vpos, &vrot, VERTEX_FLAGS_SWAP_YZ | VERTEX_FLAGS_TRANSFORM_LOCAL | VERTEX_FLAGS_TRANSFORM_LOCAL_WORLD);
+   Load_OBJECT4DV2_COB(&obj_flat_water, "./cob/cube_gouraud_01.cob", &vscale, &vpos, &vrot, VERTEX_FLAGS_SWAP_YZ | VERTEX_FLAGS_TRANSFORM_LOCAL | VERTEX_FLAGS_TRANSFORM_LOCAL_WORLD); //修改颜色后的水分子
 
    // load gouraud shaded water
    VECTOR4D_INITXYZ(&vscale, 10.00, 10.00, 10.00);
-   Load_OBJECT4DV2_COB(&obj_gouraud_water, "./cob/water_flat_01_gouraud.cob", &vscale, &vpos, &vrot, VERTEX_FLAGS_SWAP_YZ | VERTEX_FLAGS_TRANSFORM_LOCAL | VERTEX_FLAGS_TRANSFORM_LOCAL_WORLD); //修改颜色后的水分子
-//    Load_OBJECT4DV2_COB(&obj_gouraud_water, "./cob/cube_gouraud_01.cob", &vscale, &vpos, &vrot, VERTEX_FLAGS_SWAP_YZ | VERTEX_FLAGS_TRANSFORM_LOCAL | VERTEX_FLAGS_TRANSFORM_LOCAL_WORLD); //修改颜色后的水分子
+//    Load_OBJECT4DV2_COB(&obj_gouraud_water, "./cob/water_flat_01_gouraud.cob", &vscale, &vpos, &vrot, VERTEX_FLAGS_SWAP_YZ | VERTEX_FLAGS_TRANSFORM_LOCAL | VERTEX_FLAGS_TRANSFORM_LOCAL_WORLD); //修改颜色后的水分子
+   Load_OBJECT4DV2_COB(&obj_gouraud_water, "./cob/cube_gouraud_01.cob", &vscale, &vpos, &vrot, VERTEX_FLAGS_SWAP_YZ | VERTEX_FLAGS_TRANSFORM_LOCAL | VERTEX_FLAGS_TRANSFORM_LOCAL_WORLD); //修改颜色后的水分子
+
+   VECTOR4D_INITXYZ(&vscale, 5.00, 5.00, 5.00);
+
+   Load_OBJECT4DV2_COB(&obj_constant_light, "./cob/cube_flat_01.cob", &vscale, &vpos, &vrot, VERTEX_FLAGS_SWAP_YZ | VERTEX_FLAGS_TRANSFORM_LOCAL | VERTEX_FLAGS_TRANSFORM_LOCAL_WORLD);
    Reset_Lights_LIGHTV1();
 
    // create some working colors
@@ -397,7 +403,7 @@ void InitDemo9_2()
 					  LIGHTV1_STATE_ON,	// turn the light on
 					  LIGHTV1_ATTR_POINT,  // pointlight type
 					//   black, green, black, // color for diffuse term only
-					  black, white, black, // color for diffuse term only
+					  black, white, white, // color for diffuse term only
 					  &plight_pos, NULL,   // need pos only
 					  0, .001, 0,		   // linear attenuation only
 					  0, 0, 1);			   // spotlight info NA
@@ -577,35 +583,42 @@ void DrawDemo9_2()
 	obj_constant_water.world_pos.x = -50;
 	obj_constant_water.world_pos.y = 0;
 	obj_constant_water.world_pos.z = 120;
-
 	// generate rotation matrix around y axis
 	Build_XYZ_Rotation_MATRIX4X4(x_ang, y_ang, z_ang, &mrot);
-
 	// rotate the local coords of the object
 	Transform_OBJECT4DV2(&obj_constant_water, &mrot, TRANSFORM_LOCAL_TO_TRANS, 1);
-
 	// perform world transform
 	Model_To_World_OBJECT4DV2(&obj_constant_water, TRANSFORM_TRANS_ONLY);
-
 	// insert the object into render list
 	Insert_OBJECT4DV2_RENDERLIST4DV2(&rend_list2, &obj_constant_water, 0);
 
-	Reset_OBJECT4DV2(&obj_flat_water);
 
+	Reset_OBJECT4DV2(&obj_constant_light);
+	// set position of constant shaded water
+	obj_constant_light.world_pos.x = lights[POINT_LIGHT_INDEX].pos.x;
+	obj_constant_light.world_pos.y = lights[POINT_LIGHT_INDEX].pos.y;
+	obj_constant_light.world_pos.z = lights[POINT_LIGHT_INDEX].pos.z;
+	// generate rotation matrix around y axis
+	Build_XYZ_Rotation_MATRIX4X4(x_ang, y_ang, z_ang, &mrot);
+	// rotate the local coords of the object
+	Transform_OBJECT4DV2(&obj_constant_light, &mrot, TRANSFORM_LOCAL_TO_TRANS, 1);
+	// perform world transform
+	Model_To_World_OBJECT4DV2(&obj_constant_light, TRANSFORM_TRANS_ONLY);
+	// insert the object into render list
+	Insert_OBJECT4DV2_RENDERLIST4DV2(&rend_list2, &obj_constant_light, 0);
+
+
+	Reset_OBJECT4DV2(&obj_flat_water);
 	// set position of constant shaded water
 	obj_flat_water.world_pos.x = 0;
 	obj_flat_water.world_pos.y = 0;
 	obj_flat_water.world_pos.z = 120;
-
 	// generate rotation matrix around y axis
 	Build_XYZ_Rotation_MATRIX4X4(x_ang, y_ang, z_ang, &mrot);
-
 	// rotate the local coords of the object
 	Transform_OBJECT4DV2(&obj_flat_water, &mrot, TRANSFORM_LOCAL_TO_TRANS, 1);
-
 	// perform world transform
 	Model_To_World_OBJECT4DV2(&obj_flat_water, TRANSFORM_TRANS_ONLY);
-
 	// insert the object into render list
 	Insert_OBJECT4DV2_RENDERLIST4DV2(&rend_list2, &obj_flat_water, 0);
 
@@ -715,7 +728,7 @@ void DrawDemo9_2()
 
 			// Draw_Gouraud_Triangle16(&device, &face);
 
-			DrawPhongTriangle(&device, &face, rend_list_ptr->poly_ptrs[poly], lights);
+			DrawPhongTriangle(&device, &cam,&face, rend_list_ptr->poly_ptrs[poly], lights);
 
 			//     std::cout<<"...tu0 = "<< tu0    <<"tv0 = "<< tv0     <<"tw0 = "<< tw0
             //  <<"tu1 = "<< tu1     <<"tv1 = "<< tv1     <<"tw1 = "<< tw1

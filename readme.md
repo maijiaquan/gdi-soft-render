@@ -2,7 +2,7 @@
 
 目前进度：
 实现基本的坐标变换和Phong着色，包括漫反射和镜面反射。效果如下：
-<img src = "spec-effect.gif">
+<img src = "spec-effect.png">
 
 待完成：
 背面剪裁、剔除、阴影、贴图等。

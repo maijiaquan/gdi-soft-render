@@ -347,19 +347,19 @@ void InitDemo9_2()
 
 	// Load_OBJECT4DV2_COB(&obj_constant_water, "./cob/water_constant_01.cob",
 	// Load_OBJECT4DV2_COB(&obj_constant_water, "./cob/cube_constant_01.cob",						&vscale, &vpos, &vrot, VERTEX_FLAGS_SWAP_YZ | VERTEX_FLAGS_TRANSFORM_LOCAL | VERTEX_FLAGS_TRANSFORM_LOCAL_WORLD);
-   Load_OBJECT4DV2_COB(&obj_constant_water, "./cob/cube_flat_01.cob", &vscale, &vpos, &vrot, VERTEX_FLAGS_SWAP_YZ | VERTEX_FLAGS_TRANSFORM_LOCAL | VERTEX_FLAGS_TRANSFORM_LOCAL_WORLD);
+   Load_OBJECT4DV2_COB(&obj_constant_water, "./cob/water_flat_01.cob", &vscale, &vpos, &vrot, VERTEX_FLAGS_SWAP_YZ | VERTEX_FLAGS_TRANSFORM_LOCAL | VERTEX_FLAGS_TRANSFORM_LOCAL_WORLD);
 
 
 //    Load_OBJECT4DV2_COB(&obj_flat_water, "./cob/cube_flat_01.cob", &vscale, &vpos, &vrot, VERTEX_FLAGS_SWAP_YZ | VERTEX_FLAGS_TRANSFORM_LOCAL | VERTEX_FLAGS_TRANSFORM_LOCAL_WORLD);
    // load flat shaded water
    VECTOR4D_INITXYZ(&vscale, 10.00, 10.00, 10.00);
 //    Load_OBJECT4DV2_COB(&obj_flat_water, "./cob/water_flat_01.cob", &vscale, &vpos, &vrot, VERTEX_FLAGS_SWAP_YZ | VERTEX_FLAGS_TRANSFORM_LOCAL | VERTEX_FLAGS_TRANSFORM_LOCAL_WORLD);
-   Load_OBJECT4DV2_COB(&obj_flat_water, "./cob/cube_gouraud_01.cob", &vscale, &vpos, &vrot, VERTEX_FLAGS_SWAP_YZ | VERTEX_FLAGS_TRANSFORM_LOCAL | VERTEX_FLAGS_TRANSFORM_LOCAL_WORLD); //修改颜色后的水分子
+   Load_OBJECT4DV2_COB(&obj_flat_water, "./cob/water_gouraud_01.cob", &vscale, &vpos, &vrot, VERTEX_FLAGS_SWAP_YZ | VERTEX_FLAGS_TRANSFORM_LOCAL | VERTEX_FLAGS_TRANSFORM_LOCAL_WORLD); //修改颜色后的水分子
 
    // load gouraud shaded water
    VECTOR4D_INITXYZ(&vscale, 10.00, 10.00, 10.00);
-//    Load_OBJECT4DV2_COB(&obj_gouraud_water, "./cob/water_flat_01_gouraud.cob", &vscale, &vpos, &vrot, VERTEX_FLAGS_SWAP_YZ | VERTEX_FLAGS_TRANSFORM_LOCAL | VERTEX_FLAGS_TRANSFORM_LOCAL_WORLD); //修改颜色后的水分子
-   Load_OBJECT4DV2_COB(&obj_gouraud_water, "./cob/cube_gouraud_01.cob", &vscale, &vpos, &vrot, VERTEX_FLAGS_SWAP_YZ | VERTEX_FLAGS_TRANSFORM_LOCAL | VERTEX_FLAGS_TRANSFORM_LOCAL_WORLD); //修改颜色后的水分子
+   Load_OBJECT4DV2_COB(&obj_gouraud_water, "./cob/water_flat_01_gouraud.cob", &vscale, &vpos, &vrot, VERTEX_FLAGS_SWAP_YZ | VERTEX_FLAGS_TRANSFORM_LOCAL | VERTEX_FLAGS_TRANSFORM_LOCAL_WORLD); //修改颜色后的水分子
+//    Load_OBJECT4DV2_COB(&obj_gouraud_water, "./cob/water_gouraud_01.cob", &vscale, &vpos, &vrot, VERTEX_FLAGS_SWAP_YZ | VERTEX_FLAGS_TRANSFORM_LOCAL | VERTEX_FLAGS_TRANSFORM_LOCAL_WORLD); //修改颜色后的水分子
 
    VECTOR4D_INITXYZ(&vscale, 5.00, 5.00, 5.00);
 
@@ -405,7 +405,7 @@ void InitDemo9_2()
 					//   black, green, black, // color for diffuse term only
 					  black, white, white, // color for diffuse term only
 					  &plight_pos, NULL,   // need pos only
-					  0, .001, 0,		   // linear attenuation only
+					  0, .007, 0,		   // linear attenuation only
 					  0, 0, 1);			   // spotlight info NA
 
    VECTOR4D slight2_pos = {0, 200, 0, 0};
@@ -495,8 +495,9 @@ void DrawDemo9_2()
 	static float plight_ang = 0, slight_ang = 0; // angles for light motion
 
 	// move point light source in ellipse around game world
-	lights[POINT_LIGHT_INDEX].pos.x = 1000 * Fast_Cos(plight_ang);
-	lights[POINT_LIGHT_INDEX].pos.y = 100;
+	// lights[POINT_LIGHT_INDEX].pos.x = 1000 * Fast_Cos(plight_ang);
+	// lights[POINT_LIGHT_INDEX].pos.x = 200;
+	// lights[POINT_LIGHT_INDEX].pos.y = 10;
 	// lights[POINT_LIGHT_INDEX].pos.z = 1000 * Fast_Sin(plight_ang);
 
 	// if ((plight_ang += 3) > 360)
@@ -532,6 +533,29 @@ void DrawDemo9_2()
 	{
 		lights[POINT_LIGHT_INDEX].pos.z -= 10;
 	} // end if
+
+	if (KEY_DOWN(VK_NUMPAD7))
+	{
+		lights[POINT_LIGHT_INDEX].pos.y += 10;
+		// move forward
+	} // end if
+
+	if (KEY_DOWN(VK_NUMPAD1))
+	{
+		lights[POINT_LIGHT_INDEX].pos.y -= 10;
+	} // end if
+	
+	if (KEY_DOWN(VK_NUMPAD4))
+	{
+		lights[POINT_LIGHT_INDEX].pos.x -= 10;
+		// move forward
+	} // end if
+
+	if (KEY_DOWN(VK_NUMPAD6))
+	{
+		lights[POINT_LIGHT_INDEX].pos.x += 10;
+	} // end if
+
 	if (KEY_DOWN(VK_UP))
 	{
 		// move forward
@@ -557,6 +581,22 @@ void DrawDemo9_2()
 			turning = 15;
 
 	} // end if
+
+	static bool gF1 = false;
+	static bool gF2 = false;
+
+	if (KEY_DOWN(VK_F1))
+	{
+		gF1 = !gF1;
+	} // end if
+
+
+		if (KEY_DOWN(VK_F2))
+	{
+		gF2 = !gF2;
+	} // end if
+
+
 
 	if (KEY_DOWN(VK_LEFT))
 	{
@@ -651,8 +691,11 @@ void DrawDemo9_2()
 	// update rotation angles
 	// if ((x_ang += 1) > 360)
 	// 	x_ang = 0;
-	// if ((y_ang += 2) > 360)
-		// y_ang = 0;
+	if (gF1)
+	{
+		if ((y_ang += 2) > 360)
+			y_ang = 0;
+	}
 	// if ((z_ang += 3) > 360)
 	// 	z_ang = 0;
 
@@ -728,7 +771,7 @@ void DrawDemo9_2()
 
 			// Draw_Gouraud_Triangle16(&device, &face);
 
-			DrawPhongTriangle(&device, &cam,&face, rend_list_ptr->poly_ptrs[poly], lights);
+			DrawPhongTriangle(&device, &cam,&face, rend_list_ptr->poly_ptrs[poly], lights, gF2);
 
 			//     std::cout<<"...tu0 = "<< tu0    <<"tv0 = "<< tv0     <<"tw0 = "<< tw0
             //  <<"tu1 = "<< tu1     <<"tv1 = "<< tv1     <<"tw1 = "<< tw1

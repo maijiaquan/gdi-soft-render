@@ -1044,6 +1044,11 @@ inline float VECTOR4D_Length_Fast2(VECTOR4D_PTR va)
 	return ((float)(dist >> 10));
 
 } // end VECTOR4D_Length_Fast2
+void VECTOR4D_Scale(float k, VECTOR4D_PTR va);
+void VECTOR4D_Scale(float k, VECTOR4D_PTR va, VECTOR4D_PTR vscaled);
+
+
+
 
 #define TRI_TYPE_NONE 0
 #define TRI_TYPE_FLAT_TOP 1
@@ -1061,6 +1066,6 @@ inline float VECTOR4D_Length_Fast2(VECTOR4D_PTR va)
 #define FIXP16_ROUND_UP 0x00008000
 void Draw_Gouraud_Triangle16(device_t *device, POLYF4DV2_PTR face);
 // void DrawPhongTriangle(device_t *device, POLYF4DV2_PTR face, LIGHTV1_PTR lights);
-void DrawPhongTriangle(device_t *device, CAM4DV1_PTR ptrCam, POLYF4DV2_PTR face, POLYF4DV2_PTR faceInWorld, LIGHTV1_PTR lights);
+void DrawPhongTriangle(device_t *device, CAM4DV1_PTR ptrCam, POLYF4DV2_PTR face, POLYF4DV2_PTR faceInWorld, LIGHTV1_PTR lights, bool isSpec);
 
-void ComputePhongShadingPixelColor(int r_base, int g_base, int b_base, LIGHTV1_PTR prtlights, CAM4DV1_PTR ptrCam, VECTOR4D_PTR prtFragPos, VECTOR4D_PTR ptrFragNormal, IUINT32 &color);
+void ComputePhongShadingPixelColor(int r_base, int g_base, int b_base, LIGHTV1_PTR prtlights, CAM4DV1_PTR ptrCam, VECTOR4D_PTR prtFragPos, VECTOR4D_PTR ptrFragNormal, IUINT32 &color,bool isSpec);

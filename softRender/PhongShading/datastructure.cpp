@@ -424,6 +424,38 @@ VECTOR4D VECTOR4D_Add(VECTOR4D_PTR va, VECTOR4D_PTR vb)
     return (vsum);
 }
 
+
+void VECTOR4D_Scale(float k, VECTOR4D_PTR va)
+{
+// this function scales a vector by the constant k,
+// in place , note w is left unchanged
+
+// multiply each component by scaling factor
+va->x*=k;
+va->y*=k;
+va->z*=k;
+va->w = 1;
+
+} // end VECTOR4D_Scale
+
+/////////////////////////////////////////////////////////////
+
+void VECTOR4D_Scale(float k, VECTOR4D_PTR va, VECTOR4D_PTR vscaled)
+{
+// this function scales a vector by the constant k,
+// leaves the original unchanged, and returns the result
+// in vres as well as on the stack
+
+// multiply each component by scaling factor
+vscaled->x = k*va->x;
+vscaled->y = k*va->y;
+vscaled->z = k*va->z;
+vscaled->w = 1;
+
+} // end VECTOR4D_Scale
+
+
+
 //矩阵相乘
 void Mat_Mul_4X4(MATRIX4X4_PTR ma, MATRIX4X4_PTR mb, MATRIX4X4_PTR mprod)
 {
@@ -6247,7 +6279,7 @@ int Compare_FarZ_POLYF4DV2(const void *arg1, const void *arg2)
 
 } // end Compare_FarZ_POLYF4DV2
 
-void DrawPhongTriangle(device_t *device, CAM4DV1_PTR ptrCam, POLYF4DV2_PTR face, POLYF4DV2_PTR faceInWorld, LIGHTV1_PTR lights)
+void DrawPhongTriangle(device_t *device, CAM4DV1_PTR ptrCam, POLYF4DV2_PTR face, POLYF4DV2_PTR faceInWorld, LIGHTV1_PTR lights, bool isSpec)
 {
     int v0 = 0,
         v1 = 1,
@@ -6880,7 +6912,7 @@ void DrawPhongTriangle(device_t *device, CAM4DV1_PTR ptrCam, POLYF4DV2_PTR face,
                     CAM4DV1 cam;
 
                     //计算出该像素的最终光照颜色
-                    ComputePhongShadingPixelColor(r_base, g_base, b_base, lights, ptrCam, &fragPos, &fragNormal, color);
+                    ComputePhongShadingPixelColor(r_base, g_base, b_base, lights, ptrCam, &fragPos, &fragNormal, color, isSpec);
 
                     // IUINT32 c;
                     // RGBFrom565(color, c);
@@ -7427,7 +7459,7 @@ void DrawPhongTriangle(device_t *device, CAM4DV1_PTR ptrCam, POLYF4DV2_PTR face,
                     CAM4DV1 cam;
 
                     //计算出该像素的最终光照颜色
-                    ComputePhongShadingPixelColor(r_base, g_base, b_base, lights, ptrCam, &fragPos, &fragNormal, color);
+                    ComputePhongShadingPixelColor(r_base, g_base, b_base, lights, ptrCam, &fragPos, &fragNormal, color, isSpec);
 
                     device_pixel(device, xi, yi, color);
 
@@ -8488,7 +8520,7 @@ void Draw_Gouraud_Triangle16(device_t *device, POLYF4DV2_PTR face)
 }
 // end Draw_Gouraud_Triangle16
 
-void ComputePhongShadingPixelColor(int r_base, int g_base, int b_base, LIGHTV1_PTR lights, CAM4DV1_PTR ptrCam, VECTOR4D_PTR ptrFragPos, VECTOR4D_PTR ptrFragNormal, IUINT32 &color)
+void ComputePhongShadingPixelColor(int r_base, int g_base, int b_base, LIGHTV1_PTR lights, CAM4DV1_PTR ptrCam, VECTOR4D_PTR ptrFragPos, VECTOR4D_PTR ptrFragNormal, IUINT32 &color,bool isSpec)
 {
     // std::cout<<"r_base = "<<r_base<<"g_base"<<g_base<<"b_base"<<b_base<<std::endl;
 
@@ -8530,6 +8562,8 @@ void ComputePhongShadingPixelColor(int r_base, int g_base, int b_base, LIGHTV1_P
         else if (lights[curr_light].attr & LIGHTV1_ATTR_POINT) //点光源
         {
             // std::cout<<"点光源"<<std::endl;
+
+            //漫反射
             VECTOR4D lightDir; //光线方向
             VECTOR4D_Build(ptrFragPos, &lights[curr_light].pos, &lightDir);
             float dp = VECTOR4D_Dot(ptrFragNormal, &lightDir);
@@ -8544,59 +8578,70 @@ void ComputePhongShadingPixelColor(int r_base, int g_base, int b_base, LIGHTV1_P
                 sumR += (lights[curr_light].c_diffuse.r * r_base * i) / (256 * 128);
                 sumG += (lights[curr_light].c_diffuse.g * g_base * i) / (256 * 128);
                 sumB += (lights[curr_light].c_diffuse.b * b_base * i) / (256 * 128);
-                // sumR += (lights[curr_light].c_diffuse.r * dp * r_base)/256;
-                // sumG += (lights[curr_light].c_diffuse.g * dp * g_base)/256;
-                // sumB += (lights[curr_light].c_diffuse.b * dp * b_base)/256;
+
+                // sumR += (lights[curr_light].c_diffuse.r * r_base * dp * 0.001) / (256); //不随距离而变化
+                // sumG += (lights[curr_light].c_diffuse.g * g_base * dp * 0.001) / (256);
+                // sumB += (lights[curr_light].c_diffuse.b * b_base * dp * 0.001) / (256);
+
+
+
             } // end if
 
             //镜面反射
-            // VECTOR4D viewDir; //视线方向向量
-            // VECTOR4D_Build(ptrFragPos, &ptrCam->pos, &viewDir);
+            //
+            VECTOR4D viewDir; //视线方向向量
+            VECTOR4D_Build(ptrFragPos, &ptrCam->pos, &viewDir);
 
-            // VECTOR4D dirLight2Frag; //光源到片段的方向
-            // VECTOR4D_Build(&lights[curr_light].pos, ptrFragPos, &dirLight2Frag);
+            VECTOR4D dirLight2Frag; //光源到片段的方向
+            VECTOR4D_Build(&lights[curr_light].pos, ptrFragPos, &dirLight2Frag);
 
-            // float dpIN = VECTOR4D_Dot(&dirLight2Frag, ptrFragNormal);
-            // float factor = 2*dpIN;
+            float dpIN = VECTOR4D_Dot(&dirLight2Frag, ptrFragNormal);
+            float factor = 2*dpIN;
 
-            // VECTOR4D tmp;
-            // tmp.x = factor * ptrFragNormal->x;
-            // tmp.y = factor * ptrFragNormal->y;
-            // tmp.z = factor * ptrFragNormal->z;
-            // tmp.w = 1;
+            VECTOR4D tmp;
+            tmp.x = factor * ptrFragNormal->x;
+            tmp.y = factor * ptrFragNormal->y;
+            tmp.z = factor * ptrFragNormal->z;
+            tmp.w = 1;
             
 
-            // VECTOR4D reflectDir;    //反射向量
-            // reflectDir.x = dirLight2Frag.x - tmp.x;
-            // reflectDir.y = dirLight2Frag.y - tmp.y;
-            // reflectDir.z = dirLight2Frag.z - tmp.z;
-            // reflectDir.w = 1;
+            VECTOR4D reflectDir;    //反射向量
+            reflectDir.x = dirLight2Frag.x - tmp.x;
+            reflectDir.y = dirLight2Frag.y - tmp.y;
+            reflectDir.z = dirLight2Frag.z - tmp.z;
+            reflectDir.w = 1;
 
-            // VECTOR4D_Normalize(&reflectDir);
-            // VECTOR4D_Normalize(&viewDir);
+            VECTOR4D_Normalize(&reflectDir);
+            VECTOR4D_Normalize(&viewDir);
 
-            // float shininess = 125;
-            // float spec = pow(max(VECTOR4D_Dot(&viewDir, &reflectDir), 0.0), shininess);
-            // // std::cout<<"spec = "<<spec<<std::endl;
+            float shininess = 5;
+            float spec = pow(max(VECTOR4D_Dot(&viewDir, &reflectDir), 0.0), shininess);
+            // std::cout<<"spec = "<<spec<<std::endl;
 
-            // float dist = VECTOR4D_Length_Fast2(&lightDir);
-            // float atten = (lights[curr_light].kc + lights[curr_light].kl * dist + lights[curr_light].kq * dist * dist);
-            // float i = 128 * spec / (dist * atten);
+            float dist = VECTOR4D_Length_Fast2(&lightDir);
+            float atten = (lights[curr_light].kc + lights[curr_light].kl * dist + lights[curr_light].kq * dist * dist);
+            float i = 128 * spec / (dist * atten);
 
-            // // std::cout<<"dp > 0"<<std::endl;
-            // // sumR += (lights[curr_light].c_specular.r * r_base * i) / (256 * 128);
-            // // sumG += (lights[curr_light].c_specular.g * g_base * i) / (256 * 128);
-            // // sumB += (lights[curr_light].c_specular.b * b_base * i) / (256 * 128);
+            // std::cout<<"dp > 0"<<std::endl;
+            // sumR += (lights[curr_light].c_specular.r * r_base * i) / (256 * 128);
+            // sumG += (lights[curr_light].c_specular.g * g_base * i) / (256 * 128);
+            // sumB += (lights[curr_light].c_specular.b * b_base * i) / (256 * 128);
 
-            // float deltaR = (lights[curr_light].c_specular.r * r_base * spec) / (256 * 128);
-            // float deltaG = (lights[curr_light].c_specular.g * g_base * spec) / (256 * 128);
-            // float deltaB = (lights[curr_light].c_specular.b * b_base * spec) / (256 * 128);
+            float deltaR = (lights[curr_light].c_specular.r * r_base * spec) / (256 );
+            float deltaG = (lights[curr_light].c_specular.g * g_base * spec) / (256 );
+            float deltaB = (lights[curr_light].c_specular.b * b_base * spec) / (256 );
 
-            // // std::cout<< "delta R G B = "<< deltaR << ", " <<deltaG<< ", " <<deltaB<<std::endl;
+            // std::cout<< "delta R G B = "<< deltaR << ", " <<deltaG<< ", " <<deltaB<<std::endl;
 
-            // sumR += deltaR;
-            // sumG += deltaG;
-            // sumB += deltaB;
+            if(isSpec)
+            {
+                            sumR += deltaR;
+            sumG += deltaG;
+            sumB += deltaB;
+
+
+            }
+
 
             //https://blog.csdn.net/yinhun2012/article/details/79466517
             //https://www.cnblogs.com/graphics/archive/2013/02/21/2920627.html
@@ -8622,3 +8667,4 @@ void ComputePhongShadingPixelColor(int r_base, int g_base, int b_base, LIGHTV1_P
     // color = (sumR<< 16) | (sumG << 8) | sumB ;
     // color = ((sumR >> (FIXP16_SHIFT + 3)) << 11) + ((sumG >> (FIXP16_SHIFT + 2)) << 5) + (sumB >> (FIXP16_SHIFT + 3));
 }
+
